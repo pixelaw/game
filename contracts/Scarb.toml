@@ -1,0 +1,39 @@
+[package]
+cairo-version = ">=2.0.0-rc0"
+name = "pixelaw"
+version = "0.1.0"
+homepage = "https://github.com/pixelaw/contracts"
+
+[cairo]
+sierra-replace-ids = true
+
+[dependencies]
+dojo = { git = "https://github.com/ftupas/dojo" }
+
+[[target.dojo]]
+
+[tool.dojo]
+initializer_class_hash = "0xbeef"
+
+[scripts]
+deploy = "unset DOJO_WORLD_ADDRESS && sozo build && sozo migrate && ./scripts/init_auth.sh"
+spawn_pixel_1 = "./scripts/spawn_pixel_1.sh"
+put_color_1 = "./scripts/put_color_1.sh"
+spawn_rps_1 = "./scripts/spawn_rps_1.sh"
+put_rps_1 = "./scripts/put_rps_1.sh"
+get_1 = "./scripts/get_1.sh"
+get_2 = "./scripts/get_2.sh"
+spawn_pixel_2 = "./scripts/spawn_pixel_2.sh"
+put_color_2 = "./scripts/put_color_2.sh"
+spawn_rps_2 = "./scripts/spawn_rps_2.sh"
+put_rps_2 = "./scripts/put_rps_2.sh"
+
+[tool.dojo.env]
+rpc_url = "http://localhost:5050/"
+
+# Default account for katana with seed = 0
+account_address = "0x03ee9e18edc71a6df30ac3aca2e0b02a198fbce19b7480a63a0d71cbd76652e0"
+private_key = "0x0300001800000000300000180000000000030000000000003006001800006600"
+
+keystore_password = "password"
+keystore_path = "../keystore.json"

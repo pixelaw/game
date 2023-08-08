@@ -1,0 +1,3 @@
+# This crate is for tests purposes to avoid having tests running twice if we would be running them crate by crate.
+[crate_roots]
+pixelaw = "src"
