@@ -27,30 +27,23 @@ mod update_text_system {
         calldata.append(position.x.into());
         calldata.append(position.y.into());
         calldata.append(ctx.system); // This system's name
-        let res = ctx.world.execute('has_write_access_system'.into(), calldata.span());
+        let res = ctx.world.execute('has_write_access_system'.into(), calldata);
         assert(*(res[0]) == 1, 'Not authorized to change pixel!');
 
         // Retrieve the text of existing pixel at the specified position
-        let maybe_text = try_get !(ctx.world, (position.x, position.y).into(), (Text));
-        let text = match maybe_text {
-            Option::Some(text) => text,
-            Option::None(_) => Text { string: 0 },
-        };
-
-        let maybe_timestamp = try_get !(ctx.world, (position.x, position.y).into(), (Timestamp));
-        let timestamp = match maybe_timestamp {
-            Option::Some(timestamp) => timestamp,
-            Option::None(_) => Timestamp { created_at: 0, updated_at: 0 },
-        };
+        let (text, timestamp) = get!(ctx.world, (position.x, position.y).into(), (Text, Timestamp));
 
         // Update the pixel's owner and timestamp in the world state at the specified position
         set !(
             ctx.world,
-            (position.x, position.y).into(),
             (
                 Text {
+                    x: position.x,
+                    y: position.y,
                     string: new_text.string
-                    }, Timestamp {
+                }, Timestamp {
+                    x: position.x,
+                    y: position.y,
                     created_at: timestamp.created_at, updated_at: starknet::get_block_timestamp()
                 },
             )

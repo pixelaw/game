@@ -41,7 +41,7 @@ scarb run deploy
 
 ````shell
 cd contracts
-torii --manifest target/dev/manifest.json
+torii --manifest target/dev/manifest.json --world 0x45ef1358b4a415bf9551c7233d5cac213d30e47e772be88ef12327210c47429
 ````
 
 ### Step 5: Get the React frontend ready

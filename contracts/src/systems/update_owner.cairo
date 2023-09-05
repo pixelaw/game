@@ -27,7 +27,7 @@ mod update_owner_system {
         calldata.append(position.x.into());
         calldata.append(position.y.into());
         calldata.append(ctx.system); // This system's name
-        let res = ctx.world.execute('has_write_access_system'.into(), calldata.span());
+        let res = ctx.world.execute('has_write_access_system'.into(), calldata);
         assert(*(res[0]) == 1, 'Not authorized to change pixel!');
 
         // Retrieve the owner of existing pixel at the specified position
@@ -38,11 +38,15 @@ mod update_owner_system {
         // Update the pixel's owner and timestamp in the world state at the specified position
         set !(
             ctx.world,
-            (position.x, position.y).into(),
             (
                 Owner {
+                    x: position.x,
+                    y: position.y,
                     address: new_owner.address
-                    }, Timestamp {
+                },
+                Timestamp {
+                    x: position.x,
+                    y: position.y,
                     created_at: timestamp.created_at, updated_at: starknet::get_block_timestamp()
                 },
             )

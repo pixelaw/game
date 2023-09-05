@@ -5,42 +5,49 @@ import {
   OwnerComponent,
   PixelEntity,
   PixelTypeComponent,
-  PositionComponent,
   TimestampComponent
 } from "../../global/types";
 import {BigNumber} from "ethers";
 
 const convertToHexadecimal = (n: number) => n.toString(16)
+const convertToDecimal = (hexadecimalString: string) => {
+  const n = hexadecimalString.replace("0x", "")
+  return parseInt(n, 16);
+}
 const prefixString = (prefix: string, base: string) => `${prefix}${base}`
 const toKey = (n: number) => prefixString('0x', convertToHexadecimal(n))
 
 const query = gql`
 query PixelEntity($x: String!, $y: String!) {
   entities(keys: [$x, $y]) {
-    id
-    components {
-      __typename
-      ... on Position {
-        x
-        y
-      }
-      ... on Color {
-        r
-        g
-        b
-      }
-      ... on PixelType {
-        name
-      }
-      ... on Timestamp {
-        created_at
-        updated_at
-      }
-      ... on Owner {
-        address
-      }
-      ... on ColorCount {
-        count
+    edges {
+      node {
+        keys
+        components {
+          ... on Color {
+            __typename
+            r
+            g
+            b
+          }
+          ... on Timestamp {
+            created_at
+            updated_at
+            __typename
+          }
+          ... on Owner {
+            address
+            __typename
+          }
+          ... on PixelType {
+            name
+            __typename
+          }
+          ... on ColorCount {
+            count
+            __typename
+          }
+        }
       }
     }
   }
@@ -48,23 +55,26 @@ query PixelEntity($x: String!, $y: String!) {
 `
 
 type EntityType = {
-  id: string,
-  components: [OwnerComponent, PositionComponent, PixelTypeComponent, TimestampComponent, ColorComponent, ColorCountComponent]
+  node: {
+    keys: string[],
+    components: [OwnerComponent, PixelTypeComponent, TimestampComponent, ColorComponent, ColorCountComponent]
+  }
 }
 
 export type QueryReturn = {
-  entities: EntityType[]
+  entities: {
+    edges: EntityType[]
+  }
 }
 
 export const convertEntityToPixelEntity = (entity: EntityType) => {
   let ownerComponent: OwnerComponent | undefined = undefined
-  let positionComponent: PositionComponent | undefined = undefined
   let pixelTypeComponent: PixelTypeComponent | undefined = undefined
   let timestampComponent: TimestampComponent | undefined = undefined
   let colorComponent: ColorComponent | undefined = undefined
   let colorCountComponent: ColorCountComponent | undefined = undefined
 
-  for (const component of entity.components) {
+  for (const component of entity.node.components) {
     switch (component.__typename) {
       case "Color": {
         colorComponent = component
@@ -82,10 +92,6 @@ export const convertEntityToPixelEntity = (entity: EntityType) => {
         pixelTypeComponent = component
         break
       }
-      case "Position": {
-        positionComponent = component
-        break
-      }
       case "Timestamp": {
         timestampComponent = component
         break
@@ -94,9 +100,12 @@ export const convertEntityToPixelEntity = (entity: EntityType) => {
   }
 
   return {
-    id: entity.id,
+    id: entity.node.keys[0] + '-' + entity.node.keys[1],
     owner: ownerComponent?.address ?? '',
-    position: positionComponent ? { x: positionComponent.x, y: positionComponent.y } : undefined,
+    position: {
+      x: convertToDecimal(entity.node.keys[0]),
+      y: convertToDecimal(entity.node.keys[1]),
+    },
     pixelType: pixelTypeComponent?.name,
     createdAt: timestampComponent?.created_at,
     updatedAt: timestampComponent?.updated_at,
@@ -110,7 +119,7 @@ export const convertEntityToPixelEntity = (entity: EntityType) => {
 }
 
 const convertQueryReturnToPixelEntity = ({entities}: QueryReturn) => {
-  const [res] = entities
+  const [res] = entities.edges
   if (!res) return undefined
   return convertEntityToPixelEntity(res)
 }

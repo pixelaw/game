@@ -22,21 +22,16 @@ mod put_color_system {
     ) {
         let mut calldata = Default::default();
 
-        let pixel_id = (position.x, position.y).into();
-
         // Check if the PixelType is 'paint'
-        let pixel_type = get !(ctx.world, pixel_id, (PixelType));
+        let (
+            pixel_type,
+            timestamp,
+            owner,
+            color_count,
+            color
+        ) = get !(ctx.world, (position.x, position.y).into(), (PixelType, Timestamp, Owner, ColorCount, Color));
         assert(pixel_type.name == 'paint', 'PixelType is not paint!');
 
-        // Get timestamp to check if cooldown is over
-        let maybe_timestamp = try_get !(ctx.world, pixel_id, Timestamp);
-        let timestamp = match maybe_timestamp {
-            Option::Some(timestamp) => timestamp,
-            Option::None(_) => Timestamp { created_at: 0, updated_at: 0 },
-        };
-
-        // Check if the pixel is owned by the sender
-        let owner = get !(ctx.world, pixel_id, Owner);
 
         // Check if 5 seconds have passed or if the sender is the owner
         assert(
@@ -51,26 +46,16 @@ mod put_color_system {
         // Serialize color
         new_color.serialize(ref calldata);
 
-        // Update the color count if color is different
-        let maybe_color_count = try_get !(ctx.world, pixel_id, ColorCount);
-        let mut color_count = match maybe_color_count {
-            Option::Some(color_count) => color_count,
-            Option::None(_) => ColorCount { count: 0 },
-        };
-
-        let maybe_color = try_get !(ctx.world, pixel_id, Color);
-        let color = match maybe_color {
-            Option::Some(color) => color,
-            Option::None(_) => Color { r: 0, g: 0, b: 0 },
-        };
-
         // Call the update_color_system
-        ctx.world.execute('update_color_system'.into(), calldata.span());
+        ctx.world.execute('update_color_system'.into(), calldata);
 
         // Update the color if it is different
         if color != new_color {
+            // Update the color count if color is different
+            let mut color_count = color_count;
+            color_count.count += 1;
             // Update the color count
-            set !(ctx.world, pixel_id, (ColorCount { count: color_count.count + 1 }));
+            set !(ctx.world, (color_count));
         }
     }
 }

@@ -1,5 +1,9 @@
 #[derive(Component, Copy, Drop, Serde, SerdeLen)]
 struct Game {
+    #[key]
+    x: u64,
+    #[key]
+    y: u64,
     game_id: u32,
     state: u8,
     player1: felt252,

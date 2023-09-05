@@ -30,6 +30,8 @@ export function createSystemCalls(
         const tx = await execute("put_color_system", [
             position[0],
             position[1],
+            position[0],
+            position[1],
             color[0],
             color[1],
             color[2]

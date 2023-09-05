@@ -10,32 +10,36 @@ import {BLOCK_TIME} from "../../global/constants";
 export const QUERY_KEY = ["paintedPixels"]
 
 const query = gql`
-query PixelEntity {
-  entities(keys: ["%"] componentName: "Color" limit: ${64 * 64}) {
-    id
-    components {
-      __typename
-      ... on Position {
-        x
-        y
-      }
-      ... on Color {
-        r
-        g
-        b
-      }
-      ... on PixelType {
-        name
-      }
-      ... on Timestamp {
-        created_at
-        updated_at
-      }
-      ... on Owner {
-        address
-      }
-      ... on ColorCount {
-        count
+query all_entities{
+  entities(keys: ["%"] first: 4096) {
+    edges {
+      node {
+        keys
+        components {
+          ... on Color {
+            __typename
+            r
+            g
+            b
+          }
+          ... on Timestamp {
+            created_at
+            updated_at
+            __typename
+          }
+          ... on Owner {
+            address
+            __typename
+          }
+          ... on PixelType {
+            name
+            __typename
+          }
+          ... on ColorCount {
+            count
+            __typename
+          }
+        }
       }
     }
   }
@@ -47,7 +51,7 @@ const usePaintedPixels = () => {
     QUERY_KEY,
     query,
     undefined,
-    ({entities}) => entities
+    ({entities}) => entities.edges
       .map(convertEntityToPixelEntity)
       .filter(entity => entity.pixelType === PAINTED),
     {

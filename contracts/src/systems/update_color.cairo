@@ -28,30 +28,26 @@ mod update_color_system {
         calldata.append(position.x.into());
         calldata.append(position.y.into());
         calldata.append(ctx.system); // This system's name
-        let res = ctx.world.execute('has_write_access_system'.into(), calldata.span());
+        let res = ctx.world.execute('has_write_access_system'.into(), calldata);
         assert(*(res[0]) == 1, 'Not authorized to change pixel!');
 
         // Retrieve the color of existing pixel at the specified position
-        let maybe_color = try_get !(ctx.world, (position.x, position.y).into(), (Color));
-        let color = match maybe_color {
-            Option::Some(color) => color,
-            Option::None(_) => Color { r: 0, g: 0, b: 0 },
-        };
-
-        let maybe_timestamp = try_get !(ctx.world, (position.x, position.y).into(), (Timestamp));
-        let timestamp = match maybe_timestamp {
-            Option::Some(timestamp) => timestamp,
-            Option::None(_) => Timestamp { created_at: 0, updated_at: 0 },
-        };
+        let (color, timestamp) = get!(ctx.world, (position.x, position.y).into(), (Color, Timestamp));
 
         // Update the pixel's color and timestamp in the world state at the specified position
         set !(
             ctx.world,
-            (position.x, position.y).into(),
             (
                 Color {
-                    r: new_color.r, g: new_color.g, b: new_color.b, 
-                    }, Timestamp {
+                    x: position.x,
+                    y: position.y,
+                    r: new_color.r,
+                    g: new_color.g,
+                    b: new_color.b,
+                },
+                Timestamp {
+                    x: position.x,
+                    y: position.y,
                     created_at: timestamp.created_at, updated_at: starknet::get_block_timestamp()
                 },
             )

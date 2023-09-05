@@ -18,13 +18,13 @@ mod create {
     fn execute(ctx: Context, position: Position) -> (u32, felt252) {
         let game_id = ctx.world.uuid();
         let player_id: felt252 = ctx.origin.into();
-        let pixel_id = (position.x, position.y).into();
 
         // game entity
         set !(
             ctx.world,
-            pixel_id,
             (Game {
+                x: position.x,
+                y: position.y,
                 game_id,
                 state: STATE_IDLE,
                 player1: 0,

@@ -21,40 +21,39 @@ mod spawn_pixel_system {
         ctx: Context,
         position: Position,
         pixel_type: felt252,
-        allowlist: Span<felt252> // allowed systems to modify the core components of this pixel
+        allowlist: Array<felt252> // allowed systems to modify the core components of this pixel
     ) -> bool {
         let player_id: felt252 = ctx.origin.into();
 
         // Check if the pixel already exists
-        let maybe_type = try_get !(ctx.world, (position.x, position.y).into(), PixelType);
-        assert(maybe_type.is_none(), 'Pixel already exists!');
+        let maybe_type = get!(ctx.world, (position.x, position.y).into(), (PixelType));
+        assert(maybe_type.name == 0, 'Pixel already exists!');
 
         // Check if the caller is authorized to change the pixel
         let mut calldata = Default::default();
         calldata.append(position.x.into());
         calldata.append(position.y.into());
         calldata.append(ctx.system); // This system's name
-        let res = ctx.world.execute('has_write_access_system'.into(), calldata.span());
+        let res = ctx.world.execute('has_write_access_system'.into(), calldata);
         assert(*(res[0]) == 1, 'Not authorized to change pixel!');
-
-        // Create Pixel storage key
-        let pixel_id: Query = (position.x, position.y).into();
 
         // Set Pixel components
         set !(
             ctx.world,
-            pixel_id, // pixel storage key
             (
                 Owner {
+                    x: position.x,
+                    y: position.y,
                     address: player_id
                     },
-                Position {
-                    x: position.x, y: position.y
-                    },
                 PixelType {
+                    x: position.x,
+                    y: position.y,
                     name: pixel_type
                     },
                 Timestamp {
+                    x: position.x,
+                    y: position.y,
                     created_at: starknet::get_block_timestamp(),
                     updated_at: starknet::get_block_timestamp()
                 },
@@ -77,8 +76,12 @@ mod spawn_pixel_system {
             }
             set !(
                 ctx.world, // pixel + system is the storage key
-                (position.x, position.y, *allowlist[index]).into(),
-                (Permission { allowed: true })
+                (Permission {
+                    x: position.x,
+                    y: position.y,
+                    caller_system: *allowlist[index],
+                    allowed: true
+                })
             );
             index += 1;
         };

@@ -22,8 +22,7 @@ mod commit {
 
     fn execute(ctx: Context, game_id: u32, hashed_commit: felt252, position: Position) -> () {
         // Retrieve Game and Player
-        let pixel_id = (position.x, position.y).into();
-        let mut game = get !(ctx.world, pixel_id, Game);
+        let mut game = get !(ctx.world, (position.x, position.y).into(), (Game));
         let player_id: felt252 = ctx.origin.into();
 
         // Handle game state
@@ -45,19 +44,7 @@ mod commit {
         // Store the Game
         set !(
             ctx.world,
-            pixel_id,
-            (Game {
-                game_id: game.game_id,
-                state: game.state,
-                player1: game.player1,
-                player2: game.player2,
-                player1_hash: game.player1_hash,
-                player2_hash: game.player2_hash,
-                player1_commit: game.player1_commit,
-                player2_commit: game.player2_commit,
-                started_timestamp: game.started_timestamp,
-                winner: game.winner
-            })
+            (game)
         );
     }
 }

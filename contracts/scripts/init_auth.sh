@@ -3,10 +3,10 @@ set -euo pipefail
 pushd $(dirname "$0")/..
 
 # export DOJO_WORLD_ADDRESS="0x26065106fa319c3981618e7567480a50132f23932226a51c219ffb8e47daa84";
-export DOJO_WORLD_ADDRESS="0x79a3c37167370f03882049edbb291a4c8b79b988835184a18a0695f4dc4fe0c"
+export DOJO_WORLD_ADDRESS="0x45ef1358b4a415bf9551c7233d5cac213d30e47e772be88ef12327210c47429"
 
 # make sure all components/systems are deployed
-COMPONENTS=("Color" "Owner" "Permission" "Position" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player")
+COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player")
 SYSTEMS=("spawn_pixel_system" "update_color_system" "update_owner_system" "update_text_system" "update_type_system" "put_color_system" "play_rps_system" "commit" "create" "reset" "reveal")
 
 # check components
@@ -24,12 +24,12 @@ for system in ${SYSTEMS[@]}; do
 done
 
 # enable system -> component authorizations
-ADD_PIXEL_COMPONENTS=("Color" "Owner" "Permission" "Position" "Text" "Timestamp" "ColorCount")
+ADD_PIXEL_COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount")
 UPDATE_COLOR_SYSTEM=("Color" "Timestamp")
 UPDATE_OWNER_SYSTEM=("Owner" "Timestamp")
 UPDATE_TEXT_SYSTEM=("Text" "Timestamp")
 PUT_COLOR_SYSTEM=("Color" "Timestamp" "ColorCount")
-HAS_WRITE_ACCESS_SYSTEM=("Color" "Owner" "Permission" "Position" "Text" "Timestamp" "ColorCount" "PixelType")
+HAS_WRITE_ACCESS_SYSTEM=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType")
 ALL_COMPONENTS=("289632186226" "341306140018" "379660685143453645500270" "5795978142210944878" "1415936116" "1557123341884594417008" "318453956533960458989172")
 
 for component in ${COMPONENTS[@]}; do
