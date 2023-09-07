@@ -2,8 +2,8 @@
 set -euo pipefail
 pushd $(dirname "$0")/..
 
-# export DOJO_WORLD_ADDRESS="0x26065106fa319c3981618e7567480a50132f23932226a51c219ffb8e47daa84";
-export DOJO_WORLD_ADDRESS="0x45ef1358b4a415bf9551c7233d5cac213d30e47e772be88ef12327210c47429"
+export DOJO_WORLD_ADDRESS="0x26bada1b980d220e0842659711c8891a432ef4c1d9e35c0d973414e88512390";
+
 
 # make sure all components/systems are deployed
 COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player")
