@@ -37,3 +37,16 @@ struct PixelTypeUpdated {
     pixel_type: PixelType,
     caller: felt252,
 }
+
+#[derive(Drop, starknet::Event)]
+struct QueueStarted {
+    id: usize,
+    unlock: u64,
+    execution: felt252,
+    arguments: Span<felt252>
+}
+
+#[derive(Drop, starknet::Event)]
+struct QueueFinished {
+    id: usize
+}

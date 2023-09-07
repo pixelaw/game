@@ -2,12 +2,12 @@
 set -euo pipefail
 pushd $(dirname "$0")/..
 
-# export DOJO_WORLD_ADDRESS="0x26065106fa319c3981618e7567480a50132f23932226a51c219ffb8e47daa84";
-export DOJO_WORLD_ADDRESS="0x45ef1358b4a415bf9551c7233d5cac213d30e47e772be88ef12327210c47429"
+export DOJO_WORLD_ADDRESS="0x26bada1b980d220e0842659711c8891a432ef4c1d9e35c0d973414e88512390";
 
 # make sure all components/systems are deployed
 COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player")
-SYSTEMS=("spawn_pixel_system" "update_color_system" "update_owner_system" "update_text_system" "update_type_system" "put_color_system" "play_rps_system" "commit" "create" "reset" "reveal")
+# TODO remove remove_color_system
+SYSTEMS=("spawn_pixel_system" "update_color_system" "update_owner_system" "update_text_system" "update_type_system" "put_color_system" "remove_color_system" "play_rps_system" "commit" "create" "reset" "reveal" "process_queue_system")
 
 # check components
 for component in ${COMPONENTS[@]}; do
@@ -60,13 +60,13 @@ for component in ${COMPONENTS[@]}; do
     sozo auth writer $component put_color_system 
 done
 
-# P1="0x03ee9e18edc71a6df30ac3aca2e0b02a198fbce19b7480a63a0d71cbd76652e0"
-# P2="0x033c627a3e5213790e246a917770ce23d7e562baa5b4d2917c23b1be6d91961c"
+# TODO remove me later
+for component in ${COMPONENTS[@]}; do
+    sozo auth writer $component remove_color_system
+done
 
-
-# for component in ${ALL_COMPONENTS[@]}; do
-#     sozo execute grant_owner_system -c $P1,$component
-#     sozo execute grant_owner_system -c $P2,$component
-# done
+for component in ${COMPONENTS[@]}; do
+    sozo auth writer $component process_queue_system
+done
 
 echo "Default authorizations have been successfully set."

@@ -8,7 +8,7 @@ homepage = "https://github.com/pixelaw/contracts"
 sierra-replace-ids = true
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v0.2.1" }
 
 [[target.dojo]]
 
