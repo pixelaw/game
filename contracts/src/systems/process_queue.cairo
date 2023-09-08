@@ -3,8 +3,7 @@ mod process_queue_system {
     use array::ArrayTrait;
     use traits::Into;
     use dojo::world::Context;
-
-    use pixelaw::events::QueueFinished;
+    use pixelaw::events::{Event, QueueFinished};
 
     fn execute(
         ctx: Context,
@@ -15,6 +14,6 @@ mod process_queue_system {
     ) {
         assert(unlock <= starknet::get_block_timestamp(), 'unlock time not passed');
         ctx.world.execute(execution, arguments);
-        emit!(ctx.world, QueueFinished { id });
+        emit!(ctx.world, Event::QueueFinished(QueueFinished { id }));
     }
 }

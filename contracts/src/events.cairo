@@ -38,6 +38,13 @@ struct PixelTypeUpdated {
     caller: felt252,
 }
 
+#[event]
+#[derive(Drop, starknet::Event)]
+enum Event {
+    QueueStarted: QueueStarted,
+    QueueFinished: QueueFinished
+}
+
 #[derive(Drop, starknet::Event)]
 struct QueueStarted {
     id: usize,

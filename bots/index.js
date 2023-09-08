@@ -5,8 +5,8 @@ const eventsToProcess = {}
 let lastBlockIndexed = 0
 
 // constants
-const QUEUE_STARTED_KEY_EVENT = "0x7075745f636f6c6f725f73797374656d"
-const QUEUE_FINISHED_KEY_EVENT = "0x70726f636573735f71756575655f73797374656d"
+const QUEUE_STARTED_KEY_EVENT = "0x13716a499dcdd9a2bb8983f7de44be73f75b491244ab6b6ada5cc9307d74b1d"
+const QUEUE_FINISHED_KEY_EVENT = "0x243d9f213226470c700d9c1553b7b30b3f5fb9718fe4d2dba8ae3853fd10986"
 const PROCESS_QUEUE_SYSTEM_IN_HEX = "0x70726f636573735f71756575655f73797374656d"
 
 const config = {
@@ -78,9 +78,9 @@ const indexEvents = async () => {
 
         const receipts = await Promise.all(receiptPromises)
         for (const receipt of receipts) {
-            const queueStartedEvents = receipt.events.filter(event => event.keys.includes(QUEUE_STARTED_KEY_EVENT))
+            const queueStartedEvents = receipt.events.filter(event => event.keys[0] === QUEUE_STARTED_KEY_EVENT)
             const queueFinishedIds = receipt.events
-                .filter(event => event.keys.includes(QUEUE_FINISHED_KEY_EVENT))
+                .filter(event => event.keys[0] === QUEUE_FINISHED_KEY_EVENT)
                 .map(event => event.data[0])
 
             for (const queueStartedEvent of queueStartedEvents) {
