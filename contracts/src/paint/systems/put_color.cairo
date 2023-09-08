@@ -14,7 +14,6 @@ mod put_color_system {
     use pixelaw::components::owner::Owner;
     use pixelaw::components::timestamp::Timestamp;
     use pixelaw::components::pixel_type::PixelType;
-    use pixelaw::events::{Event, QueueStarted};
 
     fn execute(
         ctx: Context,
@@ -61,18 +60,12 @@ mod put_color_system {
 
         // TODO: remove me later
         let mut calldata = ArrayTrait::new();
+        calldata.append((starknet::get_block_timestamp() + 10).into());
+        calldata.append('remove_color_system');
+        calldata.append(2);
         calldata.append(position.x.into());
         calldata.append(position.y.into());
-
-        emit!(
-            ctx.world,
-            Event::QueueStarted(QueueStarted {
-                id: ctx.world.uuid(),
-                unlock: starknet::get_block_timestamp() + 10,
-                execution: 'remove_color_system',
-                arguments: calldata.span()
-            })
-        );
+        ctx.world.execute('schedule_queue_system'.into(), calldata);
     }
 }
 

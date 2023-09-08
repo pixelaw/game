@@ -46,20 +46,20 @@ const execute = async (account, system, call_data) => {
         );
         return call;
     } catch (error) {
+        console.error('could not execute:', error)
         throw error;
     }
 }
 
 // wrapper for the execute function and solely for processing the queue
-const processQueue = async (account, id, unlock, execution, args) => {
+const processQueue = async (id, execution, args) => {
     const callData = [
         id,
-        unlock,
         execution,
         args.length,
         ...args
     ]
-    return execute(account, PROCESS_QUEUE_SYSTEM_IN_HEX, callData)
+    return execute(signer, PROCESS_QUEUE_SYSTEM_IN_HEX, callData)
 }
 
 // something to add to torii
@@ -84,12 +84,11 @@ const indexEvents = async () => {
                 .map(event => event.data[0])
 
             for (const queueStartedEvent of queueStartedEvents) {
-                const [id, unlock, execution, _, ...args] = queueStartedEvent.data
+                const [id, execution, _, ...args] = queueStartedEvent.data
                 if (queueFinishedIds.includes(id)) delete eventsToProcess[id]
                 else if (!eventsToProcess[id])  {
                     eventsToProcess[id] = {
-                        id,
-                        unlock,
+                        id: Number(BigInt(id)),
                         execution,
                         args
                     }
@@ -108,14 +107,15 @@ const indexEvents = async () => {
 const processUnlockables = async () => {
     if (!Object.values(eventsToProcess).length) return
     const currentBlock = await provider.getBlock("latest")
-    const blockTimeStamp = BigInt(currentBlock.timestamp)
+    const blockTimeStamp = currentBlock.timestamp * 1000
     const unlockables = Object.values(eventsToProcess)
-        .filter(eventToProcess => blockTimeStamp >= BigInt(eventToProcess.unlock))
+        .filter(eventToProcess => blockTimeStamp >= eventToProcess.id)
+        .sort((eventToProcessA, eventToProcessB) => eventToProcessA.id - eventToProcessB.id)
 
     if (!unlockables.length) return
 
     for (const unlockable of unlockables) {
-        await processQueue(signer, unlockable.id, unlockable.unlock, unlockable.execution, unlockable.args)
+        await processQueue(unlockable.id, unlockable.execution, unlockable.args)
     }
 }
 

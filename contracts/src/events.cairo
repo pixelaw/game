@@ -47,13 +47,12 @@ enum Event {
 
 #[derive(Drop, starknet::Event)]
 struct QueueStarted {
-    id: usize,
-    unlock: u64,
+    id: u64,
     execution: felt252,
     arguments: Span<felt252>
 }
 
 #[derive(Drop, starknet::Event)]
 struct QueueFinished {
-    id: usize
+    id: u64
 }
