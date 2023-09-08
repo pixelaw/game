@@ -76,7 +76,7 @@ const indexEvents = async () => {
             .transactions
             .map(txHash => provider.getTransactionReceipt(txHash))
 
-        const receipts = await Promise.all(receiptPromises)
+        const receipts = (await Promise.allSettled(receiptPromises)).filter(x => x.status === "fulfilled").map(x => x.value)
         for (const receipt of receipts) {
             const queueStartedEvents = receipt.events.filter(event => event.keys[0] === QUEUE_STARTED_KEY_EVENT)
             const queueFinishedIds = receipt.events
