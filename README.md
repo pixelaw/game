@@ -59,6 +59,12 @@ cd web
 yarn dev
 ```
 
+### Step 7: Run the queue bot
+````shell
+cd bots
+yarn dev
+````
+
 #### NOTE
 To change accounts, add an account query to the frontend url. For example: http://localhost:5173/?account=1. Add
 as many accounts as desired by following the pattern set in the env.example.
