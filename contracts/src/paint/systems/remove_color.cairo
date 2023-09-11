@@ -1,7 +1,7 @@
-// owner, position, color, text, timestamp
+// TODO: remove me later
 
 #[system]
-mod put_color_system {
+mod remove_color_system {
     use array::ArrayTrait;
     use traits::Into;
     use dojo::world::Context;
@@ -17,55 +17,26 @@ mod put_color_system {
 
     fn execute(
         ctx: Context,
-        position: Position, // Param 1 : The position of the pixel to be changed
-        new_color: Color
+        position: Position
     ) {
-        let mut calldata = Default::default();
-
-        // Check if the PixelType is 'paint'
-        let (
-            pixel_type,
-            timestamp,
-            owner,
-            color_count,
-            color
-        ) = get !(ctx.world, (position.x, position.y).into(), (PixelType, Timestamp, Owner, ColorCount, Color));
-        assert(pixel_type.name == 'paint', 'PixelType is not paint!');
-
-
-        // Check if 5 seconds have passed or if the sender is the owner
-        assert(
-            (owner.address) == ctx.origin.into() || starknet::get_block_timestamp()
-                - timestamp.updated_at < 5,
-            'Cooldown not over'
+        // Update the pixel's color and timestamp in the world state at the specified position
+        set !(
+            ctx.world,
+            (
+                Color {
+                    x: position.x,
+                    y: position.y,
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                },
+                Timestamp {
+                    x: position.x,
+                    y: position.y,
+                    created_at: 0, updated_at: 0
+                },
+            )
         );
-
-        // Serialize Position
-        position.serialize(ref calldata);
-
-        // Serialize color
-        new_color.serialize(ref calldata);
-
-        // Call the update_color_system
-        ctx.world.execute('update_color_system'.into(), calldata);
-
-        // Update the color if it is different
-        if color != new_color {
-            // Update the color count if color is different
-            let mut color_count = color_count;
-            color_count.count += 1;
-            // Update the color count
-            set !(ctx.world, (color_count));
-        }
-
-        // TODO: remove me later
-        let mut calldata = ArrayTrait::new();
-        calldata.append((starknet::get_block_timestamp() + 10).into());
-        calldata.append('remove_color_system');
-        calldata.append(2);
-        calldata.append(position.x.into());
-        calldata.append(position.y.into());
-        ctx.world.execute('schedule_queue_system'.into(), calldata);
     }
 }
 

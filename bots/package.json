@@ -1,0 +1,14 @@
+{
+  "name": "bots",
+  "version": "1.0.0",
+  "description": "gets queueEvents and processes them",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "starknet": "^5.19.5"
+  },
+  "type": "module"
+}

@@ -41,7 +41,7 @@ scarb run deploy
 
 ````shell
 cd contracts
-torii --manifest target/dev/manifest.json --world 0x45ef1358b4a415bf9551c7233d5cac213d30e47e772be88ef12327210c47429
+torii --manifest target/dev/manifest.json --world 0x26bada1b980d220e0842659711c8891a432ef4c1d9e35c0d973414e88512390
 ````
 
 ### Step 5: Get the React frontend ready
@@ -58,6 +58,12 @@ yarn
 cd web
 yarn dev
 ```
+
+### Step 7: Run the queue bot
+````shell
+cd bots
+yarn dev
+````
 
 #### NOTE
 To change accounts, add an account query to the frontend url. For example: http://localhost:5173/?account=1. Add
