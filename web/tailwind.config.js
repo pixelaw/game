@@ -5,22 +5,33 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    colors: {
+      'primary': "#CC305A",
+      'white': "#FFFFFF",
+      'black': "#000000",
+      'label': "#FFC400",
+      'tran': "rgb(0 0 0 / 0.55)",
+      'action-div': "#3E0C57",
+      'nav-bar': "#121212",
+      'default': "#2F1643",
+      'pixel-blue': "#19C0DB",
+      'address': "#970A4C",
+      'active-zoom': "#A174E3",
+      'notification': "#FF0000"
+    },
     extend: {
       backgroundImage: {
-        'game-panel': "url('/bg_gamePanel.jpg')",
+        'home': "url('/assets/home_bg.png')",
+        'icon': "url/('assets/icon.png')"
       },
       fontFamily: {
-        oswald: ['Oswald', 'sans-serif'],
+        subtitle: ['Segoe UI', 'sans-serif'],
         noto: ['Noto Sans', 'sans-serif'],
+        primary: ['Silkscreen', 'sans-serif'],
+        emoji: ['Noto Emoji']
       },
-      colors: {
-        'option-1': "#D5EDF6",
-        'option-2': "#87F3FF",
-        'option-3': "#59B2C9",
-        'option-4': "#127994",
-        'option-5': "#45607B",
-        'option-6': "#141414",
-        'custom-blue': "#59B2C9"
+      boxShadow: {
+        'actionDiv': "0px 3px 12px #0000008A"
       }
     },
   },
