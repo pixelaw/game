@@ -3,6 +3,7 @@ import Container from "./components/Container"
 import NavigationBar from "./components/NavigationBar"
 import {LayoutPropsType} from "./types";
 import Notifications from "./components/Notifications";
+import PluginsPanel from "./components/PluginsPanel";
 
 
 const GamePlayLayout: React.FC<LayoutPropsType> = ({ children }) => {
@@ -10,6 +11,7 @@ const GamePlayLayout: React.FC<LayoutPropsType> = ({ children }) => {
     <Container>
       <NavigationBar />
       <Notifications />
+      <PluginsPanel />
       {children}
     </Container>
   )
