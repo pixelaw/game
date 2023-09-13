@@ -1,0 +1,22 @@
+projectName: pixelaw
+nameSpace: dev
+appType:
+  frontend: webapp
+  database: db
+  api: api
+
+replicaSet: 1
+
+webappContainerService:
+  type: ClusterIP  # {{ .Values.webappContainerService.type }}
+  port: 3000       # {{ .Values.webappContainerService.port }}
+
+katanaContainerService:
+  type: ClusterIP  # {{ .Values.katanaContainerService.type }}
+  port: 5050       # {{ .Values.katanaContainerService.port }}
+
+toriiContainerService:
+  type: ClusterIP  # {{ .Values.toriiContainerService.type }}
+  port: 8080       # {{ .Values.toriiContainerService.port }}
+
+tld: oostvoort.work 
