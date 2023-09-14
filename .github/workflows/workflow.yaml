@@ -20,7 +20,7 @@ jobs:
       - name: Pre Plan Script
         id: preplan
         if: (github.ref == 'refs/heads/dev' ||  github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod') && github.event_name == 'push'
-        run: sed -i "s#CHANGEME#$GITHUB_REF_NAME#g"
+        run: sed -i "s#CHANGEME#$GITHUB_REF_NAME#g" *.tf
 
       - name: Cache node modules
         uses: actions/cache@v2
