@@ -16,18 +16,21 @@ COPY --from=node_deps /app/node_modules ./node_modules
 # Build the webapp
 RUN yarn build --mode production
 
-FROM oostvoort/dojo-forkserver:v0.0.1 AS contracts_builder
+FROM oostvoort/dojo-forkserver:v0.0.5 AS contracts_builder
 WORKDIR /app
 COPY /contracts .
 RUN sozo build
 
-FROM oostvoort/dojo-forkserver:v0.0.1 AS runtime
+FROM oostvoort/dojo-forkserver:v0.0.5 AS runtime
 WORKDIR /opt
-COPY --from=contracts_builder /app/target contracts/target/
-COPY /contracts/Scarb.toml contracts/
-COPY /contracts/scripts contracts/scripts
-COPY /contracts/.env.development .env
+COPY --from=contracts_builder /app/target ./contracts/target/
+COPY ./contracts/Scarb.toml contracts/Scarb.toml
+COPY ./contracts/scripts contracts/scripts
+COPY ./contracts/.env.development contracts/.env
+
+
 COPY --from=node_builder /app/dist static/
 HEALTHCHECK CMD (curl --fail http://localhost:3000 && curl --fail http://localhost:5050) || exit 1
+
 
 CMD ["/opt/server"]

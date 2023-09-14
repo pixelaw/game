@@ -1,5 +1,5 @@
 projectName: pixelaw
-nameSpace: dev
+nameSpace: staging
 appType:
   frontend: webapp
   database: db
@@ -18,5 +18,10 @@ katanaContainerService:
 toriiContainerService:
   type: ClusterIP  # {{ .Values.toriiContainerService.type }}
   port: 8080       # {{ .Values.toriiContainerService.port }}
+
+grpcToriiContainerService:
+  type: ClusterIP  # {{ .Values.grpcToriiContainerService.type }}
+  port: 50051      # {{ .Values.grpcToriiContainerService.port }} #
+
 
 tld: oostvoort.work 
