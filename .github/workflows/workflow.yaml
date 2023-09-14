@@ -31,14 +31,38 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}- 
 
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_REGISTRY_USER}}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+
       - name: Build, tag, and push image
         id: build-image
         env:
           REGISTRY: oostvoort
-          PROJECT: pixelaw
-          IMAGE_NAME: 'pixelaw-dev'
+          PROJECTNAME: pixelaw
           IMAGE_TAG: 'latest'
-          CAPROVER_APP: 'mospa-prod-backend'
         run: |
-          docker build -t $REGISTRY/$PROJECT-$GITHUB_REF_NAME:$IMAGE_TAG .
-          docker push $REGISTRY/$PROJECT-$GITHUB_REF_NAME:$IMAGE_TAG
+          docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG .
+          docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG
+
+      - name: Deploy to ArgoCD
+        id: deploy-image
+        env:
+          REGISTRY: oostvoort
+          PROJECTNAME: pixelaw
+          IMAGE_TAG: 'latest'        
+        run: |
+          wget https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64 -O argocd
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin
+          which argocd
+          export ARGOCD_SERVER=${{ secrets.ARGOCD_SERVER }}
+          export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
+          argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo $GITHUB_REPOSITORY --path ./deploy --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
+          argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
+          argocd app wait $PROJECTNAME-$GITHUB_REF_NAME
+
+
