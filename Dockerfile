@@ -24,12 +24,14 @@ RUN sozo build
 FROM oostvoort/dojo-forkserver:v0.0.5 AS runtime
 WORKDIR /opt
 COPY --from=contracts_builder /app/target ./contracts/target/
+COPY --from=node_builder /app/dist static/
+
 COPY ./contracts/Scarb.toml contracts/Scarb.toml
 COPY ./contracts/scripts contracts/scripts
-COPY ./contracts/.env.development contracts/.env
+COPY ./contracts/.env.development .env
 
 
-COPY --from=node_builder /app/dist static/
+
 HEALTHCHECK CMD (curl --fail http://localhost:3000 && curl --fail http://localhost:5050) || exit 1
 
 
