@@ -16,12 +16,12 @@ COPY --from=node_deps /app/node_modules ./node_modules
 # Build the webapp
 RUN yarn build --mode production
 
-FROM oostvoort/dojo-forkserver:dev AS contracts_builder
+FROM oostvoort/dojo-forkserver:v0.0.1 AS contracts_builder
 WORKDIR /app
 COPY /contracts .
 RUN sozo build
 
-FROM oostvoort/dojo-forkserver:dev AS runtime
+FROM oostvoort/dojo-forkserver:v0.0.1 AS runtime
 WORKDIR /opt
 COPY --from=contracts_builder /app/target contracts/target/
 COPY /contracts/Scarb.toml contracts/
