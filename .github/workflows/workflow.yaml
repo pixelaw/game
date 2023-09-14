@@ -1,0 +1,48 @@
+name: Docker build and deploy to CapRover
+on:
+  push:
+    branches:
+      - dev
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Pre Plan Script
+        id: preplan
+        if: (github.ref == 'refs/heads/dev' ||  github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod') && github.event_name == 'push'
+        run: sed -i "s#CHANGEME#$GITHUB_REF_NAME#g"
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}- 
+
+      - name: Build, tag, and push image
+        id: build-image
+        env:
+          REGISTRY: oostvoort
+          PROJECT: pixelaw
+          IMAGE_NAME: 'pixelaw-dev'
+          IMAGE_TAG: 'latest'
+          CAPROVER_APP: 'mospa-prod-backend'
+        run: |
+          docker build -t $REGISTRY/$PROJECT-$GITHUB_REF_NAME:$IMAGE_TAG .
+          docker push $REGISTRY/$PROJECT-$GITHUB_REF_NAME:$IMAGE_TAG
