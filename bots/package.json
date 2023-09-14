@@ -5,10 +5,12 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "node index.js"
+    "dev": "wait-port 5050 && nodemon index.js"
   },
   "dependencies": {
-    "starknet": "^5.19.5"
+    "nodemon": "^3.0.1",
+    "starknet": "^5.19.5",
+    "wait-port": "^1.0.4"
   },
   "type": "module"
 }
