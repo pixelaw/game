@@ -16,6 +16,7 @@ dojo = { git = "https://github.com/dojoengine/dojo", tag = "v0.2.1" }
 initializer_class_hash = "0xbeef"
 
 [scripts]
+post_deploy = "unset DOJO_WORLD_ADDRESS && sozo migrate && ./scripts/init_auth.sh"
 deploy = "unset DOJO_WORLD_ADDRESS && sozo build && sozo migrate && ./scripts/init_auth.sh"
 spawn_pixel_1 = "./scripts/spawn_pixel_1.sh"
 put_color_1 = "./scripts/put_color_1.sh"
