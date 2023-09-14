@@ -40,3 +40,17 @@ spec:
    port: {{ .Values.toriiContainerService.port }}
  selector:
    app: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-grpc-torii
+ namespace: {{ .Values.projectName }}-{{ .Values.nameSpace }}
+spec:
+ type: {{ .Values.grpcToriiContainerService.type }}
+ ports:
+ - targetPort: {{ .Values.grpcToriiContainerService.port }}
+   port: {{ .Values.grpcToriiContainerService.port }}
+ selector:
+   app: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}

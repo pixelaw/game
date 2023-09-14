@@ -19,4 +19,9 @@ toriiContainerService:
   type: ClusterIP  # {{ .Values.toriiContainerService.type }}
   port: 8080       # {{ .Values.toriiContainerService.port }}
 
+toriiGrpcContainerService:
+  type: ClusterIP  # {{ .Values.toriiContainerService.type }}
+  port: 50051      # {{ .Values.toriiContainerService.port }}
+
+
 tld: oostvoort.work 
