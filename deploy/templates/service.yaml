@@ -48,7 +48,7 @@ metadata:
  name: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-grpc-torii
  namespace: {{ .Values.projectName }}-{{ .Values.nameSpace }}
 spec:
- type: {{ .Values.grpcToriiContainerService.type }}
+ type: {{ .Values.toriiContainerService.type }}
  ports:
  - targetPort: {{ .Values.grpcToriiContainerService.port }}
    port: {{ .Values.grpcToriiContainerService.port }}
