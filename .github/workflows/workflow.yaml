@@ -44,7 +44,7 @@ jobs:
           REGISTRY: oostvoort
           PROJECTNAME: pixelaw
         run: |
-          SHORT_SHA=${GITHUB_SHA::7}"
+          SHORT_SHA=${GITHUB_SHA::7}
           docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA .
           docker tag $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:latest
           docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA
