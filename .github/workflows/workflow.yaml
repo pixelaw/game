@@ -43,11 +43,11 @@ jobs:
         env:
           REGISTRY: oostvoort
           PROJECTNAME: pixelaw
-          IMAGE_TAG: 'latest'
+          IMAGE_TAG: ${GITHUB_SHA::7}
         run: |
           docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG .
-          echo "$REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG"
           docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG
+          echo "dockerImage: $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG" >> deploy/values-$GITHUB_REF_NAME.yaml
 
       - name: Deploy to ArgoCD
         id: deploy-image
@@ -63,3 +63,10 @@ jobs:
           argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./deploy/ --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
           argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
           argocd app wait $PROJECTNAME-$GITHUB_REF_NAME
+
+
+
+
+
+
+
