@@ -17,6 +17,8 @@ const config = {
     worldAddress: '0x26bada1b980d220e0842659711c8891a432ef4c1d9e35c0d973414e88512390'
 }
 
+console.info(`KATANA URL: ${config.rpcUrl}`)
+
 const provider = new Provider({
     rpc: {
         nodeUrl: config.rpcUrl
