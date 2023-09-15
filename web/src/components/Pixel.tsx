@@ -86,16 +86,17 @@ export default function Pixel( {index, position}: PixelProps){
     }
 
     return (
-      <div
+      <button
+          disabled={gameMode === 'none'}
           style={{backgroundColor: pixelData.color, margin: '0rem', border: '0.5px solid #2E0A3E'}}
-        className='flex items-center justify-center text-white h-4 w-4 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110'
-        onClick={() => {
+          className='disabled:cursor-not-allowed text-white h-[64px] w-[64px] transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110'
+          onClick={() => {
             handleClick()
         }}
       >
           {viewMode === "Game" && pixelData.color === "#999999" && (
             <span>{String.fromCodePoint(parseInt('1F40D', 16))}</span>
           )}
-      </div>
+      </button>
     )
 }

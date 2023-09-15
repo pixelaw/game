@@ -4,9 +4,13 @@ import Image from "@/components/ui/Image"
 import {plugins} from "@/global/config";
 import {Button} from "@/components/ui/button";
 import Footer from "@/components/Footer";
+import { gameModeAtom } from '@/global/states'
+import { useAtom } from 'jotai'
 
 export default function Plugin() {
     const [isOpen, setIsOpen] = React.useState<boolean>(false)
+
+    const [gameMode, setGameMode] = useAtom(gameModeAtom)
 
     return (
         <>
@@ -56,9 +60,13 @@ export default function Plugin() {
                     >
                         {
                             plugins.map((plugin, index) => {
+                              const selected = plugin.name === gameMode
                                 return (
-                                    <div key={index}
-                                         className={cn(['flex justify-center items-center w-full ', {'gap-x-xs justify-start': isOpen}])}>
+                                    <div
+                                      key={index}
+                                      className={cn(['flex justify-center items-center w-full ', {'gap-x-xs justify-start': isOpen}])}
+                                      onClick={() => setGameMode(plugin.name as "none" | "paint" | "rps" | "snake")}
+                                    >
                                         <Button
                                             key={index}
                                             variant={'icon'}
@@ -67,7 +75,8 @@ export default function Plugin() {
                                                 'font-emoji',
                                                 'my-xs',
                                                 'text-center text-[36px]',
-                                                'border border-brand-violetAccent rounded'
+                                                'border border-brand-violetAccent rounded',
+                                                {'border-white': selected}
                                             ])}
                                         >
                                             {plugin.icon}
@@ -76,7 +85,8 @@ export default function Plugin() {
 
                                         <h3 className={cn(
                                             ['text-brand-skyblue text-left text-base uppercase font-silkscreen',
-                                                {'hidden': !isOpen}
+                                                {'hidden': !isOpen},
+                                              {'text-white': selected}
                                             ])}
                                         >
                                             {plugin.name}

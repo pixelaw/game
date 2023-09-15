@@ -1,9 +1,9 @@
-import React from 'react';
-import Row from './Row';
-import usePaintedPixels from "../hooks/entities/usePaintedPixels";
+import React from 'react'
+import Row from './Row'
+import usePaintedPixels from '../hooks/entities/usePaintedPixels'
 
-const WIDTH = 120;
-const HEIGHT = 52;
+const WIDTH = 30
+const HEIGHT = 13;
 
 const DrawingPanel:React.FC = () => {
   const rows = [];
@@ -16,9 +16,9 @@ const DrawingPanel:React.FC = () => {
 
   return (
       <React.Fragment>
-          <div id="pixels">
-        {rows}
-      </div>
+          <div id="pixels" >
+            {rows}
+          </div>
       </React.Fragment>
   )
 };
