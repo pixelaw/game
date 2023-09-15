@@ -31,3 +31,5 @@ subDomainName:
   katana: katana-dev.pixelaw.aw           # {{ .Values.subDomainName.katana }}
   torii: torii-dev.pixelaw.aw             # {{ .Values.subDomainName.torii }}
   grpcTorii: grpc-dev.torii.pixelaw.aw    # {{ .Values.subDomainName.grpcTorii }}
+
+dockerImage: oostvoort/pixelaw-dev:latest
