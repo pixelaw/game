@@ -43,26 +43,27 @@ jobs:
         env:
           REGISTRY: oostvoort
           PROJECTNAME: pixelaw
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG .
-          docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG
-          echo "dockerImage: $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG" >> deploy/values-$GITHUB_REF_NAME.yaml
+          SHORT_SHA=${GITHUB_SHA::7}"
+          docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA .
+          docker tag $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:latest
+          docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA
+          echo "dockerImage: $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA" >> deploy/values-$GITHUB_REF_NAME.yaml
 
-      - name: Deploy to ArgoCD
-        id: deploy-image
-        env:
-          REGISTRY: oostvoort
-          PROJECTNAME: pixelaw      
-        run: |
-          wget https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64 -O argocd
-          chmod +x argocd
-          sudo mv argocd /usr/local/bin
-          export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
-          export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
-          argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./deploy/ --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
-          argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
-          argocd app wait $PROJECTNAME-$GITHUB_REF_NAME
+      # - name: Deploy to ArgoCD
+      #   id: deploy-image
+      #   env:
+      #     REGISTRY: oostvoort
+      #     PROJECTNAME: pixelaw      
+      #   run: |
+      #     wget https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64 -O argocd
+      #     chmod +x argocd
+      #     sudo mv argocd /usr/local/bin
+      #     export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
+      #     export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
+      #     argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./deploy/ --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
+      #     argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
+      #     argocd app wait $PROJECTNAME-$GITHUB_REF_NAME
 
 
 
