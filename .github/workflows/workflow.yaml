@@ -46,14 +46,14 @@ jobs:
           IMAGE_TAG: 'latest'
         run: |
           docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG .
+          echo "$REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG"
           docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG
 
       - name: Deploy to ArgoCD
         id: deploy-image
         env:
           REGISTRY: oostvoort
-          PROJECTNAME: pixelaw
-          IMAGE_TAG: 'latest'        
+          PROJECTNAME: pixelaw      
         run: |
           wget https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64 -O argocd
           chmod +x argocd
