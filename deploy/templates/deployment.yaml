@@ -18,7 +18,7 @@ spec:
     spec: 
       containers:
       - name: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }} 
-        image: oostvoort/pixelaw-dev:latest
+        image: oostvoort/pixelaw-dev:v0.0.8
         ports:
         - containerPort: {{ .Values.webappContainerService.port }}                   
 
