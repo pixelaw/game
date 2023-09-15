@@ -18,7 +18,7 @@ const config = {
 }
 
 console.info('QueueBot starting...')
-console.info(`KATANA URL: ${config.rpcUrl}`)
+console.info(`Configuration - KATANA URL: ${config.rpcUrl}`)
 
 const provider = new Provider({
     rpc: {
