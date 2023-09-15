@@ -1,45 +1,62 @@
-import React from "react";
-import {clsx} from "clsx";
+import {cn} from "@/lib/utils";
+import {Card, CardContent} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import Image from "@/components/ui/Image";
 
 type Action = {
-  img: string,
-  label: string,
-  onClick?: () => void
+    img: string,
+    label: string,
+    onClick?: () => void
 }
 
 type PropsType = {
-  label: string,
-  actions: Action[],
-  defaultMessage?: string,
-  selected?: string,
-  className?: string
+    label: string,
+    actions: Action[],
+    defaultMessage?: string,
+    selected?: string,
 }
 
-const ActionDiv: React.FC<PropsType> = ({ label, actions, defaultMessage, selected, className }) => {
-  return (
-    <div className={className}>
-      <div className={'text-label font-primary text-left p-[0.5em] text-lg'}>{ label }</div>
-      <div className={'bg-action-div flex px-[10em] py-[2.5em] gap-20 rounded-sm shadow-actionDiv justify-center'}>
-        { actions.length === 0 && (defaultMessage ?? 'No actions to display')}
-        { actions.map(({ img, label, onClick}) => (
-          <div key={label} onClick={onClick}>
-            <div>
-              <img src={img} className={clsx([
-                'rounded-full',
-                {'border-2 border-label': selected === label}
-              ])} />
-            </div>
-            <div className={clsx([
-              'font-subtitle',
-              'text-center',
-              {'text-white': selected !== label },
-              {'text-label': selected === label }
-            ])}>{ label }</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+export default function ActionDiv(prop: PropsType) {
+    return (
+        <div
+            className={cn(
+                [
+                    'flex flex-col gap-y-xs',
+                    'animate-fade-in'
+                ])}
+        >
+            <h3
+                className={cn(
+                    [
+                        'text-brand-yellow text-lg uppercase font-silkscreen'
+                    ])}
+            >
+                {prop.label}
+            </h3>
 
-export default ActionDiv
+            <Card>
+                <CardContent>
+                    <div
+                        className={cn(
+                            [
+                                'flex-center gap-x-lg'
+                            ])}
+                    >
+                        {
+                            prop.actions.map((action, index) => {
+                                return (
+                                    <Button key={index} variant={'icon'} size={'icon'} onClick={action.onClick}>
+                                        <Image src={action.img} alt={`${action.label} Icon`}
+                                               className={cn([{' border-brand-yellow border-4 rounded-full': prop.selected === action.label}])}/>
+
+                                        <h4 className={cn(['text-sm', {'text-brand-yellow': prop.selected === action.label}])}>{action.label}</h4>
+                                    </Button>
+                                )
+                            })
+                        }
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+}

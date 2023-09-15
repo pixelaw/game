@@ -23,7 +23,7 @@ export default function Pixel( {index, position}: PixelProps){
     const paint = usePaint(position as [number, number])
 
     const initialData = {
-        color: index % 2 === 0 ? "#FFFFFF" : "#EBEBED",
+        color: index % 2 === 0 ? "#2F1643" : "#2F1643",
         unicode: '0x10',
     };
 
@@ -87,7 +87,7 @@ export default function Pixel( {index, position}: PixelProps){
 
     return (
       <div
-        style={{backgroundColor: pixelData.color, margin: '0rem'}}
+          style={{backgroundColor: pixelData.color, margin: '0rem', border: '0.5px solid #2E0A3E'}}
         className='flex items-center justify-center text-white h-4 w-4 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110'
         onClick={() => {
             handleClick()

@@ -2,8 +2,8 @@ import React from 'react';
 import Row from './Row';
 import usePaintedPixels from "../hooks/entities/usePaintedPixels";
 
-const WIDTH = 64;
-const HEIGHT = 64;
+const WIDTH = 120;
+const HEIGHT = 52;
 
 const DrawingPanel:React.FC = () => {
   const rows = [];
@@ -15,11 +15,11 @@ const DrawingPanel:React.FC = () => {
   }
 
   return (
-    <div>
-      <div id="pixels" className=''>
+      <React.Fragment>
+          <div id="pixels">
         {rows}
       </div>
-    </div>
+      </React.Fragment>
   )
 };
 

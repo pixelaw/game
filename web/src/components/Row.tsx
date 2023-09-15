@@ -19,7 +19,7 @@ const Row: React.FC<RowProps> = ({ y, width}) => {
   }
 
   return (
-    <div className='flex justify-center'>
+      <div className='flex justify-center '>
       {pixels}
     </div>
   )
