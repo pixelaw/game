@@ -68,5 +68,4 @@ jobs:
           argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./deploy/ --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
           argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
           argocd app wait $PROJECTNAME-$GITHUB_REF_NAME
-          argocd app actions run $PROJECTNAME-$GITHUB_REF_NAME-webapp restart --kind Pod 
-
+          argocd app actions run $PROJECTNAME-$GITHUB_REF_NAME --namespace $PROJECTNAME-$GITHUB_REF_NAME restart --kind Deployment 
