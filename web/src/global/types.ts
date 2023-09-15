@@ -1,3 +1,5 @@
+import React from "react";
+
 import {PAPER, ROCK, SCISSORS} from "./constants";
 
 export type OptionType = typeof ROCK | typeof PAPER | typeof SCISSORS
@@ -50,4 +52,19 @@ export type PixelEntity = {
     b: number
   },
   colorCount?: number
+}
+
+export enum Active_Page {
+  Home,
+  Network,
+  Lobby,
+  Gameplay
+}
+
+export type MainLayoutType = {
+  setHasNavbar: React.Dispatch<React.SetStateAction<boolean>>
+  setHasBackgroundImage: React.Dispatch<React.SetStateAction<boolean>>
+  setHasBackgroundOverlay: React.Dispatch<React.SetStateAction<boolean>>
+  currentPage:  number
+  setCurrentPage:   React.Dispatch<React.SetStateAction<number>>
 }
