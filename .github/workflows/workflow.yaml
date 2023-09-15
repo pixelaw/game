@@ -43,7 +43,8 @@ jobs:
         env:
           REGISTRY: oostvoort
           PROJECTNAME: pixelaw
-          IMAGE_TAG: $GITHUB_SHA::7
+          SHORT_SHA: $GITHUB_SHA::7
+          IMAGE_TAG: $SHORT_SHA
         run: |
           docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG .
           docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG
