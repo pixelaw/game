@@ -34,7 +34,7 @@ jobs:
       - name: Login to Dockerhub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME}}
+          username: ${{ vars.DOCKERHUB_USERNAME}}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
@@ -59,7 +59,7 @@ jobs:
           chmod +x argocd
           sudo mv argocd /usr/local/bin
           which argocd
-          export ARGOCD_SERVER=${{ secrets.ARGOCD_SERVER }}
+          export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
           export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
           argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo $GITHUB_REPOSITORY --path ./deploy --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
           argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
