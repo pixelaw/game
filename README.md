@@ -23,7 +23,7 @@ This command compiles your project and prepares it for execution.
 [Katana RPC](https://book.dojoengine.org/framework/katana/overview.html) is the communication layer for your Dojo World. It allows different components of your world to communicate with each other. To start Katana RPC, use the following command:
 
 ```shell
-katana --allow-zero-max-fee
+katana
 ```
 
 ### Step 3: Migrate (Deploy) the World
