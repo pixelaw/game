@@ -43,11 +43,11 @@ jobs:
         env:
           REGISTRY: oostvoort
           PROJECTNAME: pixelaw
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" 
-          docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA .
-          docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA
-          echo "dockerImage: $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA" >> deploy/values-$GITHUB_REF_NAME.yaml
+          docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG .
+          docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG
+          echo "dockerImage: $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$IMAGE_TAG" >> deploy/values-$GITHUB_REF_NAME.yaml
 
       - name: Deploy to ArgoCD
         id: deploy-image
