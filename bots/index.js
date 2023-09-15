@@ -10,7 +10,7 @@ const QUEUE_FINISHED_KEY_EVENT = "0x243d9f213226470c700d9c1553b7b30b3f5fb9718fe4
 const PROCESS_QUEUE_SYSTEM_IN_HEX = "0x70726f636573735f71756575655f73797374656d"
 
 const config = {
-    rpcUrl: 'http://localhost:5050',
+    rpcUrl: 'http://0.0.0.0:5050',
     blockTime: 1_000,
     botAddress: '0x4514dd4ce4762369fc108297f45771f5160aeb7c864d5209e5047a48ab90b52',
     botPrivateKey: '0x4929b5202c17d1bf1329e0f3b1deac313252a007cfd925d703e716f790c5726',
