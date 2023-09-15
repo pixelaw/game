@@ -45,9 +45,9 @@ jobs:
           PROJECTNAME: pixelaw
         run: |
           SHORT_SHA=${GITHUB_SHA::7}
-          docker build -t built-image  .
-          docker tag built-image -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:latest
+          docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:latest  .
           docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:latest
+          docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA
 
       # - name: Deploy to ArgoCD
       #   id: deploy-image
