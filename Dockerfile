@@ -24,12 +24,12 @@ COPY --from=web_node_deps /app/node_modules ./node_modules
 # Build the webapp
 RUN yarn build --mode production
 
-FROM oostvoort/dojo-forkserver:v1.0.2 AS contracts_builder
+FROM oostvoort/dojo-forkserver:v1.0.3 AS contracts_builder
 WORKDIR /app
 COPY /contracts .
 RUN sozo build
 
-FROM oostvoort/dojo-forkserver:v1.0.2 AS runtime
+FROM oostvoort/dojo-forkserver:v1.0.3 AS runtime
 
 # Install node
 RUN apt-get update -y && \
