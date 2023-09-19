@@ -1,0 +1,71 @@
+name: Docker build and deploy to CapRover
+on:
+  push:
+    branches:
+      - dev
+      
+
+env:
+  PROJECTNAME: pixelaw
+  REGISTRY: ${{ vars.DOCKERHUB_USERNAME}}
+  
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}- 
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME}}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+      - name: Build, tag, and push image
+        id: build-image
+        # env:
+        #   REGISTRY: oostvoort
+        #   PROJECTNAME: pixelaw
+        run: |
+          SHORT_SHA=${GITHUB_SHA::7}
+          docker build -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA -t $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:latest  .
+          docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:latest
+          docker push $REGISTRY/$PROJECTNAME-$GITHUB_REF_NAME:$SHORT_SHA
+
+      - name: Deploy to ArgoCD
+        id: deploy-image
+        env:
+          PROJECTNAME: pixelaw      
+        run: |
+          wget https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64 -O argocd
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin
+          export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
+          export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
+          argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./deploy/ --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
+          argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
+          argocd app wait $PROJECTNAME-$GITHUB_REF_NAME
+          argocd app actions run $PROJECTNAME-$GITHUB_REF_NAME --namespace $PROJECTNAME-$GITHUB_REF_NAME restart --kind Deployment 

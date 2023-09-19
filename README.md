@@ -1,5 +1,5 @@
 # PixeLAW Game
-A game built on top of Dojo.
+A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoort.work/)
 
 ## Prerequisites
 
@@ -7,6 +7,7 @@ A game built on top of Dojo.
 -   Cairo language server - install [here](https://book.dojoengine.org/development/setup.html#3-setup-cairo-vscode-extension)
 -   Dojo - install [here](https://book.dojoengine.org/getting-started/installation.html)
 -   Scarb - install [here](https://docs.swmansion.com/scarb/download)
+-   NodeJS - install [here](https://nodejs.org/en/download)
 
 ## Developing Locally
 

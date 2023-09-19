@@ -1,7 +1,7 @@
-import {useMutation} from "@tanstack/react-query";
-import {useDojo} from "../../DojoContext";
-import {useAtomValue} from "jotai";
-import {rgbColorAtom} from "../../global/states";
+import { useMutation } from '@tanstack/react-query'
+import { useDojo } from '../../DojoContext'
+import { useAtomValue } from 'jotai'
+import { rgbColorAtom } from '@/global/states.ts'
 
 const PAINT = 482670636660
 

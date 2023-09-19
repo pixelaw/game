@@ -9,6 +9,8 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          x: RecsType.Number,
+          y: RecsType.Number,
           r: RecsType.Number,
           g: RecsType.Number,
           b: RecsType.Number,
@@ -25,22 +27,9 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
-          address: RecsType.Number,
-        },
-        {
-          metadata: {
-            name: name,
-          },
-        }
-      );
-    })(),
-    Position: (() => {
-      const name = "Position";
-      return defineComponent(
-        world,
-        {
           x: RecsType.Number,
           y: RecsType.Number,
+          address: RecsType.Number,
         },
         {
           metadata: {
@@ -54,6 +43,9 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          x: RecsType.Number,
+          y: RecsType.Number,
+          caller_system: RecsType.Number,
           allowed: RecsType.Boolean,
         },
         {
@@ -68,6 +60,8 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          x: RecsType.Number,
+          y: RecsType.Number,
           string: RecsType.Number,
         },
         {
@@ -82,6 +76,8 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          x: RecsType.Number,
+          y: RecsType.Number,
           created_at: RecsType.Number,
           updated_at: RecsType.Number,
         },
@@ -97,6 +93,8 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          x: RecsType.Number,
+          y: RecsType.Number,
           name: RecsType.Number,
         },
         {
@@ -111,6 +109,8 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          x: RecsType.Number,
+          y: RecsType.Number,
           count: RecsType.Number,
         },
         {
@@ -125,6 +125,8 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          x: RecsType.Number,
+          y: RecsType.Number,
           game_id: RecsType.Number,
           state: RecsType.Number,
           player1: RecsType.Number,
@@ -148,6 +150,7 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          player_id: RecsType.Number,
           wins: RecsType.Number,
         },
         {
