@@ -30,7 +30,7 @@ mod play_rps_system {
         assert(pixel_type.name == 'rps', 'PixelType is not paint!');
 
         // Create a new game
-        let mut calldata = Default::default();
+        let mut calldata:  Array<felt252> = ArrayTrait::new();
 
         // Serialize position
         position.serialize(ref calldata);
@@ -40,7 +40,7 @@ mod play_rps_system {
         let game: felt252 = game_id.into();
         game.print();
 
-        let mut calldata = Default::default();
+        let mut calldata:  Array<felt252> = ArrayTrait::new();
         // Serialize game_id
         calldata.append(game_id);
 
@@ -55,7 +55,7 @@ mod play_rps_system {
 
         // Update text
         // ? :	U+2753
-        let mut calldata = Default::default();
+        let mut calldata:  Array<felt252> = ArrayTrait::new();
         let text = Text { string: 'U+2753', x: position.x, y: position.y };
         // Serialize Position
         position.serialize(ref calldata);

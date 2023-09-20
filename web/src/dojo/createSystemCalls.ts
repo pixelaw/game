@@ -18,7 +18,7 @@ export function createSystemCalls(
             0
 
         ]);
-        await syncWorker.sync(tx.transaction_hash);
+        // await syncWorker.sync(tx.transaction_hash);
     };
 
     const put_color = async (
@@ -36,7 +36,7 @@ export function createSystemCalls(
             color[1],
             color[2]
         ]);
-        await syncWorker.sync(tx.transaction_hash);
+        // await syncWorker.sync(tx.transaction_hash);
     };
 
     // const put_color = async (

@@ -20,7 +20,7 @@ mod put_color_system {
         position: Position, // Param 1 : The position of the pixel to be changed
         new_color: Color
     ) {
-        let mut calldata = Default::default();
+        let mut calldata:  Array<felt252> = ArrayTrait::new();
 
         // Check if the PixelType is 'paint'
         let (

@@ -12,9 +12,9 @@ const PROCESS_QUEUE_SYSTEM_IN_HEX = "0x70726f636573735f71756575655f73797374656d"
 const config = {
     rpcUrl: 'http://0.0.0.0:5050',
     blockTime: 1_000,
-    botAddress: '0x4514dd4ce4762369fc108297f45771f5160aeb7c864d5209e5047a48ab90b52',
-    botPrivateKey: '0x4929b5202c17d1bf1329e0f3b1deac313252a007cfd925d703e716f790c5726',
-    worldAddress: '0x26bada1b980d220e0842659711c8891a432ef4c1d9e35c0d973414e88512390'
+    botAddress: '0x765149d6bc63271df7b0316537888b81aa021523f9516a05306f10fd36914da',
+    botPrivateKey: '0x1c9053c053edf324aec366a34c6901b1095b07af69495bffec7d7fe21effb1b',
+    worldAddress: '0x59104057c6a88a30bc6e74b945779683196f123964a09483999b0c6e5b87a16'
 }
 
 console.info('QueueBot starting...')
