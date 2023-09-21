@@ -2,7 +2,7 @@
 set -euo pipefail
 pushd $(dirname "$0")/..
 
-export DOJO_WORLD_ADDRESS="0x26bada1b980d220e0842659711c8891a432ef4c1d9e35c0d973414e88512390";
+export DOJO_WORLD_ADDRESS="0x59104057c6a88a30bc6e74b945779683196f123964a09483999b0c6e5b87a16";
 
 # make sure all components/systems are deployed
 COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player")
@@ -33,39 +33,50 @@ HAS_WRITE_ACCESS_SYSTEM=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorC
 ALL_COMPONENTS=("289632186226" "341306140018" "379660685143453645500270" "5795978142210944878" "1415936116" "1557123341884594417008" "318453956533960458989172")
 
 for component in ${COMPONENTS[@]}; do
+    sleep 0.1
     sozo auth writer $component spawn_pixel_system
 done
 
 for component in ${COMPONENTS[@]}; do
+    sleep 0.1
     sozo auth writer $component has_write_access_system
 done
 
 for component in ${COMPONENTS[@]}; do
+    sleep 0.1
     sozo auth writer $component update_color_system
 done
 
 for component in ${COMPONENTS[@]}; do
-    sozo auth writer $component update_owner_system 
+    sleep 0.1
+    sozo auth writer $component update_owner_system
 done
 
 for component in ${COMPONENTS[@]}; do
-    sozo auth writer $component update_text_system 
+    sleep 0.1
+    sozo auth writer $component update_text_system
 done
 
 for component in ${COMPONENTS[@]}; do
-    sozo auth writer $component update_type_system 
+    sleep 0.1
+    sozo auth writer $component update_type_system
 done
 
 for component in ${COMPONENTS[@]}; do
-    sozo auth writer $component put_color_system 
+    sleep 0.1
+    sozo auth writer $component put_color_system
 done
 
 # TODO remove me later
 for component in ${COMPONENTS[@]}; do
+    sleep 0.1
+    echo "auth writer $component remove_color_system"
     sozo auth writer $component remove_color_system
 done
 
 for component in ${COMPONENTS[@]}; do
+    sleep 0.1
+    echo "sozo auth writer $component process_queue_system"
     sozo auth writer $component process_queue_system
 done
 
