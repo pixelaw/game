@@ -17,6 +17,6 @@ export const STATE_DECIDED = 5
 
 export const GAME_MAX_DURATION = 20000;
 
-export const TORII_END_POINT = import.meta.env.VITE_TORII_ENDPOINT ?? 'http://localhost:8080/'
+export const TORII_END_POINT = import.meta.env.VITE_PUBLIC_TORII ?? 'http://localhost:8080/'
 
 export const BLOCK_TIME = 1_000

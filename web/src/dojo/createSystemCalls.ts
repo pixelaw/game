@@ -1,33 +1,34 @@
 import { SetupNetworkResult } from "./setupNetwork";
-import {number} from "starknet";
+import { Account, BigNumberish } from 'starknet'
 
 
 export function createSystemCalls(
-    { execute, syncWorker }: SetupNetworkResult,
+    { execute }: SetupNetworkResult,
 ) {
     const spawn_pixel_system = async (
+        signer: Account,
         position: number[],
-        pixel_type: number.BigNumberish
+        pixel_type: BigNumberish
 
     ) => {
 
-        const tx = await execute("spawn_pixel_system", [
+        await execute(signer, "spawn_pixel_system", [
             position[0],
             position[1],
             pixel_type,
             0
 
         ]);
-        // await syncWorker.sync(tx.transaction_hash);
     };
 
     const put_color = async (
+        signer: Account,
         position: number[],
         color: number[]
 
     ) => {
 
-        const tx = await execute("put_color_system", [
+        await execute(signer, "put_color_system", [
             position[0],
             position[1],
             position[0],
@@ -38,23 +39,6 @@ export function createSystemCalls(
         ]);
         // await syncWorker.sync(tx.transaction_hash);
     };
-
-    // const put_color = async (
-    //     position: number[],
-    //     color: number[]
-    //
-    // ) => {
-    //
-    //     const tx = await execute("put_color", [
-    //         position[0],
-    //         position[1],
-    //         color[0],
-    //         color[1],
-    //         color[2]
-    //     ]);
-    //     wsProvider.sendMessage({txHash: tx.transaction_hash})
-    //     await syncWorker.sync(tx.transaction_hash);
-    // };
 
     return {
         spawn_pixel_system, put_color, reset: (something: any) => something

@@ -2,7 +2,7 @@
   "world": {
     "name": "world",
     "address": null,
-    "class_hash": "0x1527b232cbd77c7f021fdc129339d7623edfd9a9c79a1b9add29c9064961497",
+    "class_hash": "0x2f857fd574c566f9bea8587569d016036377e028f0d47f6e31b4518ee605cd1",
     "abi": [
       {
         "type": "impl",
@@ -535,7 +535,7 @@
   "executor": {
     "name": "executor",
     "address": null,
-    "class_hash": "0x7b79892389a0c9fe22f74b1d28a9e9185c7b6d2c60cc1df814053e47e9078c2",
+    "class_hash": "0x24caf320f4df7648b6f150df66c16c62f51bcba009daecfec1f7622007ad04c",
     "abi": [
       {
         "type": "impl",
@@ -636,7 +636,7 @@
           "type": "core::bool"
         }
       ],
-      "class_hash": "0x3854cb97c35209fbe4532127d3ddf29385b529d6cd8f95566d2578ff511d35",
+      "class_hash": "0x68ed8b02bf610af8303f8dd85bc9021df0965701fc2d6baabde5bad698ba80",
       "dependencies": [],
       "abi": [
         {
@@ -767,7 +767,7 @@
           "type": "core::bool"
         }
       ],
-      "class_hash": "0x7a97e9362e8fdfc1bc52f459829bdaf5de986fbfb8d288076aca699c2cf9fc6",
+      "class_hash": "0x61b45eab359cc01dd65220a030a80e62a366c264d89b82c314280f866732f19",
       "dependencies": [],
       "abi": [
         {
@@ -890,7 +890,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x336833c5cea14912873730d8fdf39b6dd6dc1ad011f8615dff0c452cbcd2782",
+      "class_hash": "0x1514d8bfc2e8ae5d4cc69ff853935e3dd087cb2375c3ac1012e0e4693a4ef6f",
       "dependencies": [],
       "abi": [
         {
@@ -1013,7 +1013,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x2bcd616239f6d942690738b5bfb91033f7841247cd804180a7d6b5a607b3c48",
+      "class_hash": "0x266bd32917436417540b564cf3b4760ba742bcd10031d280ede755afdc04969",
       "dependencies": [],
       "abi": [
         {
@@ -1144,7 +1144,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x527601d3b8e43faac53bbbbeb2334ea8480bf6d205874b708b891c34cbee0b4",
+      "class_hash": "0x41f95d60be8a83ff7979db339e614171819d58b0202df12155f4f90a9e1cf59",
       "dependencies": [],
       "abi": [
         {
@@ -1267,7 +1267,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x3517a9129c677884b0e41a8efedad4e6c5517cffeb9e419900f41aa6fb4b985",
+      "class_hash": "0x619ac978d716920fc029e7845875a84bc6dcefacb64ba946c759ac86b8c2f78",
       "dependencies": [],
       "abi": [
         {
@@ -1394,7 +1394,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x1d56213009488602fbd56f89327e239615ca606389a76126d433b15a8e7cbf5",
+      "class_hash": "0x3ad88e14da7043c6162493b8d9e5c3a548b4765016b24562d161c07892222c6",
       "dependencies": [],
       "abi": [
         {
@@ -1463,6 +1463,67 @@
           ],
           "outputs": [],
           "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::felt252>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::systems::process_queue::process_queue_system::QueueStarted",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u64",
+              "kind": "data"
+            },
+            {
+              "name": "execution",
+              "type": "core::felt252",
+              "kind": "data"
+            },
+            {
+              "name": "arguments",
+              "type": "core::array::Span::<core::felt252>",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::systems::process_queue::process_queue_system::QueueFinished",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u64",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::systems::process_queue::process_queue_system::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "QueueStarted",
+              "type": "pixelaw::systems::process_queue::process_queue_system::QueueStarted",
+              "kind": "nested"
+            },
+            {
+              "name": "QueueFinished",
+              "type": "pixelaw::systems::process_queue::process_queue_system::QueueFinished",
+              "kind": "nested"
+            }
+          ]
         }
       ]
     },
@@ -1487,7 +1548,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x5666c00db695b9748f02fff472e7e91c4b3204746a2cc1ef3d7703b339e6d4f",
+      "class_hash": "0x658db7d01b2b57425c634ac3e5aadc5a7d207a0c6fe17848b7bfe20c60b4e8e",
       "dependencies": [],
       "abi": [
         {
@@ -1556,6 +1617,67 @@
           ],
           "outputs": [],
           "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::felt252>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::systems::schedule_queue::schedule_queue_system::QueueStarted",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u64",
+              "kind": "data"
+            },
+            {
+              "name": "execution",
+              "type": "core::felt252",
+              "kind": "data"
+            },
+            {
+              "name": "arguments",
+              "type": "core::array::Span::<core::felt252>",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::systems::schedule_queue::schedule_queue_system::QueueFinished",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u64",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::systems::schedule_queue::schedule_queue_system::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "QueueStarted",
+              "type": "pixelaw::systems::schedule_queue::schedule_queue_system::QueueStarted",
+              "kind": "nested"
+            },
+            {
+              "name": "QueueFinished",
+              "type": "pixelaw::systems::schedule_queue::schedule_queue_system::QueueFinished",
+              "kind": "nested"
+            }
+          ]
         }
       ]
     },
@@ -1576,7 +1698,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0xaa637a6e3167affc2d21ac503dca0c43c7d2c79b505bf687de5200863fa50",
+      "class_hash": "0x5d542f0568ab8576bfba507ea76dfb97d30a41d9047b9456c5b9e39ce86eb58",
       "dependencies": [],
       "abi": [
         {
@@ -1703,7 +1825,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0xb96fc8b51793ac3dd6735fd203f7c54eeff1e49e5f627b9d6f5f6b8dbf4e0",
+      "class_hash": "0x5c6c131118ffc35b909b8c6636e34571efd33f7f506641aaf3404f6a8783bb8",
       "dependencies": [],
       "abi": [
         {
@@ -1804,7 +1926,7 @@
           "type": "(core::integer::u32, core::felt252)"
         }
       ],
-      "class_hash": "0x2acd3b0338debaf39f8e571572ca2ff0ab6a12a68cb7c69a0dac4682e635fa8",
+      "class_hash": "0x1eaa0eadef6f07b0dd8ab08deee925ed3b22d53c08551985a42067c12b0a898",
       "dependencies": [],
       "abi": [
         {
@@ -1913,7 +2035,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x6a551c1fc0e090dc3e73da207fd6de7ccab4fdf16d92c6ef8961eca4d3e9697",
+      "class_hash": "0x1076e9c146f880a25541b61bca95e452d436086d81e31323549c218d1f3dcac",
       "dependencies": [],
       "abi": [
         {
@@ -2022,7 +2144,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x53ca1b035f1070009207cd71dcee39cc6e574c6571002d6d1f1055e86b60ace",
+      "class_hash": "0x2df23bf00b39fb9fb752303a8cb1d6eed9a71fa369afb9b60eddc855a4f8699",
       "dependencies": [],
       "abi": [
         {
@@ -2139,7 +2261,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x23d37c58b009586f58a146157b04b0e8c458c09ebf60650535627832c1151f3",
+      "class_hash": "0x24ac8cf22a5d4d3eb8b750d884b1614db77819ccebd624e9b078862efeb03c1",
       "dependencies": [],
       "abi": [
         {
@@ -2256,7 +2378,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x7b1c5486ec96a476aa4ca2a03d6536494a1482fa9649dff35888ba73645a137",
+      "class_hash": "0x19050a3ef1f0ee384fe90a895c8d28a7f6a2b3e050f2aa822aae1399ecfc2e3",
       "dependencies": [],
       "abi": [
         {
@@ -2369,7 +2491,7 @@
           "type": "core::array::Span::<core::felt252>"
         }
       ],
-      "class_hash": "0x5c3f8568adfef908692f02fcfcc80e303c237183fe864f6cff8c34d29d3f130",
+      "class_hash": "0x3687cba423875df72318e609c4a5584b222862e01f624e80011c67b18661ae1",
       "dependencies": [],
       "abi": [
         {
@@ -2493,7 +2615,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x37cc29a2e26efd37d8b14bb0a1077be38596c6f6a23b7dd0fc9762c92c445c1",
+      "class_hash": "0x202532db2c906ef9f1680dfd416f8c42b9bad37ee4f649da195e12a6e2dd7e",
       "abi": [
         {
           "type": "function",
@@ -2569,7 +2691,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x5f7d90e1a4b487a1baf77a12f845fee342cc3ce9c06349e82281eab48b0ab94",
+      "class_hash": "0x7e29064e3e6346cf2ed2596ca724013e1a76a3683edd16d4195c522b837030a",
       "abi": [
         {
           "type": "function",
@@ -2650,7 +2772,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x76ed2c83c7d4b61623079f26091f530c8b0489288a3d6feaa7404e12f05f8c7",
+      "class_hash": "0x1dbd5441c67ba6e99d4ac13d619b679e716d77b8327f8195f6eab3bd98fe4d0",
       "abi": [
         {
           "type": "function",
@@ -2726,7 +2848,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x4bedc0578db00a4c7102945abb8393fbd5233db559f834d18d4d8be8090eda3",
+      "class_hash": "0x71086884d74f50220023b3a98408ad97e8ed63d9501e3969bcfc2e5c7c31017",
       "abi": [
         {
           "type": "function",
@@ -2807,7 +2929,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x1c893f29e5d17953f4af2ddcf111d1138f0a5f6eedef589e676ecd42f03a448",
+      "class_hash": "0x2888bed3da922286a61b3a7bdde49cf99e512f284683b1bb721083c501c9337",
       "abi": [
         {
           "type": "function",
@@ -2883,7 +3005,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x38eded71730299cac2cb16244e7b75dca0be67548cce562dff1fc15f7564862",
+      "class_hash": "0x57b9720a2f2a496b299fa1b7f59a5a9ca0d5fc5fe0d55db11bdaa97bf67cf77",
       "abi": [
         {
           "type": "function",
@@ -2959,7 +3081,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x532c621c5d24fdf65a080a4fe3e526789fbd809ca92032dea102d9bf0f0bf45",
+      "class_hash": "0x5baabab9a7bf8263a3bb77f0823ee739d2838612d309ccb6c7f1cefafb14fb2",
       "abi": [
         {
           "type": "function",
@@ -3080,7 +3202,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x66dd8592b62d2b6d9f6934c6d6b58a266f000e713ee80dde83b1b34579c15af",
+      "class_hash": "0x3c5a1272d76797e6df772ae04f32f290e8984c3dd66ff1bd526eefbb3ae2eed",
       "abi": [
         {
           "type": "function",
@@ -3151,7 +3273,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x22315c853086dfee80a82fd8c245bbc02a5d5f5990da4bf93b14b258de421a5",
+      "class_hash": "0x2f5e6a851ad9e432e93a055081569bdda2790ed850f4d69f554c8b4799a129d",
       "abi": [
         {
           "type": "function",

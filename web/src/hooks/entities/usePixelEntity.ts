@@ -8,14 +8,8 @@ import {
   TimestampComponent
 } from "../../global/types";
 import {BigNumber} from "ethers";
+import { convertToDecimal, convertToHexadecimalAndLeadWithOx } from '@/global/utils'
 
-const convertToHexadecimal = (n: number) => n.toString(16)
-const convertToDecimal = (hexadecimalString: string) => {
-  const n = hexadecimalString.replace("0x", "")
-  return parseInt(n, 16);
-}
-const prefixString = (prefix: string, base: string) => `${prefix}${base}`
-const toKey = (n: number) => prefixString('0x', convertToHexadecimal(n))
 
 const query = gql`
 query PixelEntity($x: String!, $y: String!) {
@@ -125,8 +119,8 @@ const convertQueryReturnToPixelEntity = ({entities}: QueryReturn) => {
 }
 
 const usePixelEntity = ([x, y]: [number, number]) => {
-  const xKey = toKey(x)
-  const yKey = toKey(y)
+  const xKey = convertToHexadecimalAndLeadWithOx(x)
+  const yKey = convertToHexadecimalAndLeadWithOx(y)
 
   return useGraphql<QueryReturn, PixelEntity | undefined>(
     ['pixelEntity', x, y],

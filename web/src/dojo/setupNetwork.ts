@@ -1,47 +1,51 @@
 import { defineContractComponents } from "./contractComponents";
 import { world } from "./world";
-import { number } from 'starknet';
-
-import {Providers, Query, SyncWorker} from "@dojoengine/core";
-import { Account, ec } from "starknet";
-
-
-const accountIndex = new URLSearchParams(document.location.search).get("account")??1
-console.log("Using account index ", accountIndex)
-
-
-export const KATANA_ACCOUNT_ADDRESS = import.meta.env[`VITE_KATANA_ACCOUNT_${accountIndex}_ADDRESS`]
-export const KATANA_ACCOUNT_PRIVATEKEY = import.meta.env[`VITE_KATANA_ACCOUNT_${accountIndex}_PRIVATEKEY`]
-
-export const WORLD_ADDRESS = import.meta.env.VITE_WORLD_ADDRESS
-export const EVENT_KEY = import.meta.env.VITE_EVENT_KEY
-
-const RPC_URL = import.meta.env.VITE_RPC_URL ?? 'http://127.0.0.1:5050'
-
+import { RPCProvider, Query, } from "@dojoengine/core";
+import { Account, num } from "starknet";
+import { GraphQLClient } from 'graphql-request';
+import { getSdk } from '../generated/graphql';
 
 export type SetupNetworkResult = Awaited<ReturnType<typeof setupNetwork>>;
 
 export async function setupNetwork() {
+  // Extract environment variables for better readability.
+  const { VITE_PUBLIC_WORLD_ADDRESS, VITE_PUBLIC_NODE_URL, VITE_PUBLIC_TORII } = import.meta.env;
 
-    const contractComponents = defineContractComponents(world);
+  // Create a new RPCProvider instance.
+  const provider = new RPCProvider(VITE_PUBLIC_WORLD_ADDRESS, VITE_PUBLIC_NODE_URL);
 
-    const provider = new Providers.RPCProvider(WORLD_ADDRESS, RPC_URL);
+  // Utility function to get the SDK.
+  const createGraphSdk = () => getSdk(new GraphQLClient(VITE_PUBLIC_TORII));
 
-    const signer = new Account(provider.sequencerProvider, KATANA_ACCOUNT_ADDRESS, ec.getKeyPair(KATANA_ACCOUNT_PRIVATEKEY))
+  // Return the setup object.
+  return {
+    provider,
+    world,
 
-    const syncWorker = new SyncWorker(provider, contractComponents, EVENT_KEY);
+    // Define contract components for the world.
+    contractComponents: defineContractComponents(world),
 
-    return {
-        contractComponents,
-        provider,
-        signer,
-        execute: async (system: string, call_data: number.BigNumberish[]) => {
-            console.log(`executing ${system} with call_data:`, call_data)
-            return provider.execute(signer, system, call_data)
-        },
-        entity: async (component: string, query: Query) => provider.entity(component, query),
-        entities: async (component: string, partition: string, length: number) => provider.entities(component, partition, length),
-        world,
-        syncWorker
-    };
+    // Define the graph SDK instance.
+    graphSdk: createGraphSdk(),
+
+    // Execute function.
+    execute: async (signer: Account, system: string, call_data: num.BigNumberish[]) => {
+      return provider.execute(signer, system, call_data);
+    },
+
+    // Entity query function.
+    entity: async (component: string, query: Query) => {
+      return provider.entity(component, query);
+    },
+
+    // Entities query function.
+    entities: async (component: string, partition: number) => {
+      return provider.entities(component, partition);
+    },
+
+    // Call function.
+    call: async (selector: string, call_data: num.BigNumberish[]) => {
+      return provider.call(selector, call_data);
+    },
+  };
 }

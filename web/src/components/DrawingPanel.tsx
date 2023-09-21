@@ -1,6 +1,7 @@
 import React from 'react'
 import Row from './Row'
 import usePaintedPixels from '../hooks/entities/usePaintedPixels'
+import useEntities from '@/hooks/entities/useEntities'
 
 const WIDTH = 30
 const HEIGHT = 13;
@@ -8,7 +9,7 @@ const HEIGHT = 13;
 const DrawingPanel:React.FC = () => {
   const rows = [];
 
-  usePaintedPixels()
+  useEntities()
 
   for (let y = 0; y < HEIGHT; y++) {
     rows.push(<Row y={y} width={WIDTH} key={y}/>)
