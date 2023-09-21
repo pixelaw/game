@@ -30,7 +30,7 @@ mod spawn_pixel_system {
         assert(maybe_type.name == 0, 'Pixel already exists!');
 
         // Check if the caller is authorized to change the pixel
-        let mut calldata = Default::default();
+        let mut calldata:  Array<felt252> = ArrayTrait::new();
         calldata.append(position.x.into());
         calldata.append(position.y.into());
         calldata.append(ctx.system); // This system's name
@@ -61,7 +61,7 @@ mod spawn_pixel_system {
         );
 
         // Set default Pixel Systems
-        let mut calldata = Default::default();
+        let mut calldata:  Array<felt252> = ArrayTrait::new();
         calldata.append('update_color_system');
         calldata.append('update_owner_system');
         calldata.append('update_text_system');

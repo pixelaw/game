@@ -3,7 +3,25 @@ mod schedule_queue_system {
     use array::ArrayTrait;
     use traits::Into;
     use dojo::world::Context;
-    use pixelaw::events::{Event, QueueStarted};
+
+  #[derive(Drop, starknet::Event)]
+  struct QueueStarted {
+    id: u64,
+    execution: felt252,
+    arguments: Span<felt252>
+  }
+
+  #[derive(Drop, starknet::Event)]
+  struct QueueFinished {
+    id: u64
+  }
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+      QueueStarted: QueueStarted,
+      QueueFinished: QueueFinished
+    }
 
     fn execute(
         ctx: Context,

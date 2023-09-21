@@ -3,7 +3,7 @@ import {number} from "starknet";
 
 
 export function createSystemCalls(
-    { execute, syncWorker }: SetupNetworkResult,
+    { execute }: SetupNetworkResult,
 ) {
     const spawn_pixel_system = async (
         position: number[],
@@ -11,14 +11,13 @@ export function createSystemCalls(
 
     ) => {
 
-        const tx = await execute("spawn_pixel_system", [
+        await execute("spawn_pixel_system", [
             position[0],
             position[1],
             pixel_type,
             0
 
         ]);
-        await syncWorker.sync(tx.transaction_hash);
     };
 
     const put_color = async (
@@ -27,7 +26,7 @@ export function createSystemCalls(
 
     ) => {
 
-        const tx = await execute("put_color_system", [
+        await execute("put_color_system", [
             position[0],
             position[1],
             position[0],
@@ -36,7 +35,6 @@ export function createSystemCalls(
             color[1],
             color[2]
         ]);
-        await syncWorker.sync(tx.transaction_hash);
     };
 
     // const put_color = async (

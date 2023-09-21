@@ -5,7 +5,7 @@ A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoor
 
 -   Rust - install [here](https://www.rust-lang.org/tools/install)
 -   Cairo language server - install [here](https://book.dojoengine.org/development/setup.html#3-setup-cairo-vscode-extension)
--   Dojo - install [here](https://book.dojoengine.org/getting-started/installation.html)
+-   Dojo - install [here](https://book.dojoengine.org/getting-started/quick-start.html)
 -   Scarb - install [here](https://docs.swmansion.com/scarb/download)
 -   NodeJS - install [here](https://nodejs.org/en/download)
 
@@ -42,7 +42,7 @@ scarb run deploy
 
 ````shell
 cd contracts
-torii --manifest target/dev/manifest.json --world 0x26bada1b980d220e0842659711c8891a432ef4c1d9e35c0d973414e88512390
+torii --manifest target/dev/manifest.json --world 0x59104057c6a88a30bc6e74b945779683196f123964a09483999b0c6e5b87a16
 ````
 
 ### Step 5: Get the React frontend ready
@@ -63,11 +63,12 @@ yarn dev
 ### Step 7: Run the queue bot
 ````shell
 cd bots
+yarn install
 yarn dev
 ````
 
 #### NOTE
-To change accounts, add an account query to the frontend url. For example: http://localhost:5173/?account=1. Add
+To change accounts, add an account query to the frontend url. For example: http://localhost:3000/?account=1. Add
 as many accounts as desired by following the pattern set in the env.example.
 
 The following would be example players:
