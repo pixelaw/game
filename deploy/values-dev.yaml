@@ -30,6 +30,6 @@ subDomainName:
   pixelaw: pixelaw.dev.aw                 # {{ .Values.subDomainName.pixelaw }}
   katana: katana.pixelaw.dev.aw           # {{ .Values.subDomainName.katana }}
   torii: torii.pixelaw.dev.aw             # {{ .Values.subDomainName.torii }}
-  grpcTorii: grpc.pixelaw.dev.torii.aw    # {{ .Values.subDomainName.grpcTorii }}
+  grpcTorii: grpc.pixelaw.dev.aw    # {{ .Values.subDomainName.grpcTorii }}
 
 dockerImage: oostvoort/pixelaw-dev:latest
