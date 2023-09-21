@@ -13,4 +13,4 @@ export const unicodeAtom = atom("0x0")
 
 export const viewModeAtom = atom<"Pixel" | "Game">("Pixel")
 
-export const gameModeAtom = atom<"none" |"paint" | "rps" | "snake">("none")
+export const gameModeAtom = atom<"none" |"paint" | "rps" | "snake">("paint")
