@@ -48,6 +48,7 @@ export const DojoProvider = ({ children, value }: Props) => {
   const { create, list, get, account, select, isDeploying, clear } = useBurner({
     masterAccount: masterAccount,
     accountClassHash: VITE_PUBLIC_ACCOUNT_CLASS_HASH!,
+    nodeUrl: VITE_PUBLIC_NODE_URL ?? 'http://localhost:5050'
   });
 
   const selectedAccount = useMemo(() => {
