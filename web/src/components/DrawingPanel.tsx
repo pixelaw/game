@@ -1,6 +1,5 @@
 import React from 'react'
 import Row from './Row'
-import usePaintedPixels from '../hooks/entities/usePaintedPixels'
 import useEntities from '@/hooks/entities/useEntities'
 
 const WIDTH = 30

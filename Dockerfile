@@ -1,6 +1,7 @@
 FROM node:18-alpine as web_node_deps
 
 WORKDIR /app
+COPY /web/patches ./patches
 COPY /web/package.json ./package.json
 COPY /web/yarn.lock ./yarn.lock
 
