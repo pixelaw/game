@@ -1,19 +1,38 @@
 import React, {useState} from "react";
 
-import {rgbToHex} from "../global/utils";
-import {PixelEntity} from "../global/types";
+import {
+  rgbToHex,
+} from '../global/utils'
 import {useAtomValue} from "jotai";
 import {colorAtom, gameModeAtom, unicodeAtom, viewModeAtom} from "../global/states";
 import usePaint from "../hooks/systems/usePaint";
-import {useQueryClient} from "@tanstack/react-query";
-import {QUERY_KEY} from "../hooks/entities/usePaintedPixels";
+import { useDojo } from '@/DojoContext'
+import { useComponentValue } from '@dojoengine/react'
+import { getEntityIdFromKeys } from '@dojoengine/utils'
 
 interface PixelProps {
     index: number;
     position: number[];
 }
 
-export default function Pixel( {index, position}: PixelProps){
+const initialData = {
+  color: "#2F1643",
+  unicode: '0x10',
+};
+
+export default function Pixel( {position}: PixelProps){
+
+    const {
+      setup: {
+        components: { Color },
+      }
+    } = useDojo()
+
+    const keys = position.map(p => BigInt(p))
+    const entityId = getEntityIdFromKeys(keys)
+
+    const color = useComponentValue(Color, entityId)
+    // const text = useComponentValue(Text, entityId)
 
     const selectedColor = useAtomValue(colorAtom)
     const selectedUnicode = useAtomValue(unicodeAtom)
@@ -22,19 +41,7 @@ export default function Pixel( {index, position}: PixelProps){
 
     const paint = usePaint(position as [number, number])
 
-    const initialData = {
-        color: index % 2 === 0 ? "#2F1643" : "#2F1643",
-        unicode: '0x10',
-    };
-
-    const queryClient = useQueryClient()
-
-    const paintedPixels = queryClient.getQueryData<PixelEntity[]>(QUERY_KEY)
-
-    const pixel: PixelEntity | undefined  =
-      (paintedPixels?.find(pixel => pixel?.position?.x === position[0] && pixel?.position?.y === position[1]))
-    const pixelColor = pixel?.color
-    const hexColor = pixelColor ? rgbToHex(pixelColor.r, pixelColor.g, pixelColor.b) : undefined
+    const hexColor = color ? rgbToHex(color.r, color.g, color.b) : undefined
 
     const [pixelData, setPixelData] = useState(initialData);
 
@@ -48,7 +55,7 @@ export default function Pixel( {index, position}: PixelProps){
         setPixelData(prevPixelData => {
             return {...prevPixelData, color: hexColor}
         })
-    }, [hexColor, initialData.color])
+    }, [hexColor])
 
     function executePaint() {
         paint.mutateAsync()
