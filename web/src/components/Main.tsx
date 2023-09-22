@@ -30,7 +30,8 @@ const Main = () => {
   } = useDojo()
 
   const accounts = list()
-  const index = parseInt(accountParam ?? '0')
+  const accountParamInt = parseInt(accountParam ?? '1')
+  const index = isNaN(accountParamInt) ? 1 : accountParamInt
   const selectedAccount = accounts[index - 1] as Account | undefined
   const hasAccount = !!selectedAccount
   const isAlreadySelected = account.address === selectedAccount?.address
