@@ -1,0 +1,49 @@
+query getEntities {
+  entities(keys: ["%"] first: 4096) {
+    edges {
+      node {
+        keys
+        components {
+          ... on Color {
+            __typename
+            x
+            y
+            r
+            g
+            b
+          }
+          ... on Timestamp {
+            x
+            y
+            created_at
+            updated_at
+            __typename
+          }
+          ... on Owner {
+            x
+            y
+            address
+            __typename
+          }
+          ... on Text {
+            x
+            y
+            string
+          }
+          ... on PixelType {
+            x
+            y
+            name
+            __typename
+          }
+          ... on ColorCount {
+            x
+            y
+            count
+            __typename
+          }
+        }
+      }
+    }
+  }
+}
