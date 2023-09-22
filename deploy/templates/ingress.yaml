@@ -10,7 +10,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`pixelaw.aw.oostvoort.work`)
+    - match: Host(`{{ .Values.subDomainName.pixelaw }}.{{ .Values.domainName }}`)
       kind: Rule
       middlewares:
         - name: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-ingress-redirect-scheme
@@ -28,7 +28,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`pixelaw.aw.oostvoort.work`)
+    - match: Host(`{{ .Values.subDomainName.pixelaw }}.{{ .Values.domainName }}`)
       kind: Rule
       services:
         - name: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}
@@ -59,7 +59,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`katana.pixelaw.aw.oostvoort.work`)
+    - match: Host(`{{ .Values.subDomainName.katana }}.{{ .Values.domainName }}`)
       kind: Rule
       middlewares:
         - name: katana-{{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-ingress-redirect-scheme
@@ -78,7 +78,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`katana.pixelaw.aw.oostvoort.work`)
+    - match: Host(`{{ .Values.subDomainName.katana }}.{{ .Values.domainName }}`)
       kind: Rule
       services:
         - name: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-katana
@@ -108,7 +108,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`torii.pixelaw.aw.oostvoort.work`)
+    - match: Host(`{{ .Values.subDomainName.torii }}.{{ .Values.domainName }}`)
       kind: Rule
       middlewares:
         - name: torii-{{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-ingress-redirect-scheme
@@ -127,7 +127,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`torii.pixelaw.aw.oostvoort.work`)
+    - match: Host(`{{ .Values.subDomainName.torii }}.{{ .Values.domainName }}`)
       kind: Rule
       services:
         - name: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-torii
@@ -157,7 +157,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`grpc.torii.pixelaw.aw.oostvoort.work`)
+    - match: Host(`{{ .Values.subDomainName.grpc }}.{{ .Values.domainName }}`)
       kind: Rule
       middlewares:
         - name: grpc-torii-{{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-ingress-redirect-scheme
@@ -176,7 +176,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`grpc.torii.pixelaw.aw.oostvoort.work`)
+    - match: Host(`{{ .Values.subDomainName.grpc }}.{{ .Values.domainName }}`)
       kind: Rule
       services:
         - name: {{ .Values.projectName }}-{{ .Values.nameSpace }}-{{ .Values.appType.frontend }}-grpc-torii
