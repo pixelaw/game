@@ -25,12 +25,12 @@ COPY --from=web_node_deps /app/node_modules ./node_modules
 # Build the webapp
 RUN yarn build --mode production
 
-FROM oostvoort/dojo:v0.2.22 AS contracts_builder
+FROM oostvoort/dojo:v0.2.2 AS contracts_builder
 WORKDIR /app
 COPY /contracts .
 RUN sozo build
 
-FROM oostvoort/dojo-forkserver:v1.1.0 AS runtime
+FROM oostvoort/dojo-forkserver:v1.1.2 AS runtime
 
 # Install node
 RUN apt-get update -y && \
@@ -42,7 +42,6 @@ COPY --from=web_node_builder /app/dist static/
 
 COPY ./contracts/Scarb.toml contracts/Scarb.toml
 COPY ./contracts/scripts contracts/scripts
-COPY ./contracts/.env.development .env
 
 COPY ./bots/index.js ./bots/index.js
 COPY ./bots/package.json ./bots/package.json

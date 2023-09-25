@@ -19,33 +19,18 @@ make build
 
 This command compiles your project and prepares it for execution.
 
-### Step 2: Start Katana RPC
-
-[Katana RPC](https://book.dojoengine.org/framework/katana/overview.html) is the communication layer for your Dojo World. It allows different components of your world to communicate with each other. To start Katana RPC, use the following command:
-
-```shell
-katana
-```
-
-### Step 3: Migrate (Deploy) the World
-
-This command, deploys your world to Katana!
+### Step 2: Start Dojo Forkserver
+The Dojo Forkserver is a container that has the [Katana RPC](https://book.dojoengine.org/framework/katana/overview.html),
+the [Torii World Indexer](https://book.dojoengine.org/framework/torii/overview.html), and a Forkserver
+Dashboard. Once the container starts, it starts running Katana, deploys the World Container from the repo
+via the contracts volume (See the docker-compose.yml for more details), runs the post_deploy script from
+the repo's Scarb.toml, and starts up Torii. The Dojo Forkserver Dashboard is accesible via http://localhost:3000/fork.
 
 ```shell
-cd contracts
-scarb run deploy
+make start_container
 ```
 
-### Step 4: Run torii
-
-[Torii](https://book.dojoengine.org/framework/torii/overview.html) serves as a comprehensive indexing and networking layer for dojo worlds. It systematically organizes the state of dojo worlds, facilitating efficient querying for clients.
-
-````shell
-cd contracts
-torii --manifest target/dev/manifest.json --world 0x59104057c6a88a30bc6e74b945779683196f123964a09483999b0c6e5b87a16
-````
-
-### Step 5: Get the React frontend ready
+### Step 3: Get the React frontend ready
 
 ```shell
 make prep_web
@@ -53,14 +38,14 @@ cd web
 yarn
 ```
 
-### Step 6: Run the frontend locally
+### Step 4: Run the frontend locally
 
 ```shell
 cd web
 yarn dev
 ```
 
-### Step 7: Run the queue bot
+### Step 5: Run the queue bot
 ````shell
 cd bots
 yarn install
