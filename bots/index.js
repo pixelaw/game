@@ -3,6 +3,7 @@ import {Account, Provider} from "starknet";
 // for now storing events to process in memory
 const eventsToProcess = {}
 let lastBlockIndexed = 0
+let worldAddress = ''
 
 // constants
 const QUEUE_STARTED_KEY_EVENT = "0x13716a499dcdd9a2bb8983f7de44be73f75b491244ab6b6ada5cc9307d74b1d"
@@ -11,10 +12,42 @@ const PROCESS_QUEUE_SYSTEM_IN_HEX = "0x70726f636573735f71756575655f73797374656d"
 
 const config = {
     rpcUrl: 'http://0.0.0.0:5050',
+    apiUrl: 'http://0.0.0.0:3000',
     blockTime: 1_000,
     botAddress: '0x765149d6bc63271df7b0316537888b81aa021523f9516a05306f10fd36914da',
     botPrivateKey: '0x1c9053c053edf324aec366a34c6901b1095b07af69495bffec7d7fe21effb1b',
     worldAddress: '0x59104057c6a88a30bc6e74b945779683196f123964a09483999b0c6e5b87a16'
+}
+// Function to convert a ReadableStream to a string
+export async function streamToString(readableStream) {
+  const textDecoder = new TextDecoder();
+  const reader = readableStream.getReader();
+  let result = '';
+
+  try {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break; // The stream has ended
+      }
+
+      result += textDecoder.decode(value);
+    }
+
+    return result;
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+
+const getWorldAddress = async () => {
+  const result = await fetch(config.apiUrl + "/api/world-address")
+  const stream = result.body
+  if (!stream) return ''
+  return streamToString(stream)
 }
 
 console.info('QueueBot starting...')
@@ -30,6 +63,9 @@ const signer = new Account(provider, config.botAddress, config.botPrivateKey)
 
 // based on dojo execute command
 const execute = async (account, system, call_data) => {
+  if (!worldAddress) {
+    worldAddress = await getWorldAddress()
+  }
 
     console.log(`executing ${system} with args: ${call_data.join(", ")}`)
 
@@ -37,7 +73,7 @@ const execute = async (account, system, call_data) => {
         const nonce = await account?.getNonce()
         const call = await account?.execute(
             {
-                contractAddress: config.worldAddress,
+                contractAddress: worldAddress,
                 entrypoint: 'execute',
                 calldata: [system, call_data.length, ...call_data]
             },
