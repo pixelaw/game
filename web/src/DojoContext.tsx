@@ -22,24 +22,29 @@ const DojoContext = createContext<EternumContext | null>(null);
 type Props = {
   children: ReactNode;
   value: SetupResult;
+  master: {
+    address: string,
+    classHash: string,
+    privateKey: string
+  }
 };
 
-export const DojoProvider = ({ children, value }: Props) => {
+export const DojoProvider = ({ children, value, master }: Props) => {
 
-  const { VITE_PUBLIC_MASTER_ADDRESS, VITE_PUBLIC_MASTER_PRIVATE_KEY, VITE_PUBLIC_ACCOUNT_CLASS_HASH, VITE_PUBLIC_NODE_URL } = import.meta.env;
+  const VITE_PUBLIC_NODE_URL = import.meta.env.VITE_PUBLIC_NODE_URL ?? 'http://localhost:5050';
   const currentValue = useContext(DojoContext);
   if (currentValue) throw new Error("DojoProvider can only be used once");
 
   const provider = useMemo(
     () =>
       new RpcProvider({
-        nodeUrl: VITE_PUBLIC_NODE_URL!,
+        nodeUrl: VITE_PUBLIC_NODE_URL,
       }),
     [],
   );
 
-  const masterAddress = VITE_PUBLIC_MASTER_ADDRESS!;
-  const privateKey = VITE_PUBLIC_MASTER_PRIVATE_KEY!;
+  const masterAddress = master.address;
+  const privateKey = master.privateKey;
   const masterAccount = useMemo(
     () => new Account(provider, masterAddress, privateKey),
     [provider, masterAddress, privateKey],
@@ -47,8 +52,8 @@ export const DojoProvider = ({ children, value }: Props) => {
 
   const { create, list, get, account, select, isDeploying, clear } = useBurner({
     masterAccount: masterAccount,
-    accountClassHash: VITE_PUBLIC_ACCOUNT_CLASS_HASH!,
-    nodeUrl: VITE_PUBLIC_NODE_URL ?? 'http://localhost:5050'
+    accountClassHash: master.classHash,
+    nodeUrl: VITE_PUBLIC_NODE_URL
   });
 
   const selectedAccount = useMemo(() => {
