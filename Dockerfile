@@ -42,7 +42,6 @@ COPY --from=web_node_builder /app/dist static/
 
 COPY ./contracts/Scarb.toml contracts/Scarb.toml
 COPY ./contracts/scripts contracts/scripts
-COPY ./contracts/.env.development .env
 
 COPY ./bots/index.js ./bots/index.js
 COPY ./bots/package.json ./bots/package.json

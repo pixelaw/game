@@ -1,48 +1,19 @@
 services:
-  pixelaw-katana:
-    build:
-      context: .
-      dockerfile: ./deployment/katana.Dockerfile
-    container_name: pixelaw-katana
+  dojo-forkserver:
+    image: oostvoort/dojo-forkserver:v1.1.1
+    container_name: dojo-forkserver
     ports:
       - "5050:5050"
-    restart: unless-stopped
-    networks:
-      - pixelaw
-
-  pixelaw-torii:
-    build:
-      context: .
-      dockerfile: ./deployment/torii.Dockerfile
-    container_name: pixelaw-torii
-    restart: unless-stopped
-    environment:
-      - WORLD_ADDRESS=0x79a3c37167370f03882049edbb291a4c8b79b988835184a18a0695f4dc4fe0c
-      - RPC_URL=http://pixelaw-katana:5050
-    ports:
+      - "3000:3000"
       - "8080:8080"
-    depends_on:
-      pixelaw-katana:
-        condition: service_started
-    networks:
-      - pixelaw
-
-  pixelaw-web:
-    build:
-      context: .
-      dockerfile: ./deployment/web.Dockerfile
-    container_name: pixelaw-web
+      - "50051"
     restart: unless-stopped
-    environment:
-      - PORT=5173
-    ports:
-      - "5173:5173"
-    depends_on:
-      pixelaw-torii:
-        condition: service_started
+    volumes:
+      - ./contracts:/opt/contracts
     networks:
       - pixelaw
 
 networks:
   pixelaw:
     driver: bridge
+
