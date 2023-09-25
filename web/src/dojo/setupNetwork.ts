@@ -4,15 +4,25 @@ import { RPCProvider, Query, } from "@dojoengine/core";
 import { Account, num } from "starknet";
 import { GraphQLClient } from 'graphql-request';
 import { getSdk } from '../generated/graphql';
+import { streamToString } from '@/global/utils'
 
 export type SetupNetworkResult = Awaited<ReturnType<typeof setupNetwork>>;
 
+const getWorldAddress = async () => {
+  const result = await fetch("/api/world-address")
+  const stream = result.body
+  if (!stream) return ''
+  return streamToString(stream)
+}
+
 export async function setupNetwork() {
   // Extract environment variables for better readability.
-  const { VITE_PUBLIC_WORLD_ADDRESS, VITE_PUBLIC_NODE_URL, VITE_PUBLIC_TORII } = import.meta.env;
+  const { VITE_PUBLIC_NODE_URL, VITE_PUBLIC_TORII } = import.meta.env;
+
+  const worldAddress = await getWorldAddress()
 
   // Create a new RPCProvider instance.
-  const provider = new RPCProvider(VITE_PUBLIC_WORLD_ADDRESS, VITE_PUBLIC_NODE_URL);
+  const provider = new RPCProvider(worldAddress, VITE_PUBLIC_NODE_URL);
 
   // Utility function to get the SDK.
   const createGraphSdk = () => getSdk(new GraphQLClient(VITE_PUBLIC_TORII));
