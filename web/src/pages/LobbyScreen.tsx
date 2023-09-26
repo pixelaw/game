@@ -14,6 +14,16 @@ export default function LobbyScreen() {
         setHasBackgroundOverlay(true)
     }, [])
 
+  const [imageSrc, setImageSrc] = React.useState('/assets/placeholder/pixel-state.png');
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setImageSrc(`/assets/placeholder/pixel-state.png?timestamp=${new Date().getTime()}`);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, []);
+
     return (
         <div
             className={cn(
@@ -45,8 +55,8 @@ export default function LobbyScreen() {
 
                 <Image
                     className={cn(['cursor-pointer'])}
-                    src={'/assets/placeholder/lobby_canvas_placeholder.png'}
-                    alt={'Lobby Canvas Placeholder'}
+                    src={imageSrc}
+                    alt={'Lobby Canvas'}
                     onClick={() => setCurrentPage(Active_Page.Gameplay)}
                 />
             </div>

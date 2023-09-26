@@ -1,6 +1,9 @@
 import createBoard from './createBoard'
 import createDefaultPixels from './createDefaultPixels'
 import getState from './getState'
+
+const OUTPUT_PATH = process.env.NODE_ENV === 'production' ? '../static/assets/placeholder/pixel-state.png' : '../web/public/assets/placeholder/pixel-state.png'
+
 const config = {
   canvasSize: {
     width: 500,
@@ -10,7 +13,7 @@ const config = {
     height: 1,
     width: 1
   },
-  outputPath: './dist/test.png',
+  outputPath: OUTPUT_PATH,
   refreshRate: 5_000
 }
 
