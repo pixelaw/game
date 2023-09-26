@@ -1,12 +1,14 @@
 import indexEvents from './indexEvents'
 import processUnlockables from './processUnlockables'
-import { BLOCK_TIME } from './constants'
 
+const config = {
+  refreshRate: 1_000
+}
 
 async function loop() {
   await indexEvents()
   await processUnlockables()
-  setTimeout(loop, BLOCK_TIME);
+  setTimeout(loop, config.refreshRate);
 }
 
 async function start () {

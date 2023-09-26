@@ -8,9 +8,13 @@
     "dev": "wait-port 5050 && nodemon index.ts"
   },
   "dependencies": {
+    "canvas": "^2.11.2",
+    "fs": "^0.0.1-security",
+    "pngjs": "^7.0.0",
     "starknet": "^5.19.5"
   },
   "devDependencies": {
+    "@types/node": "^20.7.0",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2",

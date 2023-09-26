@@ -1,4 +1,4 @@
-import start from './QueueBot'
+import start from './PixelBoardBot'
 
 function startBots() {
   start().then()
