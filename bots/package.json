@@ -8,8 +8,13 @@
     "dev": "wait-port 5050 && nodemon index.ts"
   },
   "dependencies": {
+    "@apollo/client": "^3.8.4",
+    "apollo-client": "^2.6.10",
     "canvas": "^2.11.2",
     "fs": "^0.0.1-security",
+    "graphql": "^16.8.1",
+    "graphql-tag": "^2.12.6",
+    "mkdirp": "^3.0.1",
     "pngjs": "^7.0.0",
     "starknet": "^5.19.5"
   },

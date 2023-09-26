@@ -1,25 +1,64 @@
 import { Pixel } from './types'
-import randomNumber from '../utils/randomNumber'
+import { createClient } from '../lib/graphql'
+import { DEFAULT_COLOR, GET_ENTITIES } from './constants'
+import convertToDecimal from '../utils/convertToDecimal'
+
+// TODO: need to check if this will work over the internet. if not, replace this
+const TORII_URI = 'http://0.0.0.0:8080'
+
+const client = createClient(TORII_URI)
+
+type ColorComponent = {
+  x: number,
+  y: number,
+  r: number,
+  g: number,
+  b: number
+  __typename: 'Color'
+}
+
+type TextComponent = {
+  x: number,
+  y: number,
+  string: string
+  __typename: 'Text'
+}
+
+type EntityGqlReturn = {
+  __typename: 'Entity',
+  keys: string[],
+  components: Array<ColorComponent | TextComponent | {__typename: undefined}>
+}
 
 const getState: () => Promise<Pixel[]> = async () => {
-  const pixels: Pixel[] = []
+  console.info("getting state from torii")
+  try {
+    const response = await client.query({
+      query: GET_ENTITIES,
+    });
 
-  // TODO change dummy data with actual state of all the pixels from Torii
-  for (let y = 0; y < 500; y++) {
-    for (let x = 0; x < 500; x++) {
-      if (x % 2 === 0 && x % 3 === 0 && y % 2 !== 0 && y % 3 !== 0) pixels.push({
-        x,
-        y,
-        color: {
-          r: randomNumber(0, 255),
-          g: randomNumber(0, 255),
-          b: randomNumber(0, 255)
-        },
-        text: '🐍'
-      })
-    }
+    // Process the response here
+    const entities: EntityGqlReturn[] =  response.data.entities.edges
+      .filter((edge) => edge.node.keys.length === 2)
+      .map((edge) => edge.node);
+
+    return entities.map(entity => {
+      const colorComponent = entity.components.find(component => component?.__typename === 'Color') as ColorComponent | undefined
+      const textComponent = entity.components.find(component => component?.__typename === 'Text') as TextComponent | undefined
+      return {
+        x: convertToDecimal(entity.keys[0]),
+        y: convertToDecimal(entity.keys[1]),
+        color: colorComponent ? {
+          r: colorComponent.r,
+          g: colorComponent.g,
+          b: colorComponent.b
+        } : DEFAULT_COLOR,
+        text: textComponent?.string ?? ''
+      }
+    })
+  } catch (error) {
+    throw new Error("Could not get Entities", error)
   }
-  return pixels
 }
 
 export default getState

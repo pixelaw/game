@@ -1,4 +1,5 @@
 import { Pixel } from './types'
+import { DEFAULT_COLOR } from './constants'
 
 const createDefaultPixels = (height: number, width: number) => {
   const defaultPixels: Pixel[] = []
@@ -7,11 +8,7 @@ const createDefaultPixels = (height: number, width: number) => {
       defaultPixels.push({
         x,
         y,
-        color: {
-          r: 0,
-          g: 0,
-          b: 0
-        },
+        color: DEFAULT_COLOR,
         text: ''
       })
     }

@@ -1,7 +1,6 @@
 import createBoard from './createBoard'
 import createDefaultPixels from './createDefaultPixels'
 import getState from './getState'
-
 const config = {
   canvasSize: {
     width: 500,
@@ -18,8 +17,13 @@ const config = {
 const defaultPixels = createDefaultPixels(config.canvasSize.height, config.canvasSize.width)
 
 async function loop() {
-  const pixels = await getState()
-  createBoard(pixels, config, defaultPixels)
+  try {
+    const pixels = await getState()
+    createBoard(pixels, config, defaultPixels)
+  } catch (e) {
+    console.error("Error with PixelBoardBot", e)
+  }
+
   setTimeout(loop, config.refreshRate);
 }
 

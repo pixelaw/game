@@ -1,6 +1,7 @@
 import { createCanvas } from 'canvas'
 import * as fs from 'fs'
 import { Pixel } from './types'
+import { mkdirp } from 'mkdirp'
 
 type BoardConfig = {
   outputPath: string,
@@ -33,6 +34,7 @@ const createBoard = (data: Pixel[], config: BoardConfig, defaultPixels?: Pixel[]
   });
 
   const pngBuffer = canvas.toBuffer('image/png')
+  mkdirp.sync(config.outputPath.replace(/\/[^/]+$/, ''))
   fs.writeFileSync(config.outputPath, pngBuffer)
   console.info("created board at: ", config.outputPath)
 }
