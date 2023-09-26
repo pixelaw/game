@@ -5,12 +5,15 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "wait-port 5050 && nodemon index.js"
+    "dev": "wait-port 5050 && nodemon index.ts"
   },
   "dependencies": {
-    "nodemon": "^3.0.1",
-    "starknet": "^5.19.5",
-    "wait-port": "^1.0.4"
+    "starknet": "^5.19.5"
   },
-  "type": "module"
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2",
+    "wait-port": "^1.0.4"
+  }
 }
