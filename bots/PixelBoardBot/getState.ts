@@ -35,6 +35,7 @@ const getState: () => Promise<Pixel[]> = async () => {
   try {
     const response = await client.query({
       query: GET_ENTITIES,
+      fetchPolicy: "network-only"
     });
 
     // Process the response here
