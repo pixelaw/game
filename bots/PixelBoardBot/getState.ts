@@ -43,8 +43,17 @@ const getState: () => Promise<Pixel[]> = async () => {
       .map((edge) => edge.node);
 
     return entities.map(entity => {
-      const colorComponent = entity.components.find(component => component?.__typename === 'Color') as ColorComponent | undefined
-      const textComponent = entity.components.find(component => component?.__typename === 'Text') as TextComponent | undefined
+      let colorComponent: ColorComponent | undefined;
+      let textComponent: TextComponent | undefined;
+
+      for (const component of entity.components) {
+        if (component.__typename === 'Color') {
+          colorComponent = component as ColorComponent;
+        } else if (component.__typename === 'Text') {
+          textComponent = component as TextComponent;
+        }
+      }
+
       return {
         x: convertToDecimal(entity.keys[0]),
         y: convertToDecimal(entity.keys[1]),
