@@ -3,3 +3,4 @@
 ./web/.env
 ./contracts/target
 ./bots/.env
+./bots/node_modules
