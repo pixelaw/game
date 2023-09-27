@@ -1,7 +1,9 @@
-import start from './PixelBoardBot'
+import PixelBoardBot from './PixelBoardBot'
+import QueueBot from './QueueBot'
 
 function startBots() {
-  start().then()
+  PixelBoardBot().then()
+  QueueBot().then()
 }
 
 // Start the initial request

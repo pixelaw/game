@@ -1,40 +1,45 @@
+// Importing necessary modules
 import createBoard from './createBoard'
 import createDefaultPixels from './createDefaultPixels'
 import getState from './getState'
+import uploadBoard from './uploadBoard'
+import getEnv from '../utils/getEnv'
 
-const OUTPUT_PATH = process.env.NODE_ENV === 'production' ? '../static/assets/placeholder/pixel-state.png' : '../web/public/assets/placeholder/pixel-state.png'
-
-const config = {
+// Configuration object for the canvas and pixel size, and refresh rate
+const pixelBoardConfig = {
   canvasSize: {
-    width: 500,
-    height: 500
+    width: getEnv<number>('CANVAS_WIDTH', 500),
+    height: getEnv<number>('CANVAS_HEIGHT', 500)
   },
   pixelSize: {
-    height: 1,
-    width: 1
+    height: getEnv<number>('PIXEL_HEIGHT', 1),
+    width: getEnv<number>('PIXEL_WIDTH', 1)
   },
-  outputPath: OUTPUT_PATH,
-  refreshRate: 5_000
+  refreshRate: getEnv<number>('PIXEL_BOARD_REFRESH_RATE', 5_000)
 }
 
-const defaultPixels = createDefaultPixels(config.canvasSize.height, config.canvasSize.width)
+// Creating default pixels based on the canvas size
+const defaultPixelState = createDefaultPixels(pixelBoardConfig.canvasSize.height, pixelBoardConfig.canvasSize.width)
 
-async function loop() {
+// Main loop function that gets the state, creates the board, and uploads it
+async function mainLoop() {
   try {
-    const pixels = await getState()
-    createBoard(pixels, config, defaultPixels)
-  } catch (e) {
-    console.error("Error with PixelBoardBot", e)
+    const pixelState = await getState()
+    const board = createBoard(pixelState, pixelBoardConfig, defaultPixelState)
+    await uploadBoard(board)
+  } catch (error) {
+    console.error("Error with PixelBoardBot", error)
   }
 
-  setTimeout(loop, config.refreshRate);
+  // Setting the loop to run at the specified refresh rate
+  setTimeout(mainLoop, pixelBoardConfig.refreshRate);
 }
 
-
-
-async function start () {
+// Function to start the bot
+async function startBot () {
   console.info("PixelBoardBot starting")
-  await loop()
+  await mainLoop()
 }
 
-export default start
+// Exporting the start function as default
+export default startBot

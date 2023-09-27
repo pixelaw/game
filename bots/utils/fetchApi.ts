@@ -1,6 +1,7 @@
 import streamToString from './streamToString'
+import getEnv from './getEnv'
 
-const API_URL = "http://0.0.0.0:3000"
+const API_URL = getEnv("API_URL", "http://0.0.0.0:3000")
 
 async function fetchApi<T>(endpoint: string, returnType: 'json' | 'string' | 'number') {
   const result = await fetch(`${API_URL}/api/${endpoint}`)

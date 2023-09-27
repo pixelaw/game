@@ -9,8 +9,11 @@
   },
   "dependencies": {
     "@apollo/client": "^3.8.4",
+    "@aws-sdk/client-s3": "^3.418.0",
     "apollo-client": "^2.6.10",
+    "aws-sdk": "^2.1464.0",
     "canvas": "^2.11.2",
+    "dotenv": "^16.3.1",
     "fs": "^0.0.1-security",
     "graphql": "^16.8.1",
     "graphql-tag": "^2.12.6",

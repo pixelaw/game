@@ -5,6 +5,8 @@ import {Button} from "@/components/ui/button";
 import {useMainLayout} from "@/components/layouts/MainLayout";
 import {Active_Page} from "@/global/types";
 
+const PIXEL_STATE_SRC = import.meta.env.VITE_PIXEL_STATE_SRC ?? '/assets/placeholder/pixel-state.png'
+
 export default function LobbyScreen() {
     const {setCurrentPage, setHasNavbar, setHasBackgroundImage, setHasBackgroundOverlay} = useMainLayout()
 
@@ -14,11 +16,11 @@ export default function LobbyScreen() {
         setHasBackgroundOverlay(true)
     }, [])
 
-  const [imageSrc, setImageSrc] = React.useState('/assets/placeholder/pixel-state.png');
-
+  // this is to force the image tag to refetch
+  const [imageSrc, setImageSrc] = React.useState(PIXEL_STATE_SRC);
   React.useEffect(() => {
     const timer = setInterval(() => {
-      setImageSrc(`/assets/placeholder/pixel-state.png?timestamp=${new Date().getTime()}`);
+      setImageSrc(`${PIXEL_STATE_SRC}?timestamp=${new Date().getTime()}`);
     }, 5000);
 
     return () => clearInterval(timer);

@@ -1,8 +1,9 @@
 import indexEvents from './indexEvents'
 import processUnlockables from './processUnlockables'
+import getEnv from '../utils/getEnv'
 
 const config = {
-  refreshRate: 1_000
+  refreshRate: getEnv<number>("QUEUE_BOT_REFRESH_RATE", 1_000)
 }
 
 async function loop() {

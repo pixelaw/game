@@ -2,9 +2,10 @@ import { Pixel } from './types'
 import { createClient } from '../lib/graphql'
 import { DEFAULT_COLOR, GET_ENTITIES } from './constants'
 import convertToDecimal from '../utils/convertToDecimal'
+import getEnv from '../utils/getEnv'
 
 // TODO: need to check if this will work over the internet. if not, replace this
-const TORII_URI = 'http://0.0.0.0:8080'
+const TORII_URI = getEnv("TORII_URI", 'http://0.0.0.0:8080')
 
 const client = createClient(TORII_URI)
 
