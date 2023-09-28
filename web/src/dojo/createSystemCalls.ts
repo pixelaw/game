@@ -1,7 +1,5 @@
 import { SetupNetworkResult } from "./setupNetwork";
 import { Account, BigNumberish } from 'starknet'
-
-
 export function createSystemCalls(
     { execute }: SetupNetworkResult,
 ) {
@@ -12,7 +10,7 @@ export function createSystemCalls(
 
     ) => {
 
-        await execute(signer, "spawn_pixel_system", [
+        return await execute(signer, "spawn_pixel_system", [
             position[0],
             position[1],
             pixel_type,
@@ -28,7 +26,7 @@ export function createSystemCalls(
 
     ) => {
 
-        await execute(signer, "put_color_system", [
+        return await execute(signer, "put_color_system", [
             position[0],
             position[1],
             position[0],
@@ -37,10 +35,9 @@ export function createSystemCalls(
             color[1],
             color[2]
         ]);
-        // await syncWorker.sync(tx.transaction_hash);
     };
 
     return {
-        spawn_pixel_system, put_color, reset: (something: any) => something
+        spawn_pixel_system, put_color
     };
 }
