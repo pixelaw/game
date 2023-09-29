@@ -1,11 +1,11 @@
 import React from "react";
 import {cn} from "@/lib/utils";
-import Image from "@/components/ui/Image"
 import {Button} from "@/components/ui/button";
 import {useMainLayout} from "@/components/layouts/MainLayout";
 import {Active_Page} from "@/global/types";
+import LobbyMap from '@/components/LobbyMap'
 
-const PIXEL_STATE_SRC = '/assets/placeholder/pixel-state.png'
+
 
 export default function LobbyScreen() {
     const {setCurrentPage, setHasNavbar, setHasBackgroundImage, setHasBackgroundOverlay} = useMainLayout()
@@ -16,15 +16,6 @@ export default function LobbyScreen() {
         setHasBackgroundOverlay(true)
     }, [])
 
-  // this is to force the image tag to refetch
-  const [imageSrc, setImageSrc] = React.useState(PIXEL_STATE_SRC);
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      setImageSrc(`${PIXEL_STATE_SRC}?timestamp=${new Date().getTime()}`);
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, []);
 
     return (
         <div
@@ -54,13 +45,7 @@ export default function LobbyScreen() {
                         </div>
                     </Button>
                 </div>
-
-                <Image
-                    className={cn(['cursor-pointer'])}
-                    src={imageSrc}
-                    alt={'Lobby Canvas'}
-                    onClick={() => setCurrentPage(Active_Page.Gameplay)}
-                />
+              <LobbyMap onMapClick={() => setCurrentPage(Active_Page.Gameplay)} visitable={1} />
             </div>
         </div>
     )

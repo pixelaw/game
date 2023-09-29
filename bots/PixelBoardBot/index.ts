@@ -12,8 +12,8 @@ const BOARD_PATH_FILE = getEnv<string>(
 // Configuration object for the canvas and pixel size, and refresh rate
 const pixelBoardConfig = {
   canvasSize: {
-    width: getEnv<number>('CANVAS_WIDTH', 500),
-    height: getEnv<number>('CANVAS_HEIGHT', 500)
+    width: getEnv<number>('CANVAS_WIDTH', 256),
+    height: getEnv<number>('CANVAS_HEIGHT', 256)
   },
   pixelSize: {
     height: getEnv<number>('PIXEL_HEIGHT', 1),
