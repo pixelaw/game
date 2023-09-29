@@ -6,3 +6,4 @@ mod permission;
 mod text;
 mod timestamp;
 mod pixel_type;
+mod needs_attention;
