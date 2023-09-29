@@ -28,7 +28,9 @@ const defaultPixelState = createDefaultPixels(pixelBoardConfig.canvasSize.height
 // Main loop function that gets the state, creates the board, and uploads it
 async function mainLoop() {
   try {
+    console.info('[PIXEL_BOARD_BOT]', 'getting state from torii')
     const pixelState = await getState()
+    console.info('[PIXEL_BOARD_BOT]', 'creating board')
     const board = createBoard(pixelState, pixelBoardConfig, defaultPixelState)
     console.info('[PIXEL_BOARD_BOT]', 'writing board')
     writeBoard(board, BOARD_PATH_FILE)

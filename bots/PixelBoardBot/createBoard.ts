@@ -13,7 +13,6 @@ type BoardConfig = {
 }
 
 const createBoard = (data: Pixel[], config: BoardConfig, defaultPixels?: Pixel[]) => {
-  console.info("creating board")
   const canvas = createCanvas(config.canvasSize.width, config.canvasSize.height)
   const ctx = canvas.getContext("2d")
 

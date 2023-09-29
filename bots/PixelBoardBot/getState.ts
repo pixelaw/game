@@ -32,7 +32,6 @@ type EntityGqlReturn = {
 }
 
 const getState: () => Promise<Pixel[]> = async () => {
-  console.info("getting state from torii")
   try {
     const response = await client.query({
       query: GET_ENTITIES,
