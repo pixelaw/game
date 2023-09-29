@@ -30,7 +30,7 @@ WORKDIR /app
 COPY /contracts .
 RUN sozo build
 
-FROM oostvoort/dojo-forkserver:v1.1.2 AS runtime
+FROM oostvoort/dojo-forkserver:v1.1.4 AS runtime
 
 # Install node
 RUN apt-get update -y && \
