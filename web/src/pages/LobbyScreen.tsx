@@ -1,9 +1,9 @@
 import React from "react";
 import {cn} from "@/lib/utils";
-import Image from "@/components/ui/Image"
 import {Button} from "@/components/ui/button";
 import {useMainLayout} from "@/components/layouts/MainLayout";
 import {Active_Page} from "@/global/types";
+import LobbyMap from '@/components/LobbyMap'
 
 export default function LobbyScreen() {
     const {setCurrentPage, setHasNavbar, setHasBackgroundImage, setHasBackgroundOverlay} = useMainLayout()
@@ -13,6 +13,7 @@ export default function LobbyScreen() {
         setHasBackgroundImage(true)
         setHasBackgroundOverlay(true)
     }, [])
+
 
     return (
         <div
@@ -42,13 +43,7 @@ export default function LobbyScreen() {
                         </div>
                     </Button>
                 </div>
-
-                <Image
-                    className={cn(['cursor-pointer'])}
-                    src={'/assets/placeholder/lobby_canvas_placeholder.png'}
-                    alt={'Lobby Canvas Placeholder'}
-                    onClick={() => setCurrentPage(Active_Page.Gameplay)}
-                />
+              <LobbyMap onMapClick={() => setCurrentPage(Active_Page.Gameplay)} visitable={1} />
             </div>
         </div>
     )

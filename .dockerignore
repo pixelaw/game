@@ -2,3 +2,5 @@
 ./web/node_modules
 ./web/.env
 ./contracts/target
+./bots/.env
+./bots/node_modules
