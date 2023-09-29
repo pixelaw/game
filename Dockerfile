@@ -8,7 +8,7 @@ COPY /web/yarn.lock ./yarn.lock
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
-FROM node:18-alpine as bots_node_deps
+FROM node:18-buster-slim as bots_node_deps
 WORKDIR /app
 COPY /bots/package.json ./package.json
 COPY /bots/yarn.lock ./yarn.lock
@@ -43,8 +43,8 @@ COPY --from=web_node_builder /app/dist static/
 COPY ./contracts/Scarb.toml contracts/Scarb.toml
 COPY ./contracts/scripts contracts/scripts
 
-COPY ./bots/index.js ./bots/index.js
-COPY ./bots/package.json ./bots/package.json
+COPY ./bots/ ./bots/
+COPY ./bots/.env.production ./bots/.env
 COPY --from=bots_node_deps /app/node_modules ./bots/node_modules
 
 COPY ./startup.sh ./startup.sh
