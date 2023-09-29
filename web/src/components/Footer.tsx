@@ -33,7 +33,7 @@ export default function Footer(props: PropsType) {
                 )}
             >
                 <h3 className={cn(['text-brand-violetAccent04 text-sm'])}>Coordinates: <span
-                    className={'text-white font-semibold ml-1'}>{`${props.coordinates.x}, ${props.coordinates.x}`}</span>
+                    className={'text-white font-semibold ml-1'}>{`${props.coordinates.x}, ${props.coordinates.y}`}</span>
                 </h3>
                 <h3 className={cn(['text-brand-violetAccent04 text-sm'])}>Type: <span
                     className={'text-white font-semibold ml-1'}>{props.type ?? 'null'}</span></h3>

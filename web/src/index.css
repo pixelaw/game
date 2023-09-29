@@ -132,3 +132,19 @@
 .flexbox-fix{
   display: none!important;
 }
+
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #2F1643;
+  border-radius: 4px;
+
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ffffff;
+  border-radius: 10px;;
+}

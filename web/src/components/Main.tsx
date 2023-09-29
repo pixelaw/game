@@ -1,11 +1,12 @@
 import React from "react";
 
-import DrawingPanel from "./DrawingPanel";
+// import DrawingPanel from "./DrawingPanel";
 import {ColorResult, CompactPicker} from 'react-color';
-import { useAtom } from 'jotai'
-import { colorAtom } from '@/global/states'
+import { useAtom, useAtomValue } from 'jotai'
+import { colorAtom, zoomLevelAtom } from '@/global/states'
 import Plugin from "@/components/Plugin";
 import { useDojo } from '@/DojoContext'
+import DrawPanel from '@/components/shared/DrawPanel.tsx'
 
 type Account = {
   address: string,
@@ -18,6 +19,7 @@ const Main = () => {
 
   const urlParams = new URLSearchParams(window.location.search)
   const accountParam = urlParams.get('account')
+  const zoomLevel = useAtomValue(zoomLevelAtom)
 
   const {
     account: {
@@ -58,6 +60,7 @@ const Main = () => {
     setColor(color.hex)
   }
 
+
   return (
       <React.Fragment>
           {
@@ -65,7 +68,8 @@ const Main = () => {
                   <>
                       <div className={'m-sm'}>
                           <div>
-                              <DrawingPanel/>
+                            <DrawPanel zoom={zoomLevel}/>
+                              {/*<DrawingPanel/>*/}
                           </div>
 
                           <div className="fixed bottom-5 right-20">

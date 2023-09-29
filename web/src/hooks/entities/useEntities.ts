@@ -4,7 +4,7 @@ import { BLOCK_TIME } from '@/global/constants'
 import { convertToDecimal } from '@/global/utils'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
 import { getComponentValue, setComponent } from '@latticexyz/recs'
-import { Color, Text } from '@/generated/graphql';
+import { Color, Text } from '@/generated/graphql.ts';
 import _ from 'lodash'
 
 const useEntities = () => {
@@ -15,7 +15,8 @@ const useEntities = () => {
     }
   } = useDojo()
   return useQuery(
-    ['entities'],
+    // /offset-x, offset-y as qury key
+    ['entities' ],
     async () => {
       const { data } = await graphSdk.getEntities()
       if (!data || !data?.entities?.edges || ! data?.entities?.edges) return { entities: { edges: [] } }

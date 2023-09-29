@@ -68,3 +68,10 @@ export type MainLayoutType = {
   currentPage:  number
   setCurrentPage:   React.Dispatch<React.SetStateAction<number>>
 }
+
+export type DrawPanelProps = {
+  // startingCoordinates?: { x: number, y: number },
+  // dataToRender?: { type: 'snake' | 'color' }[],
+  // onCreateColor?: (x, y, rgb) => void,
+  zoom: number
+}
