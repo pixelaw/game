@@ -5,8 +5,6 @@ import {useMainLayout} from "@/components/layouts/MainLayout";
 import {Active_Page} from "@/global/types";
 import LobbyMap from '@/components/LobbyMap'
 
-
-
 export default function LobbyScreen() {
     const {setCurrentPage, setHasNavbar, setHasBackgroundImage, setHasBackgroundOverlay} = useMainLayout()
 
