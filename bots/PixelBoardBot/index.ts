@@ -2,8 +2,12 @@
 import createBoard from './createBoard'
 import createDefaultPixels from './createDefaultPixels'
 import getState from './getState'
-import uploadBoard from './uploadBoard'
 import getEnv from '../utils/getEnv'
+import writeBoard from './writeBoard'
+
+const BOARD_PATH_FILE = getEnv<string>(
+  'BOARD_PATH_FILE', '../web/public/assets/placeholder/pixel-state.png'
+)
 
 // Configuration object for the canvas and pixel size, and refresh rate
 const pixelBoardConfig = {
@@ -26,7 +30,8 @@ async function mainLoop() {
   try {
     const pixelState = await getState()
     const board = createBoard(pixelState, pixelBoardConfig, defaultPixelState)
-    await uploadBoard(board)
+    console.info('[PIXEL_BOARD_BOT]', 'writing board')
+    writeBoard(board, BOARD_PATH_FILE)
   } catch (error) {
     console.error("Error with PixelBoardBot", error)
   }

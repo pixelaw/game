@@ -5,7 +5,7 @@ import {Button} from "@/components/ui/button";
 import {useMainLayout} from "@/components/layouts/MainLayout";
 import {Active_Page} from "@/global/types";
 
-const PIXEL_STATE_SRC = import.meta.env.VITE_PIXEL_STATE_SRC ?? '/assets/placeholder/pixel-state.png'
+const PIXEL_STATE_SRC = '/assets/placeholder/pixel-state.png'
 
 export default function LobbyScreen() {
     const {setCurrentPage, setHasNavbar, setHasBackgroundImage, setHasBackgroundOverlay} = useMainLayout()

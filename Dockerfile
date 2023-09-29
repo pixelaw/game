@@ -14,7 +14,6 @@ COPY /bots/package.json ./package.json
 COPY /bots/yarn.lock ./yarn.lock
 
 # Install dependencies
-#RUN apk add --update --no-cache python3 make g++
 RUN yarn install --frozen-lockfile
 
 # Now copy all the sources so we can compile
@@ -45,6 +44,7 @@ COPY ./contracts/Scarb.toml contracts/Scarb.toml
 COPY ./contracts/scripts contracts/scripts
 
 COPY ./bots/ ./bots/
+COPY ./bots/.env.production ./bots/.env
 COPY --from=bots_node_deps /app/node_modules ./bots/node_modules
 
 COPY ./startup.sh ./startup.sh
