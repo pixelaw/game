@@ -30,4 +30,4 @@ export const GET_ENTITIES = gql`query getEntities {
 }
 `;
 
-export const DEFAULT_COLOR = hexToRGB(getEnv<string>('DEFAULT_PIXEL_COLOR', "#000000"))
+export const DEFAULT_COLOR = hexToRGB(getEnv<string>('DEFAULT_PIXEL_COLOR', "#2f1643"))
