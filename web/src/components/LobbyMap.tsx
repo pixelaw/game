@@ -21,7 +21,7 @@ type VisitableSectionProps = {
 const VisitableSection: React.FC<VisitableSectionProps> = ({ src, onClick }) => {
   return (
     <Image
-      className={cn(['cursor-pointer'])}
+      className={cn(['cursor-pointer hover:border-brand-skyblue hover:border'])}
       width={CANVAS_WIDTH}
       height={CANVAS_HEIGHT}
       src={src}
@@ -34,7 +34,7 @@ const VisitableSection: React.FC<VisitableSectionProps> = ({ src, onClick }) => 
 const NonVisitableSection = () => {
   return (
     <Image
-      className={cn(['cursor-not-allowed'])}
+      className={cn(['cursor-not-allowed opacity-75'])}
       width={CANVAS_WIDTH}
       height={CANVAS_HEIGHT}
       src={'/assets/placeholder/default-pixel-state.png'}
@@ -69,7 +69,7 @@ const LobbyMap: React.FC<PropsType> = ({ onMapClick, visitable = MAX_MAPS }) => 
   }
 
   return (
-    <div className={"columns-5 p-0"}>
+    <div className={"grid grid-cols-5 gap-[0.75px]"}>
       {renderMap()}
     </div>
   )
