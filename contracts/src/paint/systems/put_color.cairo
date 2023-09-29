@@ -30,13 +30,24 @@ mod put_color_system {
             color_count,
             color
         ) = get !(ctx.world, (position.x, position.y).into(), (PixelType, Timestamp, Owner, ColorCount, Color));
-        assert(pixel_type.name == 'paint', 'PixelType is not paint!');
 
+      if owner.address == 0 {
+        let mut calldata = ArrayTrait::new();
+        position.serialize(ref calldata);
+        calldata.append('paint');
+        calldata.append(1);
+        calldata.append('paint');
+        ctx.world.execute('spawn_pixel_system'.into(), calldata);
+      } else {
+        // only check pixel type if pixel has already been spawned
+        assert(pixel_type.name == 'paint', 'PixelType is not paint!');
+      }
 
         // Check if 5 seconds have passed or if the sender is the owner
         assert(
-            (owner.address) == ctx.origin.into() || starknet::get_block_timestamp()
-                - timestamp.updated_at < 5,
+            owner.address == 0 ||
+            (owner.address) == ctx.origin.into() ||
+              starknet::get_block_timestamp() - timestamp.updated_at < 5,
             'Cooldown not over'
         );
 
