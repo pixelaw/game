@@ -169,7 +169,7 @@ export type ComponentEdge = {
   node?: Maybe<Component>;
 };
 
-export type ComponentUnion = Color | ColorCount | Game | Owner | Permission | PixelType | Player | Text | Timestamp;
+export type ComponentUnion = Color | ColorCount | Game | NeedsAttention | Owner | Permission | PixelType | Player | Text | Timestamp;
 
 export enum Direction {
   Asc = 'ASC',
@@ -330,6 +330,58 @@ export type GameWhereInput = {
   winnerLT?: InputMaybe<Scalars['Int']['input']>;
   winnerLTE?: InputMaybe<Scalars['Int']['input']>;
   winnerNEQ?: InputMaybe<Scalars['Int']['input']>;
+  x?: InputMaybe<Scalars['Int']['input']>;
+  xGT?: InputMaybe<Scalars['Int']['input']>;
+  xGTE?: InputMaybe<Scalars['Int']['input']>;
+  xLT?: InputMaybe<Scalars['Int']['input']>;
+  xLTE?: InputMaybe<Scalars['Int']['input']>;
+  xNEQ?: InputMaybe<Scalars['Int']['input']>;
+  y?: InputMaybe<Scalars['Int']['input']>;
+  yGT?: InputMaybe<Scalars['Int']['input']>;
+  yGTE?: InputMaybe<Scalars['Int']['input']>;
+  yLT?: InputMaybe<Scalars['Int']['input']>;
+  yLTE?: InputMaybe<Scalars['Int']['input']>;
+  yNEQ?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type NeedsAttention = {
+  __typename?: 'NeedsAttention';
+  entity?: Maybe<Entity>;
+  value?: Maybe<Scalars['bool']['output']>;
+  x?: Maybe<Scalars['u64']['output']>;
+  y?: Maybe<Scalars['u64']['output']>;
+};
+
+export type NeedsAttentionConnection = {
+  __typename?: 'NeedsAttentionConnection';
+  edges?: Maybe<Array<Maybe<NeedsAttentionEdge>>>;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type NeedsAttentionEdge = {
+  __typename?: 'NeedsAttentionEdge';
+  cursor: Scalars['Cursor']['output'];
+  node?: Maybe<NeedsAttention>;
+};
+
+export type NeedsAttentionOrder = {
+  direction: Direction;
+  field: NeedsAttentionOrderOrderField;
+};
+
+export enum NeedsAttentionOrderOrderField {
+  Value = 'VALUE',
+  X = 'X',
+  Y = 'Y'
+}
+
+export type NeedsAttentionWhereInput = {
+  value?: InputMaybe<Scalars['Int']['input']>;
+  valueGT?: InputMaybe<Scalars['Int']['input']>;
+  valueGTE?: InputMaybe<Scalars['Int']['input']>;
+  valueLT?: InputMaybe<Scalars['Int']['input']>;
+  valueLTE?: InputMaybe<Scalars['Int']['input']>;
+  valueNEQ?: InputMaybe<Scalars['Int']['input']>;
   x?: InputMaybe<Scalars['Int']['input']>;
   xGT?: InputMaybe<Scalars['Int']['input']>;
   xGTE?: InputMaybe<Scalars['Int']['input']>;
@@ -563,6 +615,7 @@ export type Query = {
   event: Event;
   events?: Maybe<EventConnection>;
   gameComponents?: Maybe<GameConnection>;
+  needsattentionComponents?: Maybe<NeedsAttentionConnection>;
   ownerComponents?: Maybe<OwnerConnection>;
   permissionComponents?: Maybe<PermissionConnection>;
   pixeltypeComponents?: Maybe<PixelTypeConnection>;
@@ -627,6 +680,16 @@ export type QueryGameComponentsArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   order?: InputMaybe<GameOrder>;
   where?: InputMaybe<GameWhereInput>;
+};
+
+
+export type QueryNeedsattentionComponentsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  order?: InputMaybe<NeedsAttentionOrder>;
+  where?: InputMaybe<NeedsAttentionWhereInput>;
 };
 
 
@@ -864,7 +927,7 @@ export type TimestampWhereInput = {
 export type GetEntitiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?: 'EntityConnection', edges?: Array<{ __typename?: 'EntityEdge', node?: { __typename?: 'Entity', keys?: Array<string | null> | null, components?: Array<{ __typename: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null } | { __typename: 'ColorCount', x?: any | null, y?: any | null, count?: any | null } | { __typename?: 'Game' } | { __typename: 'Owner', x?: any | null, y?: any | null, address?: any | null } | { __typename?: 'Permission' } | { __typename: 'PixelType', x?: any | null, y?: any | null, name?: any | null } | { __typename?: 'Player' } | { __typename?: 'Text', x?: any | null, y?: any | null, string?: any | null } | { __typename: 'Timestamp', x?: any | null, y?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null } | null> | null } | null };
+export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?: 'EntityConnection', edges?: Array<{ __typename?: 'EntityEdge', node?: { __typename?: 'Entity', keys?: Array<string | null> | null, components?: Array<{ __typename: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null } | { __typename: 'ColorCount', x?: any | null, y?: any | null, count?: any | null } | { __typename?: 'Game' } | { __typename: 'NeedsAttention', x?: any | null, y?: any | null, value?: any | null } | { __typename: 'Owner', x?: any | null, y?: any | null, address?: any | null } | { __typename?: 'Permission' } | { __typename: 'PixelType', x?: any | null, y?: any | null, name?: any | null } | { __typename?: 'Player' } | { __typename?: 'Text', x?: any | null, y?: any | null, string?: any | null } | { __typename: 'Timestamp', x?: any | null, y?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null } | null> | null } | null };
 
 
 export const GetEntitiesDocument = gql`
@@ -910,6 +973,12 @@ export const GetEntitiesDocument = gql`
             x
             y
             count
+            __typename
+          }
+          ... on NeedsAttention {
+            x
+            y
+            value
             __typename
           }
         }

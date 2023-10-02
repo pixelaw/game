@@ -2,9 +2,60 @@ import React from "react";
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import Image from "@/components/ui/Image"
+import { useComponentValue, useEntityQuery } from '@dojoengine/react'
+import { useDojo } from '@/DojoContext'
+import { EntityIndex, HasValue } from '@latticexyz/recs'
+import { felt252ToString } from '@/global/utils'
+
+const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
+  const {
+    setup: {
+      components: { PixelType },
+    },
+  } = useDojo()
+
+  const pixelType = useComponentValue(PixelType, entityIndex)
+  const name = felt252ToString(pixelType?.name ?? 'Unknown')
+
+  // TODO: add focus on Notif click...coordinates is inside pixelType
+
+  return (
+    <div
+      className={cn(
+        [
+          'flex items-center'
+        ])}
+    >
+      <div className={cn(['w-[20px] grow-0'])}>
+        <div className={cn(['h-2 w-2 rounded-full bg-brand-danger'])}/>
+      </div>
+      <div className={cn(['grow'])}>
+        <h2 className={cn(['text-white text-left text-sm font-semibold'])}>{name} pixel needs your attention</h2>
+      </div>
+      <Button
+        variant={'icon'}
+        size={'icon'}
+        className={cn(['w-[20px] grow-0 font-emoji text-xl text-brand-skyblue'])}
+      >
+        &#x1f50d;
+      </Button>
+    </div>
+  )
+}
 
 export default function Notification() {
     const [isOpen, setIsOpen] = React.useState<boolean>(false)
+
+  const {
+    setup: {
+      components: { NeedsAttention, Owner },
+    },
+    account: { account }
+  } = useDojo()
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const notifs = useEntityQuery([HasValue(NeedsAttention, { value: true }), HasValue(Owner, { address: account.address })])
 
     return (
         <>
@@ -64,27 +115,10 @@ export default function Notification() {
                         </Button>
                     </div>
 
-                    {/*TODO add loop of notifications*/}
-                    <div
-                        className={cn(
-                            [
-                                'flex items-center'
-                            ])}
-                    >
-                        <div className={cn(['w-[20px] grow-0'])}>
-                            <div className={cn(['h-2 w-2 rounded-full bg-brand-danger'])}/>
-                        </div>
-                        <div className={cn(['grow'])}>
-                            <h2 className={cn(['text-white text-left text-sm font-semibold'])}>Reveal RPS</h2>
-                        </div>
-                        <Button
-                            variant={'icon'}
-                            size={'icon'}
-                            className={cn(['w-[20px] grow-0 font-emoji text-xl text-brand-skyblue'])}
-                        >
-                            &#x1f50d;
-                        </Button>
-                    </div>
+                    {notifs.map(notif => (
+                      <Notif entityIndex={notif} key={notif} />
+                    ))}
+
 
 
                 </div>
