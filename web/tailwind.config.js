@@ -137,6 +137,9 @@ module.exports = {
         "slide-left": "slide-left 0.3s linear forwards",
         "slide-right": "slide-right 0.3s linear forwards"
       },
+      boxShadow: {
+        glow: '0 0 10px 0 rgba(255, 255, 255, 1)',
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],

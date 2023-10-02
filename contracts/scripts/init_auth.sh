@@ -7,7 +7,7 @@ export PRIVATE_KEY=$2;
 export ACCOUNT_ADDRESS=$3;
 
 # make sure all components/systems are deployed
-COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player")
+COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player" "NeedsAttention")
 # TODO remove remove_color_system
 SYSTEMS=("spawn_pixel_system" "update_color_system" "update_owner_system" "update_text_system" "update_type_system" "put_color_system" "remove_color_system" "play_rps_system" "commit" "create" "reset" "reveal" "process_queue_system" "schedule_queue_system")
 
