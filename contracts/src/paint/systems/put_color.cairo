@@ -14,6 +14,7 @@ mod put_color_system {
     use pixelaw::components::owner::Owner;
     use pixelaw::components::timestamp::Timestamp;
     use pixelaw::components::pixel_type::PixelType;
+    use pixelaw::components::needs_attention::NeedsAttention;
 
     fn execute(
         ctx: Context,
@@ -28,8 +29,9 @@ mod put_color_system {
             timestamp,
             owner,
             color_count,
-            color
-        ) = get !(ctx.world, (position.x, position.y).into(), (PixelType, Timestamp, Owner, ColorCount, Color));
+            color,
+            needs_attention
+        ) = get !(ctx.world, (position.x, position.y).into(), (PixelType, Timestamp, Owner, ColorCount, Color, NeedsAttention));
 
       if owner.address == 0 {
         let mut calldata = ArrayTrait::new();
@@ -67,6 +69,10 @@ mod put_color_system {
             color_count.count += 1;
             // Update the color count
             set !(ctx.world, (color_count));
+        }
+
+        if needs_attention.value {
+          set!(ctx.world, NeedsAttention { x: position.x, y: position.y, value: false })
         }
 
         // TODO: remove me later

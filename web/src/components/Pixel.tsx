@@ -9,6 +9,7 @@ import usePaint from "../hooks/systems/usePaint";
 import { useDojo } from '@/DojoContext'
 import { useComponentValue } from '@dojoengine/react'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
+import { clsx } from 'clsx'
 
 interface PixelProps {
     index: number;
@@ -33,8 +34,9 @@ export default function Pixel( {position}: PixelProps){
 
     const {
       setup: {
-        components: { Color },
-      }
+        components: { Color, NeedsAttention, Owner },
+      },
+      account: { account }
     } = useDojo()
 
     const keys = position.map(p => BigInt(p))
@@ -42,6 +44,8 @@ export default function Pixel( {position}: PixelProps){
 
     const color = useComponentValue(Color, entityId)
     // const text = useComponentValue(Text, entityId)
+    const needsAttention = useComponentValue(NeedsAttention, entityId)
+    const owner = useComponentValue(Owner, entityId)
 
     const selectedColor = useAtomValue(colorAtom)
     const selectedUnicode = useAtomValue(unicodeAtom)
@@ -53,6 +57,12 @@ export default function Pixel( {position}: PixelProps){
     const hexColor = color ? rgbToHex(color.r, color.g, color.b) : undefined
 
     const [pixelData, setPixelData] = useState(initialData);
+
+  // the generateComponent.cjs makes the address into a number thereby causing this typing issue
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const isGlow = (owner?.address === account?.address) && !!needsAttention?.value
+
 
     React.useEffect(() => {
         if (!hexColor) {
@@ -104,7 +114,12 @@ export default function Pixel( {position}: PixelProps){
       <button
           disabled={gameMode === 'none'}
           style={{backgroundColor: pixelData.color, margin: '0rem', border: '0.5px solid #2E0A3E'}}
-          className='disabled:cursor-not-allowed text-white h-[64px] w-[64px] transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110 flex justify-center items-center'
+          className={
+            clsx([
+              'disabled:cursor-not-allowed text-white h-[64px] w-[64px] transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110 flex justify-center items-center',
+              { 'shadow-glow': isGlow }
+            ])
+          }
           onClick={() => {
             handleClick()
         }}

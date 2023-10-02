@@ -73,3 +73,11 @@ export async function streamToString(readableStream: ReadableStream) {
     reader.releaseLock();
   }
 }
+
+// TODO: replace this with actual parser
+export const felt252ToString = (felt252: string | number) => {
+  switch (felt252) {
+    case  '0x7061696e74': return 'Paint'
+    default: return felt252
+  }
+}

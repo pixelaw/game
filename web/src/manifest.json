@@ -1698,7 +1698,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x5d542f0568ab8576bfba507ea76dfb97d30a41d9047b9456c5b9e39ce86eb58",
+      "class_hash": "0x41dd85af67de4a7ac05aca30545ca964d3d7273ef086b1fd1dfa6b9ba1ff8a",
       "dependencies": [],
       "abi": [
         {
@@ -1825,7 +1825,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x5c6c131118ffc35b909b8c6636e34571efd33f7f506641aaf3404f6a8783bb8",
+      "class_hash": "0x769dff752c10c8ff49429e099dbbc8c307e54d9e1ea6affe8fb39c83cea1b3",
       "dependencies": [],
       "abi": [
         {
@@ -3057,6 +3057,82 @@
         {
           "type": "event",
           "name": "pixelaw::components::pixel_type::pixel_type::Event",
+          "kind": "enum",
+          "variants": []
+        }
+      ]
+    },
+    {
+      "name": "NeedsAttention",
+      "members": [
+        {
+          "name": "x",
+          "type": "u64",
+          "key": true
+        },
+        {
+          "name": "y",
+          "type": "u64",
+          "key": true
+        },
+        {
+          "name": "value",
+          "type": "bool",
+          "key": false
+        }
+      ],
+      "class_hash": "0xc819fdcb505b90e3e4b7d1402832be885c8d1f9c93d98a199751cea503f29",
+      "abi": [
+        {
+          "type": "function",
+          "name": "name",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::felt252"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "schema",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::array::Array::<(core::felt252, core::felt252, core::bool)>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::components::needs_attention::needs_attention::Event",
           "kind": "enum",
           "variants": []
         }
