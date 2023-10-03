@@ -1,6 +1,6 @@
-import React from "react";
+import React, { SetStateAction } from 'react'
 
-import {PAPER, ROCK, SCISSORS} from "./constants";
+import { PAPER, ROCK, SCISSORS } from './constants'
 
 export type OptionType = typeof ROCK | typeof PAPER | typeof SCISSORS
 
@@ -69,9 +69,3 @@ export type MainLayoutType = {
   setCurrentPage:   React.Dispatch<React.SetStateAction<number>>
 }
 
-export type DrawPanelProps = {
-  // startingCoordinates?: { x: number, y: number },
-  // dataToRender?: { type: 'snake' | 'color' }[],
-  // onCreateColor?: (x, y, rgb) => void,
-  zoom: number
-}

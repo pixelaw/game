@@ -47,3 +47,32 @@ query getEntities {
     }
   }
 }
+
+query all_filtered_entities($xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int){
+  colorComponents(where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
+    edges {
+      node {
+        x
+        y
+        r
+        g
+        b
+        entity {
+          id
+        }
+      }
+    }
+  }
+  ownerComponents(where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
+    edges {
+      node {
+        x
+        y
+        address
+        entity {
+          id
+        }
+      }
+    }
+  }
+}

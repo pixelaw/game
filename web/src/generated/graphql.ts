@@ -1,6 +1,4 @@
 import { GraphQLClient } from 'graphql-request';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';
 import { print } from 'graphql'
 import gql from 'graphql-tag';
@@ -866,6 +864,16 @@ export type GetEntitiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?: 'EntityConnection', edges?: Array<{ __typename?: 'EntityEdge', node?: { __typename?: 'Entity', keys?: Array<string | null> | null, components?: Array<{ __typename: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null } | { __typename: 'ColorCount', x?: any | null, y?: any | null, count?: any | null } | { __typename?: 'Game' } | { __typename: 'Owner', x?: any | null, y?: any | null, address?: any | null } | { __typename?: 'Permission' } | { __typename: 'PixelType', x?: any | null, y?: any | null, name?: any | null } | { __typename?: 'Player' } | { __typename?: 'Text', x?: any | null, y?: any | null, string?: any | null } | { __typename: 'Timestamp', x?: any | null, y?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null } | null> | null } | null };
 
+export type All_Filtered_EntitiesQueryVariables = Exact<{
+  xMin?: InputMaybe<Scalars['Int']['input']>;
+  xMax?: InputMaybe<Scalars['Int']['input']>;
+  yMin?: InputMaybe<Scalars['Int']['input']>;
+  yMax?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type All_Filtered_EntitiesQuery = { __typename?: 'Query', colorComponents?: { __typename?: 'ColorConnection', edges?: Array<{ __typename?: 'ColorEdge', node?: { __typename?: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, ownerComponents?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null };
+
 
 export const GetEntitiesDocument = gql`
     query getEntities {
@@ -918,18 +926,50 @@ export const GetEntitiesDocument = gql`
   }
 }
     `;
+export const All_Filtered_EntitiesDocument = gql`
+    query all_filtered_entities($xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int) {
+  colorComponents(where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
+    edges {
+      node {
+        x
+        y
+        r
+        g
+        b
+        entity {
+          id
+        }
+      }
+    }
+  }
+  ownerComponents(where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
+    edges {
+      node {
+        x
+        y
+        address
+        entity {
+          id
+        }
+      }
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string) => Promise<T>;
 
 
 const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType) => action();
 const GetEntitiesDocumentString = print(GetEntitiesDocument);
+const All_Filtered_EntitiesDocumentString = print(All_Filtered_EntitiesDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetEntitiesQuery>(GetEntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getEntities', 'query');
+    },
+    all_filtered_entities(variables?: All_Filtered_EntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: All_Filtered_EntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<All_Filtered_EntitiesQuery>(All_Filtered_EntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'all_filtered_entities', 'query');
     }
   };
 }

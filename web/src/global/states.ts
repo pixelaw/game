@@ -1,7 +1,7 @@
 import {atom} from "jotai";
 import {hexToRgb} from "./utils";
 
-export const colorAtom = atom(undefined)
+export const colorAtom = atom('#FFFFFF')
 export const rgbColorAtom = atom(
   (get) => {
     if(colorAtom) return
