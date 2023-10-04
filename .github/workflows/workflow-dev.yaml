@@ -1,0 +1,101 @@
+name: Docker build and deploy to argoCD
+on:
+  push:
+    branches:
+      - dev
+    tags:
+      - '*'
+
+env:
+  PROJECTNAME: pixelaw
+  REGISTRY: ${{ vars.DOCKERHUB_USERNAME}}
+  VERSION: ${{github.ref_name}}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_and_push:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}- 
+
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME}}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+      - name: Build, tag, and push image
+        id: build-image
+        run: |
+          docker build -t $REGISTRY/$PROJECTNAME-dev:${VERSION} -t $REGISTRY/$PROJECTNAME-dev:latest  .
+          docker push $REGISTRY/$PROJECTNAME-dev:latest
+          docker push $REGISTRY/$PROJECTNAME-dev:${VERSION}
+
+      - name: Deploy to ArgoCD
+        id: deploy-image
+        run: |
+          export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
+          export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
+          wget https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64 -O argocd
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin
+
+          argocd app create $PROJECTNAME-dev --repo https://oostvoort.github.io/dojo-rockpaperscissors/ --path chart/  --revision ${VERSION:1} --helm-chart chart/$PROJECTNAME --dest-namespace default --dest-server https://kubernetes.default.svc --values values-dev.yaml --helm-set-string dockerImage=oostvoort/dojorps-dev:${VERSION} --upsert
+          argocd app sync $PROJECTNAME-dev
+          argocd app wait $PROJECTNAME-dev
+
+
+  helmRelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.8.1
+
+      - name: custom packaging
+        run: |
+          rm -rf .cr-release-packages
+          mkdir -p .cr-release-packages
+          helm package chart/$PROJECTNAME --app-version=${VERSION:1} --version=${VERSION:1} --destination=.cr-release-packages
+
+      - name: Run chart-releaser
+        # switch back to helm/chart-releaser-action if this contribution is ever mergedd
+        uses: askcloudarchitech/chart-releaser-action@skip-packaging-option
+        with:
+          skip_packaging: true
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
