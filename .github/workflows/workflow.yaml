@@ -1,10 +1,8 @@
 name: Docker build and deploy to argoCD
 on:
   push:
-    branches:
-      - dev
     tags:
-      - '*'
+      - "*"
 
 env:
   PROJECTNAME: pixelaw
@@ -17,7 +15,6 @@ defaults:
 
 jobs:
   build_and_push:
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -63,7 +60,7 @@ jobs:
           chmod +x argocd
           sudo mv argocd /usr/local/bin
 
-          argocd app create $PROJECTNAME-dev --repo https://oostvoort.github.io/dojo-rockpaperscissors/ --path chart/  --revision ${VERSION:1} --helm-chart chart/$PROJECTNAME --dest-namespace default --dest-server https://kubernetes.default.svc --values values-dev.yaml --helm-set-string dockerImage=oostvoort/dojorps-dev:${VERSION} --upsert
+          argocd app create $PROJECTNAME-dev --repo https://pixelaw.github.io/game/ --path chart/  --revision ${VERSION:1} --helm-chart chart/$PROJECTNAME --dest-namespace default --dest-server https://kubernetes.default.svc --values values-dev.yaml --helm-set-string dockerImage=oostvoort/dojorps-dev:${VERSION} --upsert
           argocd app sync $PROJECTNAME-dev
           argocd app wait $PROJECTNAME-dev
 
