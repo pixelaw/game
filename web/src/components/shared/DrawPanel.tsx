@@ -3,6 +3,10 @@ import { clsx } from 'clsx'
 import { useRenderGrid } from '@/hooks/useRenderGrid'
 import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_ROWS_COLS } from '@/global/constants'
 
+type Coordinate = [ number, number ]
+
+type VisibleCoordinates = Coordinate[]
+
 type DrawPanelProps = {
   gameMode: 'none' | 'paint' | 'rps' | 'snake',
   selectedColor: string
@@ -12,6 +16,9 @@ type DrawPanelProps = {
   onCellClick?: (position: [ number, number ]) => void,
   coordinates: [ number | undefined, number | undefined ] | undefined
   onPanning?: (isPanning: boolean) => void
+  onVisisbleCoordinateChanged?: (visibleCoordinates: VisibleCoordinates) => void
+  onOffsetChanged?: (offsetCoordinate: Coordinate) => void
+  onVisibleAreaCoordinate?: (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => void
 }
 
 export default function DrawPanel(props: DrawPanelProps) {
@@ -23,6 +30,9 @@ export default function DrawPanel(props: DrawPanelProps) {
     cellSize,
     onCellClick,
     onPanning,
+    onVisisbleCoordinateChanged,
+    onOffsetChanged,
+    onVisibleAreaCoordinate,
   } = props
 
   //moving the canvas
@@ -40,6 +50,19 @@ export default function DrawPanel(props: DrawPanelProps) {
   const visibleAreaXEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_WIDTH - panOffsetX) / cellSize))
   const visibleAreaYEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_HEIGHT - panOffsetY) / cellSize))
 
+  onVisibleAreaCoordinate?.([visibleAreaXStart, visibleAreaYStart], [visibleAreaXEnd, visibleAreaYEnd])
+
+  const visibleCells: VisibleCoordinates = []
+  //visible cells
+  for (let x = visibleAreaXStart; x <= visibleAreaXEnd; x++) {
+    for (let y = visibleAreaYStart; y <= visibleAreaYEnd; y++) {
+      const cell: [ number, number ] = [ x, y ]
+      visibleCells.push(cell)
+    }
+  }
+
+  onVisisbleCoordinateChanged?.(visibleCells)
+
   //render canvas grid
   const renderGrid = useRenderGrid()
 
@@ -51,14 +74,11 @@ export default function DrawPanel(props: DrawPanelProps) {
       const ctx = gridCanvasRef.current.getContext('2d')
       if (!ctx) return
 
-      console.info("coordinates", coordinates);
-
       renderGrid(ctx, {
         width: gridCanvasRef.current.width,
         height: gridCanvasRef.current.height,
         cellSize,
         coordinates,
-
         panOffsetX,
         panOffsetY,
         selectedColor,
@@ -91,14 +111,16 @@ export default function DrawPanel(props: DrawPanelProps) {
     }
   }
 
-  function mouseDown(clientX: number, clientY: number) {
+  function onMouseDown(clientX: number, clientY: number) {
     setPanning(true)
+    onPanning?.(true)
     setStartPanX(clientX - panOffsetX)
     setStartPanY(clientY - panOffsetY)
   }
 
-  function mouseMove(clientX: number, clientY: number) {
+  function onMouseMove(clientX: number, clientY: number) {
     if (!panning) return
+    onOffsetChanged?.([ clientX - startPanX, clientY - startPanY ])
     setPanOffsetX(clientX - startPanX)
     setPanOffsetY(clientY - startPanY)
   }
@@ -120,10 +142,16 @@ export default function DrawPanel(props: DrawPanelProps) {
                   onClick={(event) => {
                     onClickCoordinates(event.clientX, event.clientY)
                   }}
-                  onMouseDown={(event) => mouseDown(event.clientX, event.clientY)}
-                  onMouseMove={(event) => mouseMove(event.clientX, event.clientY)}
-                  onMouseUp={() => setPanning(false)}
-                  onMouseLeave={() => setPanning(false)}
+                  onMouseDown={(event) => onMouseDown(event.clientX, event.clientY)}
+                  onMouseMove={(event) => onMouseMove(event.clientX, event.clientY)}
+                  onMouseUp={() => {
+                    onPanning?.(false)
+                    setPanning(false)
+                  }}
+                  onMouseLeave={() => {
+                    onPanning?.(false)
+                    setPanning(false)
+                  }}
           />
         </div>
       </div>

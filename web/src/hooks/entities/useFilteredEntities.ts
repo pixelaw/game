@@ -4,7 +4,12 @@ import { setComponent } from '@latticexyz/recs'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
 import { BLOCK_TIME } from '@/global/constants.ts'
 
-export function useFilteredEntities() {
+export function useFilteredEntities(
+  xMin: number,
+  xMax: number,
+  yMin: number,
+  yMax: number,
+) {
   const {
     setup: {
       components: {
@@ -17,7 +22,7 @@ export function useFilteredEntities() {
   return useQuery({
     queryKey: [ 'filteredEntities' ],
     queryFn: async () => {
-      const { data } = await graphSdk.all_filtered_entities({ xMin: 0, xMax: 20, yMin: 0, yMax: 20 })
+      const { data } = await graphSdk.all_filtered_entities({ xMin, xMax, yMin, yMax })
       if (!data || !data.colorComponents?.edges) return { colorComponents: { edges: [] } }
       for (const edge of data.colorComponents.edges) {
         if (!edge || !edge.node) return

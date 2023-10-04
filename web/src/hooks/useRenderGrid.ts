@@ -32,7 +32,6 @@ export function useRenderGrid() {
 
     for (let r = visibleAreaXStart; r <= visibleAreaXEnd; r++) {
       for (let c = visibleAreaYStart; c <= visibleAreaYEnd; c++) {
-console.info("redraw");
         const x = r * cellSize + panOffsetX
         const y = c * cellSize + panOffsetY
 
