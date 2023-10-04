@@ -997,7 +997,10 @@ export const GetEntitiesDocument = gql`
     `;
 export const All_Filtered_EntitiesDocument = gql`
     query all_filtered_entities($xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int) {
-  colorComponents(where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
+  colorComponents(
+    first: 200
+    where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
+  ) {
     edges {
       node {
         x
@@ -1011,7 +1014,10 @@ export const All_Filtered_EntitiesDocument = gql`
       }
     }
   }
-  ownerComponents(where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
+  ownerComponents(
+    first: 200
+    where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
+  ) {
     edges {
       node {
         x

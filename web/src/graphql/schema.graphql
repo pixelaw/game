@@ -55,7 +55,7 @@ query getEntities {
 }
 
 query all_filtered_entities($xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int){
-  colorComponents(where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
+  colorComponents(first: 200, where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
     edges {
       node {
         x
@@ -69,7 +69,7 @@ query all_filtered_entities($xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int){
       }
     }
   }
-  ownerComponents(where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
+  ownerComponents(first: 200, where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}) {
     edges {
       node {
         x

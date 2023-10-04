@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useDojo } from '@/DojoContext.tsx'
-import { setComponent } from '@latticexyz/recs'
+import { getComponentValue, setComponent } from '@latticexyz/recs'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
 import { BLOCK_TIME } from '@/global/constants.ts'
+import _ from 'lodash'
 
 export function useFilteredEntities(
   xMin: number,
@@ -18,22 +19,25 @@ export function useFilteredEntities(
       network: { graphSdk },
     },
   } = useDojo()
-
+  //0 20 0 8
+  // console.info('params', { xMin, xMax, yMin, yMax })
   return useQuery({
-    queryKey: [ 'filteredEntities' ],
+    queryKey: [ 'filtered-entitities', xMin, xMax, yMin, yMax ],
     queryFn: async () => {
       const { data } = await graphSdk.all_filtered_entities({ xMin, xMax, yMin, yMax })
       if (!data || !data.colorComponents?.edges) return { colorComponents: { edges: [] } }
       for (const edge of data.colorComponents.edges) {
         if (!edge || !edge.node) return
         const { x, y, r, g, b } = edge.node
+        const color = { x, y, r, g, b }
         const entityId = getEntityIdFromKeys([ BigInt(x), BigInt(y) ])
-        setComponent(Color, entityId, { x, y, r, g, b })
+        const currentColor = getComponentValue(Color, entityId)
+        if (!_.isEqual(currentColor, color)) {
+          setComponent(Color, entityId, { x, y, r, g, b })
+        }
       }
 
-      return {
-        data,
-      }
+      return data
     },
     refetchInterval: BLOCK_TIME,
   })

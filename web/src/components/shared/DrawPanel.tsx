@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo, SetStateAction } from 'react'
 import { clsx } from 'clsx'
 import { useRenderGrid } from '@/hooks/useRenderGrid'
 import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_ROWS_COLS } from '@/global/constants'
@@ -7,21 +7,27 @@ type Coordinate = [ number, number ]
 
 type VisibleCoordinates = Coordinate[]
 
+export type CellDatum = {
+  coordinates: Array<number>
+  hexColor: string
+}
+
 type DrawPanelProps = {
   gameMode: 'none' | 'paint' | 'rps' | 'snake',
   selectedColor: string
   onLoadingPixel?: (position: Array<[ number, number ]>) => void,
 
+  queriedData?: Array<CellDatum | undefined> | undefined,
   cellSize: number,
   onCellClick?: (position: [ number, number ]) => void,
   coordinates: [ number | undefined, number | undefined ] | undefined
-  onPanning?: (isPanning: boolean) => void
   onVisisbleCoordinateChanged?: (visibleCoordinates: VisibleCoordinates) => void
   onOffsetChanged?: (offsetCoordinate: Coordinate) => void
   onVisibleAreaCoordinate?: (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => void
+  setOnRender: React.Dispatch<SetStateAction<boolean>>
 }
 
-export default function DrawPanel(props: DrawPanelProps) {
+const DrawPanel = memo((props: DrawPanelProps) => {
   const {
     gameMode,
     selectedColor,
@@ -29,10 +35,10 @@ export default function DrawPanel(props: DrawPanelProps) {
     coordinates,
     cellSize,
     onCellClick,
-    onPanning,
     onVisisbleCoordinateChanged,
-    onOffsetChanged,
     onVisibleAreaCoordinate,
+    queriedData,
+    setOnRender,
   } = props
 
   //moving the canvas
@@ -50,7 +56,8 @@ export default function DrawPanel(props: DrawPanelProps) {
   const visibleAreaXEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_WIDTH - panOffsetX) / cellSize))
   const visibleAreaYEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_HEIGHT - panOffsetY) / cellSize))
 
-  onVisibleAreaCoordinate?.([visibleAreaXStart, visibleAreaYStart], [visibleAreaXEnd, visibleAreaYEnd])
+  // Add a new state for storing the mousedown time
+  const [ mouseDownTime, setMouseDownTime ] = React.useState<number>(0)
 
   const visibleCells: VisibleCoordinates = []
   //visible cells
@@ -61,13 +68,19 @@ export default function DrawPanel(props: DrawPanelProps) {
     }
   }
 
-  onVisisbleCoordinateChanged?.(visibleCells)
-
   //render canvas grid
   const renderGrid = useRenderGrid()
 
   //canvas ref
   const gridCanvasRef = React.useRef<HTMLCanvasElement>()
+
+  //It should be run one time only
+  React.useEffect(() => {
+    if (gameMode !== 'paint') return
+    onVisisbleCoordinateChanged?.(visibleCells)
+    onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
+    setOnRender(false)
+  }, [])
 
   React.useEffect(() => {
     if (gridCanvasRef.current) {
@@ -86,9 +99,11 @@ export default function DrawPanel(props: DrawPanelProps) {
         visibleAreaXEnd,
         visibleAreaYStart,
         visibleAreaYEnd,
+        pixels: queriedData,
       })
     }
-  }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedColor ])
+  }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedColor, queriedData ])
+
 
   function onClickCoordinates(clientX: number, clientY: number) {
     if (!gridCanvasRef.current) return
@@ -111,16 +126,34 @@ export default function DrawPanel(props: DrawPanelProps) {
     }
   }
 
+  function onMouseLeave() {
+    setPanning(false)
+    onVisisbleCoordinateChanged?.(visibleCells)
+    onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
+  }
+
+  function onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+    setPanning(false)
+    onVisisbleCoordinateChanged?.(visibleCells)
+    onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
+
+    // If the time difference between mouse down and up is less than a threshold (e.g., 200ms), it's a click
+    if (Date.now() - mouseDownTime < 200) {
+      onClickCoordinates(event.clientX, event.clientY)
+    }
+  }
+
   function onMouseDown(clientX: number, clientY: number) {
     setPanning(true)
-    onPanning?.(true)
     setStartPanX(clientX - panOffsetX)
     setStartPanY(clientY - panOffsetY)
+
+    // Record the current time when mouse is down
+    setMouseDownTime(Date.now())
   }
 
   function onMouseMove(clientX: number, clientY: number) {
     if (!panning) return
-    onOffsetChanged?.([ clientX - startPanX, clientY - startPanY ])
     setPanOffsetX(clientX - startPanX)
     setPanOffsetY(clientY - startPanY)
   }
@@ -139,22 +172,21 @@ export default function DrawPanel(props: DrawPanelProps) {
                   width={CANVAS_WIDTH}
                   height={CANVAS_HEIGHT}
                   className={clsx([ 'cursor-pointer', { 'cursor-grab': panning } ])}
-                  onClick={(event) => {
-                    onClickCoordinates(event.clientX, event.clientY)
-                  }}
+            // onClick={(event) => {
+            //   onClickCoordinates(event.clientX, event.clientY)
+            // }}
                   onMouseDown={(event) => onMouseDown(event.clientX, event.clientY)}
                   onMouseMove={(event) => onMouseMove(event.clientX, event.clientY)}
-                  onMouseUp={() => {
-                    onPanning?.(false)
-                    setPanning(false)
-                  }}
-                  onMouseLeave={() => {
-                    onPanning?.(false)
-                    setPanning(false)
-                  }}
+                  onMouseUp={(event) => onMouseUp(event)}
+                  onMouseLeave={onMouseLeave}
           />
         </div>
       </div>
     </React.Fragment>
   )
-}
+}, (prevProps, nextProps) => {
+  return prevProps.cellSize === nextProps.cellSize
+
+})
+
+export default DrawPanel

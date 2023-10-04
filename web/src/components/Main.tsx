@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDojo } from '@/DojoContext'
 import Plugin from '@/components/Plugin'
-import { hexToRgb } from '@/global/utils'
+import { hexToRgb, rgbToHex } from '@/global/utils'
 import { CompactPicker } from 'react-color'
 import { useAtom, useAtomValue } from 'jotai'
 import { EXECUTION_STATUS, MAX_CELL_SIZE } from '@/global/constants'
@@ -16,6 +16,29 @@ type Account = {
   address: string,
   active: boolean
 }
+
+// type FilteredComponentsPorps = {
+//   xMin: number,
+//   xMax: number,
+//   yMin: number,
+//   yMax: number,
+// }
+// const FilteredComponents = (
+//   {
+//     xMin,
+//     xMax,
+//     yMin,
+//     yMax,
+//   }: FilteredComponentsPorps,
+// ) => {
+//   useFilteredEntities(
+//     xMin,
+//     xMax,
+//     yMin,
+//     yMax,
+//   )
+//   return <></>
+// }
 
 const Main = () => {
   const {
@@ -53,6 +76,7 @@ const Main = () => {
   const cellSize = MAX_CELL_SIZE * (zoomLevel / 100)
 
   const hexColor = useAtomValue(colorAtom)
+
   const paintCanvas = usePaintCanvas()
   //mode of the game
   const gameMode = useAtomValue(gameModeAtom)
@@ -60,10 +84,11 @@ const Main = () => {
   const [ selectedColor, setColor ] = useAtom(colorAtom)
   //For setting the color of the pixel, getting the x and y coordinates when clicking the pixel
   const [coordinates, setCoordinates] = React.useState<[number | undefined, number | undefined]>()
-  const [ isPanning, setIsPanning ] = React.useState<boolean>(false)
 
   const [ visibleAreaStart, setVisibleAreaStart ] = React.useState<[ number, number ]>([ 0, 0 ])
   const [ visibleAreaEnd, setVisibleAreaEnd ] = React.useState<[ number, number ]>([ 28, 8 ])
+
+  const [onRender, setOnRender] = React.useState<boolean>(true)
 
   useFilteredEntities(
     visibleAreaStart[0],
@@ -88,60 +113,74 @@ const Main = () => {
     select(selectedAccount?.address ?? '')
   }, [setIsLoading, isAlreadySelected, selectedAccount?.address, select, hasAccount])
 
+  const [ coordinatesToQuery, setCoordinatesToQuery ] = React.useState<[ number, number ][]>([])
+
+  const entityIds = coordinatesToQuery.map(visibleCoordinate => {
+    return getEntityIdFromKeys([ BigInt(visibleCoordinate[0]), BigInt(visibleCoordinate[1]) ])
+  })
+
+  const colors = entityIds.map(entityId => {
+    return getComponentValue(Color, entityId)
+  }).filter(data => data !== undefined)
+
+  const formatColors = React.useMemo(() => {
+    return colors.map((color) => {
+      if (!color) return
+      return {
+        coordinates: [ color.x, color.y ],
+        hexColor: rgbToHex(color.r, color.g, color.b),
+      }
+    })
+  }, [ colors ])
+
   return (
       <React.Fragment>
+        {/*<FilteredComponents*/}
+        {/*  xMin={visibleAreaStart[0]}*/}
+        {/*  xMax={visibleAreaEnd[0]}*/}
+        {/*  yMin={visibleAreaStart[1]}*/}
+        {/*  yMax={visibleAreaEnd[1]}*/}
+        {/*  />*/}
           {
               !isLoading ?
                   <>
                       <div className={'m-sm'}>
-                        <DrawPanel
-                          coordinates={coordinates}
-                          cellSize={cellSize}
-                          gameMode={gameMode}
-                          selectedColor={selectedColor}
-                          onPanning={(isPanning) => {
-                            setIsPanning(isPanning)
-                          }}
-                          onVisibleAreaCoordinate={(visibleAreaStart, visibleAreaEnd) => {
-                            if (isPanning) return
-                            const timer = setTimeout(() => {
-                              setVisibleAreaStart(visibleAreaStart) // replace with your value
-                              setVisibleAreaEnd(visibleAreaEnd) // replace with your value
-                            }, 3000)
-
-                            return () => clearTimeout(timer)
-
-                          }}
-                          onVisisbleCoordinateChanged={visibleCoordinates => {
-                            if (!isPanning) {
-                              const entityIds = visibleCoordinates.map(visibleCoordinate => {
-                                return getEntityIdFromKeys([ BigInt(visibleCoordinate[0]), BigInt(visibleCoordinate[1]) ])
+                        <>
+                          <DrawPanel
+                            setOnRender={setOnRender}
+                            queriedData={formatColors}
+                            coordinates={coordinates}
+                            cellSize={cellSize}
+                            gameMode={gameMode}
+                            selectedColor={selectedColor}
+                            onVisibleAreaCoordinate={(visibleAreaStart, visibleAreaEnd) => {
+                              setVisibleAreaStart(visibleAreaStart)
+                              setVisibleAreaEnd(visibleAreaEnd)
+                            }}
+                            onVisisbleCoordinateChanged={visibleCoordinates => {
+                              setCoordinatesToQuery(visibleCoordinates)
+                            }}
+                            onCellClick={(position) => {
+                              setCoordinates([ position[0], position[1] ])
+                              paintCanvas.mutateAsync({
+                                position,
+                                rgbColor: hexToRgb(hexColor) ?? [ 0, 0, 0 ],
                               })
+                                .then((response) => {
+                                  if (response.execution_status === EXECUTION_STATUS.SUCCEEDED) {
+                                    setCoordinates([ undefined, undefined ])
+                                  }
+                                })
+                                .catch(err => {
+                                  console.error('reversing color because of: ', err)
+                                  setCoordinates([ undefined, undefined ])
+                                })
+                            }}
+                          />
+                        </>
 
-                              const colors = entityIds.map(entityId => {
-                                // eslint-disable-next-line react-hooks/rules-of-hooks
-                                return getComponentValue(Color, entityId)
-                              })
 
-                              console.info('colors', colors)
-                            }
-                          }}
-                          onCellClick={(position) => {
-                            setCoordinates([position[0], position[1]])
-                            paintCanvas.mutateAsync({
-                              position,
-                              rgbColor: hexToRgb(hexColor) ?? [ 0, 0, 0 ],
-                            })
-                              .then((response) => {
-                                if (response.execution_status === EXECUTION_STATUS.SUCCEEDED) {
-                                  setCoordinates([undefined, undefined])
-                                }
-                              })
-                              .catch(err => {
-                                console.error(err)
-                              })
-                          }}
-                        />
+                        {/*<PixelBoard/>*/}
 
                           <div className="fixed bottom-5 right-20">
                             <CompactPicker color={selectedColor} onChangeComplete={(color) => setColor(color.hex)} />
@@ -149,6 +188,7 @@ const Main = () => {
                       </div>
 
                       <Plugin/>
+
                   </>
                   :
                   <div className={'fixed top-0 bottom-0 left-0 w-full bg-brand-body z-40 flex-center'}>
@@ -161,4 +201,5 @@ const Main = () => {
   )
 };
 
-export default Main;
+export default Main
+
