@@ -12,6 +12,7 @@ mod remove_color_system {
     use pixelaw::components::position::Position;
     use pixelaw::components::color::Color;
     use pixelaw::components::owner::Owner;
+    use pixelaw::components::needs_attention::NeedsAttention;
     use pixelaw::components::timestamp::Timestamp;
     use pixelaw::components::pixel_type::PixelType;
 
@@ -19,6 +20,8 @@ mod remove_color_system {
         ctx: Context,
         position: Position
     ) {
+
+        let timestamp = get!(ctx.world, (position.x, position.y).into(), (Timestamp));
         // Update the pixel's color and timestamp in the world state at the specified position
         set !(
             ctx.world,
@@ -33,8 +36,14 @@ mod remove_color_system {
                 Timestamp {
                     x: position.x,
                     y: position.y,
-                    created_at: 0, updated_at: 0
+                    created_at: timestamp.created_at,
+                    updated_at: starknet::get_block_timestamp()
                 },
+                NeedsAttention {
+                  x: position.x,
+                  y: position.y,
+                  value: true
+                }
             )
         );
     }

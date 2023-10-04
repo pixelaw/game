@@ -42,6 +42,12 @@ query getEntities {
             count
             __typename
           }
+          ... on NeedsAttention {
+            x
+            y
+            value
+            __typename
+          }
         }
       }
     }

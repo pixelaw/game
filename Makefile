@@ -14,7 +14,7 @@ start_container:
 	docker compose up -d
 
 stop_container:
-	docker compose stop
+	docker compose down
 
 
 

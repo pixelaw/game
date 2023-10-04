@@ -3,20 +3,21 @@ import { useDojo } from '@/DojoContext'
 import { BLOCK_TIME } from '@/global/constants'
 import { convertToDecimal } from '@/global/utils'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
-import { getComponentValue, setComponent } from '@latticexyz/recs'
-import { Color, Text } from '@/generated/graphql.ts';
+import { Component, getComponentValue, setComponent } from '@latticexyz/recs'
 import _ from 'lodash'
 
 const useEntities = () => {
   const {
     setup: {
-      components: { Color, Text },
+      components: { Color, Text, NeedsAttention, Timestamp, Owner, PixelType },
       network: { graphSdk }
     }
   } = useDojo()
+
+  const componentTypes: Component[] = [Color, Text, NeedsAttention, Timestamp, Owner, PixelType]
+
   return useQuery(
-    // /offset-x, offset-y as qury key
-    ['entities' ],
+    ['entities'],
     async () => {
       const { data } = await graphSdk.getEntities()
       if (!data || !data?.entities?.edges || ! data?.entities?.edges) return { entities: { edges: [] } }
@@ -29,20 +30,15 @@ const useEntities = () => {
         // eslint-disable-next-line no-unsafe-optional-chaining
         for (const component of edge?.node?.components) {
           if (!component) continue
-          if (component.__typename === 'Color') {
-            const color = component as Color
-            delete color["__typename"]
-            const currentColor = getComponentValue(Color, entityId)
-            if (!_.isEqual(currentColor, color)) {
-              setComponent(Color, entityId, { x: color.x, y: color.y, r: color.r, g: color.g, b: color.b })
-            }
-          }
-          if (component.__typename === 'Text') {
-            const text = component as Text
-            delete text["__typename"]
-            const currentText = getComponentValue(Text, entityId)
-            if (!_.isEqual(text, currentText)) setComponent(Text, entityId, { x: text.x, y: text.y, string: text.string })
-          }
+          const componentType = componentTypes.find(componentType => componentType.metadata?.name === component?.__typename)
+          if (!componentType) continue
+          delete component["__typename"]
+          const currentValue = getComponentValue(componentType, entityId)
+
+          // do not update if it's already equal
+          if (_.isEqual(componentType, currentValue)) return
+
+          setComponent(componentType, entityId, component)
         }
       }
       return data

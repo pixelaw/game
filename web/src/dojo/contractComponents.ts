@@ -104,6 +104,22 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
+    NeedsAttention: (() => {
+      const name = "NeedsAttention";
+      return defineComponent(
+        world,
+        {
+          x: RecsType.Number,
+          y: RecsType.Number,
+          value: RecsType.Boolean,
+        },
+        {
+          metadata: {
+            name: name,
+          },
+        }
+      );
+    })(),
     ColorCount: (() => {
       const name = "ColorCount";
       return defineComponent(
