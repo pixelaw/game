@@ -1,7 +1,7 @@
-import React, { memo } from 'react'
-import { clsx } from 'clsx'
-import { useRenderGrid } from '@/hooks/useRenderGrid'
-import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_ROWS_COLS } from '@/global/constants'
+import React, {memo} from 'react'
+import {clsx} from 'clsx'
+import {useRenderGrid} from '@/hooks/useRenderGrid'
+import {CANVAS_HEIGHT, CANVAS_WIDTH, MAX_ROWS_COLS} from '@/global/constants'
 
 export type Coordinate = [ number, number ]
 
@@ -35,7 +35,6 @@ const DrawPanel = memo((props: DrawPanelProps) => {
     coordinates,
     cellSize,
     onCellClick,
-    onVisisbleCoordinateChanged,
     onVisibleAreaCoordinate,
     data,
   } = props
@@ -47,8 +46,8 @@ const DrawPanel = memo((props: DrawPanelProps) => {
   const [ panOffsetX, setPanOffsetX ] = React.useState<number>(0)
   const [ panOffsetY, setPanOffsetY ] = React.useState<number>(0)
 
-  const [ startPanX, setStartPanX ] = React.useState<number>(0)
-  const [ startPanY, setStartPanY ] = React.useState<number>(0)
+  const [ initialPositionX, setInitialPositionX ] = React.useState<number>(0)
+  const [ initialPositionY, setInitialPositionY ] = React.useState<number>(0)
 
   // min: [x,y], [10,10]
   const visibleAreaXStart = Math.max(0, Math.floor(-panOffsetX / cellSize))
@@ -61,14 +60,6 @@ const DrawPanel = memo((props: DrawPanelProps) => {
   // Add a new state for storing the mousedown time
   const [ mouseDownTime, setMouseDownTime ] = React.useState<number>(0)
 
-  const visibleCells: VisibleCoordinates = []
-  //visible cells
-  for (let x = visibleAreaXStart; x <= visibleAreaXEnd; x++) {
-    for (let y = visibleAreaYStart; y <= visibleAreaYEnd; y++) {
-      const cell: [ number, number ] = [ x, y ]
-      visibleCells.push(cell)
-    }
-  }
 
   //render canvas grid
   const renderGrid = useRenderGrid()
@@ -76,14 +67,10 @@ const DrawPanel = memo((props: DrawPanelProps) => {
   //canvas ref
   const gridCanvasRef = React.useRef<HTMLCanvasElement>()
 
-  React.useEffect(() => {
-    onVisisbleCoordinateChanged?.(visibleCells)
-  }, [ cellSize ])
 
   //It should be run one time only
   React.useEffect(() => {
     if (gameMode !== 'paint') return
-    onVisisbleCoordinateChanged?.(visibleCells)
     onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
     // setOnRender(false)
   }, [])
@@ -121,6 +108,7 @@ const DrawPanel = memo((props: DrawPanelProps) => {
 
         const gridX = Math.floor(x / cellSize)
         const gridY = Math.floor(y / cellSize)
+        console.info("grid", gridX, gridY);
 
         onCellClick?.([ gridX, gridY ])
         break
@@ -133,13 +121,11 @@ const DrawPanel = memo((props: DrawPanelProps) => {
 
   function onMouseLeave() {
     setPanning(false)
-    onVisisbleCoordinateChanged?.(visibleCells)
     onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
   }
 
   function onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     setPanning(false)
-    onVisisbleCoordinateChanged?.(visibleCells)
     onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
 
     // If the time difference between mouse down and up is less than a threshold (e.g., 200ms), it's a click
@@ -150,8 +136,8 @@ const DrawPanel = memo((props: DrawPanelProps) => {
 
   function onMouseDown(clientX: number, clientY: number) {
     setPanning(true)
-    setStartPanX(clientX - panOffsetX)
-    setStartPanY(clientY - panOffsetY)
+    setInitialPositionX(clientX - panOffsetX)
+    setInitialPositionY(clientY - panOffsetY)
 
     // Record the current time when mouse is down
     setMouseDownTime(Date.now())
@@ -159,8 +145,17 @@ const DrawPanel = memo((props: DrawPanelProps) => {
 
   function onMouseMove(clientX: number, clientY: number) {
     if (!panning) return
-    setPanOffsetX(clientX - startPanX)
-    setPanOffsetY(clientY - startPanY)
+    // this is a negative value
+    const offsetX = clientX - initialPositionX;
+    const offsetY = clientY - initialPositionY;
+
+    const maxOffsetX = -(MAX_ROWS_COLS * cellSize - CANVAS_WIDTH) ; // Maximum allowed offset in X direction
+    const maxOffsetY = -(MAX_ROWS_COLS * cellSize - CANVAS_WIDTH) ; // Maximum allowed offset in Y direction
+
+    console.info([offsetX, offsetY], [maxOffsetX, maxOffsetY])
+
+    setPanOffsetX(offsetX > 0 ? 0 : Math.abs(offsetX) > Math.abs(maxOffsetX) ? maxOffsetX : offsetX)
+    setPanOffsetY(offsetY > 0 ? 0 : Math.abs(offsetY) > Math.abs(maxOffsetY) ? maxOffsetY : offsetY)
   }
 
   return (

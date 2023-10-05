@@ -32,15 +32,15 @@ export function useRenderGrid() {
     } = options
     ctx.clearRect(0, 0, width, height)
 
-    for (let r = visibleAreaXStart; r <= visibleAreaXEnd; r++) {
-      for (let c = visibleAreaYStart; c <= visibleAreaYEnd; c++) {
-        const x = r * cellSize + panOffsetX
-        const y = c * cellSize + panOffsetY
+    for (let row = visibleAreaXStart; row <= visibleAreaXEnd; row++) {
+      for (let col = visibleAreaYStart; col <= visibleAreaYEnd; col++) {
+        const x = row * cellSize + panOffsetX
+        const y = col * cellSize + panOffsetY
 
         let pixelColor = '#2F1643' // default color
 
         if (pixels && pixels.length > 0) {
-          const pixel = pixels.find(p => p && p.coordinates[0] === r && p.coordinates[1] === c)
+          const pixel = pixels.find(p => p && p.coordinates[0] === row && p.coordinates[1] === col)
           if (pixel) {
             // Get the current color of the pixel
             const imageData = ctx.getImageData(x, y, 1, 1).data
@@ -56,8 +56,7 @@ export function useRenderGrid() {
           }
         }
 
-        //TODO: fix the incorrect selected pixel when user onClick (need to fix to be exact calculation of cell)
-        if (coordinates && r === coordinates[0] && c === coordinates[1]) {
+        if (coordinates && row === coordinates[0] && col === coordinates[1]) {
           pixelColor = selectedColor
         }
 

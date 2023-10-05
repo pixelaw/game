@@ -23,6 +23,11 @@ type Account = {
   active: boolean
 }
 
+// Data = [0,0,256,256,256 ]
+// const data: Record<`[${number},${number}]`, string> = {
+//   "[0,0]":  '#fffff'
+// }
+
 const Main = () => {
   const {
     account: {
@@ -58,15 +63,15 @@ const Main = () => {
   //cell size or pixel size
   const cellSize = MAX_CELL_SIZE * (zoomLevel / 100)
 
-  const hexColor = useAtomValue(colorAtom)
+  // const hexColor = useAtomValue(colorAtom)
 
   const paintCanvas = usePaintCanvas()
   //mode of the game
   const gameMode = useAtomValue(gameModeAtom)
   //selected color in color pallete
-  const [ selectedColor, setColor ] = useAtom(colorAtom)
+  const [ selectedHexColor, setColor ] = useAtom(colorAtom)
   //For setting the color of the pixel, getting the x and y coordinates when clicking the pixel
-  const [coordinates, setCoordinates] = React.useState<[number | undefined, number | undefined]>()
+  const [coordinates, setCoordinates] = React.useState<[number, number] | undefined>()
 
   const [ visibleAreaStart, setVisibleAreaStart ] = React.useState<[ number, number ]>([ 0, 0 ])
   const [ visibleAreaEnd, setVisibleAreaEnd ] = React.useState<[ number, number ]>([ 28, 8 ])
@@ -98,17 +103,30 @@ const Main = () => {
     return getComponentValue(Color, entityId)
   }).filter(data => data !== undefined)
 
-  const formattedEntityColors = React.useMemo(() => {
-    return entityColors.map((color) => {
+  const [pixelData, setPixelData] = React.useState<Record<`[${number},${number}]`, string>>({})
+
+  React.useEffect(() => {
+    const entries = entityColors.map((color) => {
       if (!color) return
-      const coordinates = [color.x, color.y]
       const hexColor = rgbToHex(color.r, color.g, color.b)
-      return {
-        coordinates,
-        hexColor,
+      return [color.x, color.y, hexColor] as [number, number, string]
+    })
+
+    if (!entries) return
+
+    setPixelData(prev => {
+      const newData = {...prev}
+
+      for (const entry of entries) {
+        if (!entry) continue
+        newData[`[${entry[0]},${entry[1]}]`] = entry[2]
       }
+
+      return newData
     })
   }, [entityColors])
+
+  //
 
   const handleVisibleAreaCoordinate = (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => {
     const expansionFactor = 10
@@ -144,18 +162,25 @@ const Main = () => {
 
   const handleCellClick = (position: Coordinate) => {
     setCoordinates([position[0], position[1]])
+    setPixelData(prev => {
+      const newData = {...prev}
+      newData[`[${position[0]},${position[1]}]`] = selectedHexColor
+      return newData
+    })
+
     paintCanvas.mutateAsync({
       position,
-      rgbColor: hexToRgb(hexColor) ?? [0, 0, 0],
+      rgbColor: hexToRgb(selectedHexColor) ?? [0, 0, 0],
     })
       .then((response) => {
         if (response.execution_status === EXECUTION_STATUS.SUCCEEDED) {
-          setCoordinates([undefined, undefined])
+          setCoordinates(undefined)
+
         }
       })
       .catch(err => {
         console.error('reversing color because of: ', err)
-        setCoordinates([undefined, undefined])
+        setCoordinates(undefined)
       })
   }
 
@@ -172,18 +197,23 @@ const Main = () => {
                         <>
                           <DrawPanel
                             isCanvasRender={isCanvasRender}
-                            data={formattedEntityColors}
+                            data={Object.entries(pixelData).map(([key, value]) => {
+                              return {
+                                coordinates: key.match(/\d+/g)?.map(Number) as [number, number],
+                                hexColor: value
+                              }
+                            })}
                             coordinates={coordinates}
                             cellSize={cellSize}
                             gameMode={gameMode}
-                            selectedColor={selectedColor}
+                            selectedColor={selectedHexColor}
                             onVisibleAreaCoordinate={handleVisibleAreaCoordinate}
                             onCellClick={handleCellClick}
                           />
                         </>
 
                           <div className="fixed bottom-5 right-20">
-                            <CompactPicker color={selectedColor} onChangeComplete={handleColorChange}/>
+                            <CompactPicker color={selectedHexColor} onChangeComplete={handleColorChange}/>
                           </div>
                       </div>
 
