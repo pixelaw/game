@@ -21,4 +21,6 @@ export const coordinatesAtom = atom<Record<string, number>>({
   y: 0
 })
 
-export const zoomLevelAtom = atom<number>(70)
+export const zoomLevelAtom = atom<number>(100)
+
+export const isCanvasRenderAtom = atom<boolean>(false)

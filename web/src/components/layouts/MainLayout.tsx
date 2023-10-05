@@ -88,7 +88,7 @@ export default function MainLayout({children}: { children: React.ReactNode }) {
 
             <ZoomControl
               max={100}
-              min={25}
+              min={40}
               steps={5}
             />
 

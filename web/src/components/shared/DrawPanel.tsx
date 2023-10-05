@@ -1,9 +1,9 @@
-import React, { memo, SetStateAction } from 'react'
+import React, { memo } from 'react'
 import { clsx } from 'clsx'
 import { useRenderGrid } from '@/hooks/useRenderGrid'
 import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_ROWS_COLS } from '@/global/constants'
 
-type Coordinate = [ number, number ]
+export type Coordinate = [ number, number ]
 
 type VisibleCoordinates = Coordinate[]
 
@@ -17,14 +17,14 @@ type DrawPanelProps = {
   selectedColor: string
   onLoadingPixel?: (position: Array<[ number, number ]>) => void,
 
-  queriedData?: Array<CellDatum | undefined> | undefined,
+  data?: Array<CellDatum | undefined> | undefined,
   cellSize: number,
   onCellClick?: (position: [ number, number ]) => void,
   coordinates: [ number | undefined, number | undefined ] | undefined
   onVisisbleCoordinateChanged?: (visibleCoordinates: VisibleCoordinates) => void
   onOffsetChanged?: (offsetCoordinate: Coordinate) => void
   onVisibleAreaCoordinate?: (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => void
-  setOnRender: React.Dispatch<SetStateAction<boolean>>
+  isCanvasRender: boolean
 }
 
 const DrawPanel = memo((props: DrawPanelProps) => {
@@ -37,8 +37,7 @@ const DrawPanel = memo((props: DrawPanelProps) => {
     onCellClick,
     onVisisbleCoordinateChanged,
     onVisibleAreaCoordinate,
-    queriedData,
-    setOnRender,
+    data,
   } = props
 
   //moving the canvas
@@ -51,8 +50,11 @@ const DrawPanel = memo((props: DrawPanelProps) => {
   const [ startPanX, setStartPanX ] = React.useState<number>(0)
   const [ startPanY, setStartPanY ] = React.useState<number>(0)
 
+  // min: [x,y], [10,10]
   const visibleAreaXStart = Math.max(0, Math.floor(-panOffsetX / cellSize))
   const visibleAreaYStart = Math.max(0, Math.floor(-panOffsetY / cellSize))
+
+  // max: [x,y]: [20,20]
   const visibleAreaXEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_WIDTH - panOffsetX) / cellSize))
   const visibleAreaYEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_HEIGHT - panOffsetY) / cellSize))
 
@@ -74,12 +76,16 @@ const DrawPanel = memo((props: DrawPanelProps) => {
   //canvas ref
   const gridCanvasRef = React.useRef<HTMLCanvasElement>()
 
+  React.useEffect(() => {
+    onVisisbleCoordinateChanged?.(visibleCells)
+  }, [ cellSize ])
+
   //It should be run one time only
   React.useEffect(() => {
     if (gameMode !== 'paint') return
     onVisisbleCoordinateChanged?.(visibleCells)
     onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
-    setOnRender(false)
+    // setOnRender(false)
   }, [])
 
   React.useEffect(() => {
@@ -99,11 +105,10 @@ const DrawPanel = memo((props: DrawPanelProps) => {
         visibleAreaXEnd,
         visibleAreaYStart,
         visibleAreaYEnd,
-        pixels: queriedData,
+        pixels: data,
       })
     }
-  }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedColor, queriedData ])
-
+  }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedColor, data ])
 
   function onClickCoordinates(clientX: number, clientY: number) {
     if (!gridCanvasRef.current) return
@@ -138,7 +143,7 @@ const DrawPanel = memo((props: DrawPanelProps) => {
     onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
 
     // If the time difference between mouse down and up is less than a threshold (e.g., 200ms), it's a click
-    if (Date.now() - mouseDownTime < 200) {
+    if (Date.now() - mouseDownTime < 300) {
       onClickCoordinates(event.clientX, event.clientY)
     }
   }
@@ -172,9 +177,6 @@ const DrawPanel = memo((props: DrawPanelProps) => {
                   width={CANVAS_WIDTH}
                   height={CANVAS_HEIGHT}
                   className={clsx([ 'cursor-pointer', { 'cursor-grab': panning } ])}
-            // onClick={(event) => {
-            //   onClickCoordinates(event.clientX, event.clientY)
-            // }}
                   onMouseDown={(event) => onMouseDown(event.clientX, event.clientY)}
                   onMouseMove={(event) => onMouseMove(event.clientX, event.clientY)}
                   onMouseUp={(event) => onMouseUp(event)}
@@ -185,8 +187,17 @@ const DrawPanel = memo((props: DrawPanelProps) => {
     </React.Fragment>
   )
 }, (prevProps, nextProps) => {
-  return prevProps.cellSize === nextProps.cellSize
+  const conditionOne = prevProps.isCanvasRender === nextProps.isCanvasRender
+  const condtionTwo = prevProps.coordinates === nextProps.coordinates
+  const condtionThree = prevProps.cellSize === nextProps.cellSize
+  const conditionFour = prevProps.selectedColor === nextProps.selectedColor
+  const conditionFive = prevProps.data === nextProps.data
 
+  return conditionOne &&
+    condtionTwo &&
+    condtionThree &&
+    conditionFour &&
+    conditionFive
 })
 
 export default DrawPanel

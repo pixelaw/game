@@ -928,6 +928,7 @@ export type GetEntitiesQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?: 'EntityConnection', edges?: Array<{ __typename?: 'EntityEdge', node?: { __typename?: 'Entity', keys?: Array<string | null> | null, components?: Array<{ __typename: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null } | { __typename: 'ColorCount', x?: any | null, y?: any | null, count?: any | null } | { __typename?: 'Game' } | { __typename: 'NeedsAttention', x?: any | null, y?: any | null, value?: any | null } | { __typename: 'Owner', x?: any | null, y?: any | null, address?: any | null } | { __typename?: 'Permission' } | { __typename: 'PixelType', x?: any | null, y?: any | null, name?: any | null } | { __typename?: 'Player' } | { __typename?: 'Text', x?: any | null, y?: any | null, string?: any | null } | { __typename: 'Timestamp', x?: any | null, y?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null } | null> | null } | null };
 
 export type All_Filtered_EntitiesQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']['input']>;
   xMin?: InputMaybe<Scalars['Int']['input']>;
   xMax?: InputMaybe<Scalars['Int']['input']>;
   yMin?: InputMaybe<Scalars['Int']['input']>;
@@ -996,9 +997,9 @@ export const GetEntitiesDocument = gql`
 }
     `;
 export const All_Filtered_EntitiesDocument = gql`
-    query all_filtered_entities($xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int) {
+    query all_filtered_entities($first: Int, $xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int) {
   colorComponents(
-    first: 200
+    first: $first
     where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
   ) {
     edges {
@@ -1015,7 +1016,7 @@ export const All_Filtered_EntitiesDocument = gql`
     }
   }
   ownerComponents(
-    first: 200
+    first: $first
     where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
   ) {
     edges {
