@@ -3,18 +3,24 @@ import React, {useState} from "react";
 import {
   rgbToHex,
 } from '@/global/utils'
-import {useAtomValue} from "jotai";
-import {colorAtom, gameModeAtom, unicodeAtom, viewModeAtom} from '@/global/states';
+import { useAtom, useAtomValue } from 'jotai'
+import { colorAtom, coordinatesAtom, gameModeAtom, unicodeAtom, viewModeAtom } from '../global/states'
 import usePaint from "../hooks/systems/usePaint";
 import { useDojo } from '@/DojoContext'
 import { useComponentValue } from '@dojoengine/react'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
 import { clsx } from 'clsx'
 
+// interface PixelProps {
+//     index: number;
+//     position: number[];
+// }
+
 interface PixelProps {
     index: number;
-    position: number[];
+    position: [number, number];
 }
+
 
 const initialData = {
   color: "#2F1643",
@@ -30,8 +36,7 @@ const Loading = () => {
   )
 }
 
-export default function Pixel( {position}: PixelProps){
-
+export default function Pixel( { position}: PixelProps){
     const {
       setup: {
         components: { Color, NeedsAttention, Owner },
@@ -51,6 +56,8 @@ export default function Pixel( {position}: PixelProps){
     const selectedUnicode = useAtomValue(unicodeAtom)
     const viewMode = useAtomValue(viewModeAtom)
     const gameMode = useAtomValue(gameModeAtom)
+
+    const [, setCoordinnate] = useAtom(coordinatesAtom)
 
     const paint = usePaint(position as [number, number])
 
@@ -103,15 +110,16 @@ export default function Pixel( {position}: PixelProps){
             }
         }
 
-        if (viewMode === "Pixel") {
-            setPixelData({...pixelData, color: selectedColor});
-        } else if (viewMode === "Game") {
-            setPixelData({...pixelData, unicode: selectedUnicode});
-        }
+        // if (viewMode === "Pixel") {
+        //     setPixelData({...pixelData, color: selectedColor});
+        // } else if (viewMode === "Game") {
+        //     setPixelData({...pixelData, unicode: selectedUnicode});
+        // }
     }
 
     return (
       <button
+          onMouseOver={() => setCoordinnate({x: position[0], y: position[1]} )}
           disabled={gameMode === 'none'}
           style={{backgroundColor: pixelData.color, margin: '0rem', border: '0.5px solid #2E0A3E'}}
           className={

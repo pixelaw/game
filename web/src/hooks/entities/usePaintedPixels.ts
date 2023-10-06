@@ -1,11 +1,11 @@
 import useGraphql from "./useGraphql";
 import {gql} from "graphql-request";
-import {PixelEntity} from "../../global/types";
+import {PixelEntity} from '@/global/types.ts';
 import {
   convertEntityToPixelEntity,
   QueryReturn,
 } from './usePixelEntity'
-import {BLOCK_TIME} from "../../global/constants";
+import {BLOCK_TIME} from '@/global/constants.ts';
 
 export const QUERY_KEY = ["paintedPixels"]
 

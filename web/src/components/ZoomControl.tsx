@@ -1,6 +1,8 @@
 import React from "react";
 import {clsx} from "clsx";
 import {Button} from "@/components/ui/button";
+import { useAtom } from 'jotai'
+import { zoomLevelAtom } from '@/global/states.ts'
 
 type PropsType = {
   value?: number,
@@ -19,20 +21,22 @@ const ZoomControl: React.FC<PropsType & React.HTMLAttributes<HTMLDivElement>> = 
     props
 ) => {
 
-  const [, setZoom] = React.useState(100)
+  // const [zoom, setZoom] = React.useState(100)
+  // const [zoom , setZoom] = useAtom(zoomLevelAtom)
 
-  const handleZoomChange = (newValue: number) => {
-    setZoom(newValue)
-  }
+  // const handleZoomChange = (newValue: number) => {
+  //   setZoom(newValue)
+  // }
 
 
   const {min, max, className} = props
   const steps = props?.steps ?? 1
-  const [currentValue, setCurrentValue] = React.useState(100)
-  const value = props?.value ?? currentValue
+
+  const [zoomLevel, setZoomLevel] = useAtom(zoomLevelAtom)
+  // const value = props?.value ?? zoomLevel
 
   const handleChange = (type: ZoomType) => {
-    let newValue = value
+    let newValue = zoomLevel
     if (type === ZoomType.Add) {
       newValue += steps
       if (max) {
@@ -44,8 +48,8 @@ const ZoomControl: React.FC<PropsType & React.HTMLAttributes<HTMLDivElement>> = 
         if (min > newValue) newValue = min
       }
     }
-    setCurrentValue(newValue)
-    handleZoomChange(newValue)
+    setZoomLevel(newValue)
+    // handleZoomChange(newValue)
   }
 
   return (
@@ -70,19 +74,19 @@ const ZoomControl: React.FC<PropsType & React.HTMLAttributes<HTMLDivElement>> = 
               variant={'icon'}
               size={'icon'}
               onClick={() => handleChange(ZoomType.Subtract)}
-              disabled={min ? min >= value : false}
+              disabled={min ? min >= zoomLevel : false}
               className={'font-emoji font-bold text-brand-violetAccent text-[34px]'}
           >
             &#8722;
           </Button>
 
-          <span className={'text-brand-skyblue text-base font-silkscreen text-center'}> {value}% </span>
+          <span className={'text-brand-skyblue text-base font-silkscreen text-center'}> {zoomLevel}% </span>
 
           <Button
               variant={'icon'}
               size={'icon'}
               onClick={() => handleChange(ZoomType.Add)}
-              disabled={max ? max <= value : false}
+              disabled={max ? max <= zoomLevel : false}
               className={'font-emoji font-bold text-brand-violetAccent text-[34px]'}
           >
             &#43;

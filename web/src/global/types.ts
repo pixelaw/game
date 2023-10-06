@@ -1,6 +1,6 @@
-import React from "react";
+import React, { SetStateAction } from 'react'
 
-import {PAPER, ROCK, SCISSORS} from "./constants";
+import { PAPER, ROCK, SCISSORS } from './constants'
 
 export type OptionType = typeof ROCK | typeof PAPER | typeof SCISSORS
 
@@ -68,3 +68,4 @@ export type MainLayoutType = {
   currentPage:  number
   setCurrentPage:   React.Dispatch<React.SetStateAction<number>>
 }
+
