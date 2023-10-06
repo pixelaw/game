@@ -17,6 +17,7 @@ const usePaint = (position: [number, number]) => {
   return useMutation(
     ['usePaint', position[0], position[1]],
     async () => {
+      if(!rgbColor) return
       const tx = await put_color(account, position, rgbColor)
       const response = await account.waitForTransaction(tx.transaction_hash)
       if (response.status === TransactionStatus.REJECTED) {
