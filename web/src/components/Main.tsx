@@ -1,16 +1,16 @@
 import React from 'react'
-import {useDojo} from '@/DojoContext'
+import { useDojo } from '@/DojoContext'
 import Plugin from '@/components/Plugin'
-import {hexToRgb, rgbToHex} from '@/global/utils'
-import {ColorResult, CompactPicker} from 'react-color'
-import {useAtom, useAtomValue} from 'jotai'
-import {EXECUTION_STATUS, MAX_CELL_SIZE} from '@/global/constants'
-import DrawPanel, {Coordinate} from '@/components/shared/DrawPanel'
-import {usePaintCanvas} from '@/hooks/systems/usePaintCanvas'
-import {getEntityIdFromKeys} from '@dojoengine/utils'
-import {getComponentValue} from '@latticexyz/recs'
-import {useFilteredEntities} from '@/hooks/entities/useFilteredEntities.ts'
-import {colorAtom, gameModeAtom, isCanvasRenderAtom, zoomLevelAtom} from '@/global/states'
+import { hexToRgb, rgbToHex } from '@/global/utils'
+import { ColorResult, CompactPicker } from 'react-color'
+import { useAtom, useAtomValue } from 'jotai'
+import { EXECUTION_STATUS, MAX_CELL_SIZE } from '@/global/constants'
+import DrawPanel, { Coordinate } from '@/components/shared/DrawPanel'
+import { usePaintCanvas } from '@/hooks/systems/usePaintCanvas'
+import { getComponentValue, Has } from '@latticexyz/recs'
+import { useFilteredEntities } from '@/hooks/entities/useFilteredEntities.ts'
+import { colorAtom, coordinatesAtom, gameModeAtom, isCanvasRenderAtom, zoomLevelAtom } from '@/global/states'
+import { useEntityQuery } from '@dojoengine/react'
 
 const FilteredComponents: React.FC<{ xMin: number, xMax: number, yMin: number, yMax: number }> = ({xMin, xMax, yMin, yMax}) => {
   //it always rerender this query because of refetch interval
@@ -22,11 +22,6 @@ type Account = {
   address: string,
   active: boolean
 }
-
-// Data = [0,0,256,256,256 ]
-// const data: Record<`[${number},${number}]`, string> = {
-//   "[0,0]":  '#fffff'
-// }
 
 const Main = () => {
   const {
@@ -63,8 +58,6 @@ const Main = () => {
   //cell size or pixel size
   const cellSize = MAX_CELL_SIZE * (zoomLevel / 100)
 
-  // const hexColor = useAtomValue(colorAtom)
-
   const paintCanvas = usePaintCanvas()
   //mode of the game
   const gameMode = useAtomValue(gameModeAtom)
@@ -76,10 +69,11 @@ const Main = () => {
   const [ visibleAreaStart, setVisibleAreaStart ] = React.useState<[ number, number ]>([ 0, 0 ])
   const [ visibleAreaEnd, setVisibleAreaEnd ] = React.useState<[ number, number ]>([ 28, 8 ])
 
-  const [coordinatesToQuery, setCoordinatesToQuery] = React.useState<[number, number][]>([])
-
   //Check if the filter is on success on first load
   const [isCanvasRender] = useAtom(isCanvasRenderAtom)
+
+  //setting the coordinates and passing it to plugin when hover in the cell
+  const [ , setCoordinate ] = useAtom(coordinatesAtom)
 
   React.useEffect(() => {
     if (isDeploying || isNaN(index) || hasAccount) return
@@ -91,82 +85,53 @@ const Main = () => {
       setIsLoading(false)
       return
     }
+
     if (!hasAccount) return
+
     select(selectedAccount?.address ?? '')
   }, [setIsLoading, isAlreadySelected, selectedAccount?.address, select, hasAccount])
 
-  const queriedEntityIds = coordinatesToQuery.map(visibleCoordinate => {
-    return getEntityIdFromKeys([ BigInt(visibleCoordinate[0]), BigInt(visibleCoordinate[1]) ])
+  const entityIds = useEntityQuery([ Has(Color) ])
+
+  const entityColors: [ number, number, string ][] = entityIds
+    .map(entityId => {
+      const componentValue = getComponentValue(Color, entityId)
+      const hexColor = rgbToHex(componentValue?.r ?? 0, componentValue?.g ?? 0, componentValue?.b ?? 0)
+      return [ componentValue?.x ?? 0, componentValue?.y ?? 0, hexColor ]
+    })
+
+  const pixelData: Record<`[${number},${number}]`, string> = {}
+
+  entityColors.forEach(entityColor => {
+    pixelData[`[${entityColor[0]},${entityColor[1]}]`] = entityColor[2]
   })
 
-  const entityColors = queriedEntityIds.map(entityId => {
-    return getComponentValue(Color, entityId)
-  }).filter(data => data !== undefined)
 
-  const [pixelData, setPixelData] = React.useState<Record<`[${number},${number}]`, string>>({})
-
-  React.useEffect(() => {
-    const entries = entityColors.map((color) => {
-      if (!color) return
-      const hexColor = rgbToHex(color.r, color.g, color.b)
-      return [color.x, color.y, hexColor] as [number, number, string]
-    })
-
-    if (!entries) return
-
-    setPixelData(prev => {
-      const newData = {...prev}
-
-      for (const entry of entries) {
-        if (!entry) continue
-        newData[`[${entry[0]},${entry[1]}]`] = entry[2]
-      }
-
-      return newData
-    })
-  }, [entityColors])
-
-  //
 
   const handleVisibleAreaCoordinate = (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => {
-    const expansionFactor = 10
-    const minLimit = 0, maxLimit = 256
-    const visibleCells = []
-
-    const expandedMinX = visibleAreaStart[0] - expansionFactor
-    const expandedMinY = visibleAreaStart[1] - expansionFactor
-
-    const expandedMaxX = visibleAreaEnd[0] + expansionFactor
-    const expandedMaxY = visibleAreaEnd[1] + expansionFactor
-
-
-    visibleAreaStart[0] = expandedMinX < minLimit ? minLimit : expandedMinX;
-    visibleAreaStart[1] = expandedMinX < minLimit ? minLimit : expandedMinY;
-
-    visibleAreaEnd[0] = expandedMaxX > maxLimit ? maxLimit : expandedMaxX;
-    visibleAreaEnd[1] = expandedMaxY > maxLimit ? maxLimit : expandedMaxY;
-
-
-    for (let x = visibleAreaStart[0]; x <= visibleAreaEnd[0]; x++) {
-      for (let y = visibleAreaStart[1]; y <= visibleAreaEnd[1]; y++) {
-        const cell: [number, number] = [x, y]
-        visibleCells.push(cell)
-      }
-    }
-
     setVisibleAreaStart(visibleAreaStart)
     setVisibleAreaEnd(visibleAreaEnd)
+  }
 
-    setCoordinatesToQuery(visibleCells)
+  const [ tempData, setTempData ] = React.useState<Record<`[${number},${number}]`, string>>({})
+
+  const updatePixelData = (position: Coordinate, color: string) => {
+    const newData = { ...pixelData }
+
+    newData[`[${position[0]},${position[1]}]`] = color
+
+    setTempData(prev => {
+      return {
+        ...prev,
+        [`[${position[0]},${position[1]}]`]: color,
+      }
+    })
   }
 
   const handleCellClick = (position: Coordinate) => {
     setCoordinates([position[0], position[1]])
-    setPixelData(prev => {
-      const newData = {...prev}
-      newData[`[${position[0]},${position[1]}]`] = selectedHexColor
-      return newData
-    })
+
+    updatePixelData(position, selectedHexColor)
 
     paintCanvas.mutateAsync({
       position,
@@ -175,7 +140,6 @@ const Main = () => {
       .then((response) => {
         if (response.execution_status === EXECUTION_STATUS.SUCCEEDED) {
           setCoordinates(undefined)
-
         }
       })
       .catch(err => {
@@ -188,6 +152,19 @@ const Main = () => {
     setColor(color.hex)
   }
 
+  const handleData = () => {
+    const data = {
+      ...tempData,
+      ...pixelData,
+    }
+    return Object.entries(data).map(([ key, value ]) => {
+      return {
+        coordinates: key.match(/\d+/g)?.map(Number) as [ number, number ],
+        hexColor: value,
+      }
+    })
+  }
+
   return (
       <React.Fragment>
           {
@@ -197,18 +174,17 @@ const Main = () => {
                         <>
                           <DrawPanel
                             isCanvasRender={isCanvasRender}
-                            data={Object.entries(pixelData).map(([key, value]) => {
-                              return {
-                                coordinates: key.match(/\d+/g)?.map(Number) as [number, number],
-                                hexColor: value
-                              }
-                            })}
+                            data={handleData()}
                             coordinates={coordinates}
                             cellSize={cellSize}
                             gameMode={gameMode}
                             selectedColor={selectedHexColor}
                             onVisibleAreaCoordinate={handleVisibleAreaCoordinate}
                             onCellClick={handleCellClick}
+                            onHover={(coordinate) => setCoordinate({
+                              x: coordinate[0],
+                              y: coordinate[1],
+                            })}
                           />
                         </>
 
@@ -218,6 +194,7 @@ const Main = () => {
                       </div>
 
                       <Plugin/>
+
                     <FilteredComponents xMin={visibleAreaStart[0]} xMax={visibleAreaEnd[0]} yMin={visibleAreaStart[1]}
                                         yMax={visibleAreaEnd[1]}/>
 

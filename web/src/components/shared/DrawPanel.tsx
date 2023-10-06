@@ -1,7 +1,7 @@
-import React, {memo} from 'react'
-import {clsx} from 'clsx'
-import {useRenderGrid} from '@/hooks/useRenderGrid'
-import {CANVAS_HEIGHT, CANVAS_WIDTH, MAX_ROWS_COLS} from '@/global/constants'
+import React from 'react'
+import { clsx } from 'clsx'
+import { useRenderGrid } from '@/hooks/useRenderGrid'
+import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_ROWS_COLS } from '@/global/constants'
 
 export type Coordinate = [ number, number ]
 
@@ -24,10 +24,11 @@ type DrawPanelProps = {
   onVisisbleCoordinateChanged?: (visibleCoordinates: VisibleCoordinates) => void
   onOffsetChanged?: (offsetCoordinate: Coordinate) => void
   onVisibleAreaCoordinate?: (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => void
+  onHover?: (coordinate: Coordinate) => void
   isCanvasRender: boolean
 }
 
-const DrawPanel = memo((props: DrawPanelProps) => {
+const DrawPanel = (props: DrawPanelProps) => {
   const {
     gameMode,
     selectedColor,
@@ -37,6 +38,7 @@ const DrawPanel = memo((props: DrawPanelProps) => {
     onCellClick,
     onVisibleAreaCoordinate,
     data,
+    onHover,
   } = props
 
   //moving the canvas
@@ -60,24 +62,22 @@ const DrawPanel = memo((props: DrawPanelProps) => {
   // Add a new state for storing the mousedown time
   const [ mouseDownTime, setMouseDownTime ] = React.useState<number>(0)
 
-
   //render canvas grid
   const renderGrid = useRenderGrid()
 
   //canvas ref
   const gridCanvasRef = React.useRef<HTMLCanvasElement>()
 
-
   //It should be run one time only
   React.useEffect(() => {
     if (gameMode !== 'paint') return
     onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
-    // setOnRender(false)
   }, [])
+  // useFilteredEntities(visibleAreaXStart, visibleAreaXEnd, visibleAreaYStart, visibleAreaYEnd)
 
   React.useEffect(() => {
     if (gridCanvasRef.current) {
-      const ctx = gridCanvasRef.current.getContext('2d')
+      const ctx = gridCanvasRef.current.getContext('2d', { willReadFrequently: true })
       if (!ctx) return
 
       renderGrid(ctx, {
@@ -95,7 +95,7 @@ const DrawPanel = memo((props: DrawPanelProps) => {
         pixels: data,
       })
     }
-  }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedColor, data ])
+  }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedColor, data, renderGrid, visibleAreaXStart, visibleAreaXEnd, visibleAreaYStart, visibleAreaYEnd ])
 
   function onClickCoordinates(clientX: number, clientY: number) {
     if (!gridCanvasRef.current) return
@@ -108,7 +108,6 @@ const DrawPanel = memo((props: DrawPanelProps) => {
 
         const gridX = Math.floor(x / cellSize)
         const gridY = Math.floor(y / cellSize)
-        console.info("grid", gridX, gridY);
 
         onCellClick?.([ gridX, gridY ])
         break
@@ -121,6 +120,8 @@ const DrawPanel = memo((props: DrawPanelProps) => {
 
   function onMouseLeave() {
     setPanning(false)
+    onHover?.([ 0, 0 ])
+
     onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
   }
 
@@ -143,8 +144,22 @@ const DrawPanel = memo((props: DrawPanelProps) => {
     setMouseDownTime(Date.now())
   }
 
+  function onMouseHover(clientX: number, clientY: number) {
+    if (!gridCanvasRef.current) return
+
+    const rect = gridCanvasRef.current.getBoundingClientRect()
+    const x = Math.abs(panOffsetX) + clientX - rect.left  // pixel
+    const y = Math.abs(panOffsetY) + clientY - rect.top  // pixel
+
+    const gridX = Math.floor(x / cellSize)
+    const gridY = Math.floor(y / cellSize)
+
+    // Now you have the grid coordinates on hover, you can use them as you need
+    onHover?.([ gridX, gridY ])
+  }
+
   function onMouseMove(clientX: number, clientY: number) {
-    if (!panning) return
+    if (panning) {
     // this is a negative value
     const offsetX = clientX - initialPositionX;
     const offsetY = clientY - initialPositionY;
@@ -152,10 +167,11 @@ const DrawPanel = memo((props: DrawPanelProps) => {
     const maxOffsetX = -(MAX_ROWS_COLS * cellSize - CANVAS_WIDTH) ; // Maximum allowed offset in X direction
     const maxOffsetY = -(MAX_ROWS_COLS * cellSize - CANVAS_WIDTH) ; // Maximum allowed offset in Y direction
 
-    console.info([offsetX, offsetY], [maxOffsetX, maxOffsetY])
-
     setPanOffsetX(offsetX > 0 ? 0 : Math.abs(offsetX) > Math.abs(maxOffsetX) ? maxOffsetX : offsetX)
     setPanOffsetY(offsetY > 0 ? 0 : Math.abs(offsetY) > Math.abs(maxOffsetY) ? maxOffsetY : offsetY)
+    } else {
+      onMouseHover(clientX, clientY)
+    }
   }
 
   return (
@@ -171,7 +187,7 @@ const DrawPanel = memo((props: DrawPanelProps) => {
           <canvas ref={gridCanvasRef}
                   width={CANVAS_WIDTH}
                   height={CANVAS_HEIGHT}
-                  className={clsx([ 'cursor-pointer', { 'cursor-grab': panning } ])}
+                  className={clsx([ 'cursor-pointer', { '!cursor-grab': panning } ])}
                   onMouseDown={(event) => onMouseDown(event.clientX, event.clientY)}
                   onMouseMove={(event) => onMouseMove(event.clientX, event.clientY)}
                   onMouseUp={(event) => onMouseUp(event)}
@@ -181,18 +197,6 @@ const DrawPanel = memo((props: DrawPanelProps) => {
       </div>
     </React.Fragment>
   )
-}, (prevProps, nextProps) => {
-  const conditionOne = prevProps.isCanvasRender === nextProps.isCanvasRender
-  const condtionTwo = prevProps.coordinates === nextProps.coordinates
-  const condtionThree = prevProps.cellSize === nextProps.cellSize
-  const conditionFour = prevProps.selectedColor === nextProps.selectedColor
-  const conditionFive = prevProps.data === nextProps.data
-
-  return conditionOne &&
-    condtionTwo &&
-    condtionThree &&
-    conditionFour &&
-    conditionFive
-})
+}
 
 export default DrawPanel

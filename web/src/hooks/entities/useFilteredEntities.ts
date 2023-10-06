@@ -3,7 +3,7 @@ import {useDojo} from '@/DojoContext.tsx'
 import {getComponentValue, setComponent} from '@latticexyz/recs'
 import {getEntityIdFromKeys} from '@dojoengine/utils'
 import {BLOCK_TIME} from '@/global/constants.ts'
-import _ from 'lodash'
+import isEqual from 'lodash/isEqual'
 import {useAtom} from 'jotai'
 import {isCanvasRenderAtom} from '@/global/states.ts'
 
@@ -36,7 +36,7 @@ export function useFilteredEntities(
         const currentColor = getComponentValue(Color, entityId)
 
         // do not update if it's already equal
-        if (_.isEqual(currentColor, color)) continue
+        if (isEqual(currentColor, color)) continue
 
         // to update latticexyz indexer
         setComponent(Color, entityId, {x, y, r, g, b})
