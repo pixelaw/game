@@ -1,7 +1,7 @@
-mod components;
+mod models;
 mod systems;
-mod events;
+// mod events;
 
 // Default games
-mod paint;
-mod rps;
+// mod paint;
+// mod rps;

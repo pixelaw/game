@@ -1,4 +1,4 @@
-#[derive(Component, Copy, Drop, Serde, SerdeLen, PartialEq)]
+#[derive(Model, Copy, Drop, Serde)]
 struct Color {
     #[key]
     x: u64,
