@@ -70,10 +70,10 @@ jobs:
           sudo mv argocd /usr/local/bin
           export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
           export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
-          argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./chart/pixelaw --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
-          argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
-          argocd app wait $PROJECTNAME-$GITHUB_REF_NAME
-          argocd app actions run $PROJECTNAME-$GITHUB_REF_NAME --namespace $PROJECTNAME-$GITHUB_REF_NAME restart --kind Deployment 
+          argocd app create $PROJECTNAME-dev --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./chart/pixelaw --values values-dev.yaml --dest-namespace $PROJECTNAME-dev  --dest-server https://kubernetes.default.svc --upsert
+          argocd app sync $PROJECTNAME-dev
+          argocd app wait $PROJECTNAME-dev
+          argocd app actions run $PROJECTNAME-dev --namespace $PROJECTNAME-dev restart --kind Deployment 
 
 
   helmRelease:
