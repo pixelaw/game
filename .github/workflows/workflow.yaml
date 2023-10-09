@@ -43,6 +43,17 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME}}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: push README to Dockerhub
+        uses: christian-korneck/update-container-description-action@v1
+        env:
+          DOCKER_USER: ${{ vars.DOCKERHUB_USERNAME}}
+          DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
+
+        with:
+          destination_container_repo: oostvoort/pixelaw
+          provider: dockerhub
+          short_description: ''
+          readme_file: 'README.md'      
 
       - name: Build, tag, and push image
         id: build-image
@@ -54,15 +65,15 @@ jobs:
       - name: Deploy to ArgoCD
         id: deploy-image
         run: |
-          export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
-          export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
           wget https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64 -O argocd
           chmod +x argocd
           sudo mv argocd /usr/local/bin
-
-          argocd app create $PROJECTNAME-dev --repo https://pixelaw.github.io/game/ --path chart/  --revision ${VERSION:1} --helm-chart chart/$PROJECTNAME --dest-namespace default --dest-server https://kubernetes.default.svc --values values-dev.yaml --helm-set-string dockerImage=oostvoort/dojorps-dev:${VERSION} --upsert
-          argocd app sync $PROJECTNAME-dev
-          argocd app wait $PROJECTNAME-dev
+          export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
+          export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
+          argocd app create $PROJECTNAME-$GITHUB_REF_NAME --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./deploy/ --values values-$GITHUB_REF_NAME.yaml --dest-namespace $PROJECTNAME-$GITHUB_REF_NAME  --dest-server https://kubernetes.default.svc --upsert
+          argocd app sync $PROJECTNAME-$GITHUB_REF_NAME
+          argocd app wait $PROJECTNAME-$GITHUB_REF_NAME
+          argocd app actions run $PROJECTNAME-$GITHUB_REF_NAME --namespace $PROJECTNAME-$GITHUB_REF_NAME restart --kind Deployment 
 
 
   helmRelease:
