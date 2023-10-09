@@ -1,4 +1,5 @@
-import {cn} from "@/lib/utils";
+import { cn } from '@/lib/utils'
+import { formatAddress } from '@/global/utils.ts'
 
 type PropsType = {
     coordinates: {
@@ -38,7 +39,7 @@ export default function Footer(props: PropsType) {
                 <h3 className={cn(['text-brand-violetAccent04 text-sm'])}>Type: <span
                     className={'text-white font-semibold ml-1'}>{props.type ?? 'null'}</span></h3>
                 <h3 className={cn(['text-brand-violetAccent04 text-sm'])}>Owner: <span
-                    className={'text-white font-semibold ml-1'}>{props.owner ?? 'n/a'}</span></h3>
+                  className={'text-white font-semibold ml-1'}>{formatAddress(String(props.owner)) ?? 'n/a'}</span></h3>
             </div>
 
             <div

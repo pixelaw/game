@@ -1,5 +1,6 @@
 import {atom} from "jotai";
 import {hexToRgb} from "./utils";
+import { PositionWithAddressAndType } from '@/components/Main.tsx'
 
 export const colorAtom = atom('#FFFFFF')
 export const rgbColorAtom = atom(
@@ -24,3 +25,10 @@ export const coordinatesAtom = atom<Record<string, number>>({
 export const zoomLevelAtom = atom<number>(50)
 
 export const isCanvasRenderAtom = atom<boolean>(false)
+
+export const positionWithAddressAndTypeAtom = atom<PositionWithAddressAndType>({
+  x: 0,
+  y: 0,
+  address: '',
+  pixel: '',
+})

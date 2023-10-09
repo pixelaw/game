@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDojo } from '@/DojoContext'
 import Plugin from '@/components/Plugin'
-import { hexToRgb, rgbToHex } from '@/global/utils'
+import { felt252ToString, hexToRgb, rgbToHex } from '@/global/utils'
 import { ColorResult, CompactPicker } from 'react-color'
 import { useAtom, useAtomValue } from 'jotai'
 import { EXECUTION_STATUS, MAX_CELL_SIZE } from '@/global/constants'
@@ -9,11 +9,17 @@ import DrawPanel, { Coordinate } from '@/components/shared/DrawPanel'
 import { usePaintCanvas } from '@/hooks/systems/usePaintCanvas'
 import { getComponentValue, Has } from '@latticexyz/recs'
 import { useFilteredEntities } from '@/hooks/entities/useFilteredEntities.ts'
-import { colorAtom, coordinatesAtom, gameModeAtom, isCanvasRenderAtom, zoomLevelAtom } from '@/global/states'
+import {
+  colorAtom,
+  gameModeAtom,
+  isCanvasRenderAtom,
+  positionWithAddressAndTypeAtom,
+  zoomLevelAtom,
+} from '@/global/states'
 import { useEntityQuery } from '@dojoengine/react'
 
 const FilteredComponents: React.FC<{ xMin: number, xMax: number, yMin: number, yMax: number }> = ({xMin, xMax, yMin, yMax}) => {
-  //it always rerender this query because of refetch interval
+  //it always rerender this query because of refetch interval to set the value of component in dojo
   useFilteredEntities(xMin, xMax, yMin, yMax)
   return <></>
 }
@@ -21,6 +27,13 @@ const FilteredComponents: React.FC<{ xMin: number, xMax: number, yMin: number, y
 type Account = {
   address: string,
   active: boolean
+}
+
+export type PositionWithAddressAndType = {
+  x: number | undefined
+  y: number | undefined
+  address?: string | number
+  pixel?: string | number
 }
 
 const Main = () => {
@@ -35,6 +48,8 @@ const Main = () => {
     setup: {
       components: {
         Color,
+        Owner,
+        PixelType,
       },
     },
   } = useDojo()
@@ -73,7 +88,9 @@ const Main = () => {
   const [isCanvasRender] = useAtom(isCanvasRenderAtom)
 
   //setting the coordinates and passing it to plugin when hover in the cell
-  const [ , setCoordinate ] = useAtom(coordinatesAtom)
+  const [ , setPositionWithAddressAndType ] = useAtom(positionWithAddressAndTypeAtom)
+
+  const [ tempData, setTempData ] = React.useState<Record<`[${number},${number}]`, string>>({})
 
   React.useEffect(() => {
     if (isDeploying || isNaN(index) || hasAccount) return
@@ -106,14 +123,36 @@ const Main = () => {
     pixelData[`[${entityColor[0]},${entityColor[1]}]`] = entityColor[2]
   })
 
+  const entityOwners = entityIds
+    .map(entityId => {
+      return getComponentValue(Owner, entityId)
+    })
 
+  const entityPixelsType = entityIds
+    .map(entityId => {
+      return getComponentValue(PixelType, entityId)
+    })
 
   const handleVisibleAreaCoordinate = (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => {
+    const expansionFactor = 10
+    const minLimit = 0, maxLimit = 256
+
+    const expandedMinX = visibleAreaStart[0] - expansionFactor
+    const expandedMinY = visibleAreaStart[1] - expansionFactor
+
+    const expandedMaxX = visibleAreaEnd[0] + expansionFactor
+    const expandedMaxY = visibleAreaEnd[1] + expansionFactor
+
+
+    visibleAreaStart[0] = expandedMinX < minLimit ? minLimit : expandedMinX
+    visibleAreaStart[1] = expandedMinX < minLimit ? minLimit : expandedMinY
+
+    visibleAreaEnd[0] = expandedMaxX > maxLimit ? maxLimit : expandedMaxX
+    visibleAreaEnd[1] = expandedMaxY > maxLimit ? maxLimit : expandedMaxY
+
     setVisibleAreaStart(visibleAreaStart)
     setVisibleAreaEnd(visibleAreaEnd)
   }
-
-  const [ tempData, setTempData ] = React.useState<Record<`[${number},${number}]`, string>>({})
 
   const updatePixelData = (position: Coordinate, color: string) => {
     const newData = { ...pixelData }
@@ -165,6 +204,32 @@ const Main = () => {
     })
   }
 
+  const handleHover = (coordinate: Coordinate) => {
+    let hasOwner = false
+    const newState: PositionWithAddressAndType = { x: coordinate[0], y: coordinate[1] }
+
+    entityPixelsType.forEach((entityPixelType) => {
+      if (entityPixelType && coordinate[0] === entityPixelType.x && coordinate[1] === entityPixelType.y) {
+        newState.pixel = felt252ToString(entityPixelType.name)
+        hasOwner = true
+      }
+    })
+
+    entityOwners.forEach((entityOwner) => {
+      if (entityOwner && coordinate[0] === entityOwner.x && coordinate[1] === entityOwner.y) {
+        newState.address = entityOwner.address
+        hasOwner = true
+      }
+    })
+
+    if (!hasOwner) {
+      newState.address = 'N/A'
+      newState.pixel = 'N/A'
+    }
+
+    setPositionWithAddressAndType(newState)
+  }
+
   return (
       <React.Fragment>
           {
@@ -181,10 +246,7 @@ const Main = () => {
                             selectedColor={selectedHexColor}
                             onVisibleAreaCoordinate={handleVisibleAreaCoordinate}
                             onCellClick={handleCellClick}
-                            onHover={(coordinate) => setCoordinate({
-                              x: coordinate[0],
-                              y: coordinate[1],
-                            })}
+                            onHover={handleHover}
                           />
                         </>
 

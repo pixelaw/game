@@ -81,3 +81,11 @@ export const felt252ToString = (felt252: string | number) => {
     default: return felt252
   }
 }
+
+export const formatAddress = (address: string) => {
+  if (address.length > 30) {
+    return address.substr(0, 6) + '...' + address.substr(address.length - 4, address.length)
+  }
+
+  return address
+}

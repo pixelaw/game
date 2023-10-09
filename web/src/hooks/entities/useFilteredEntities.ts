@@ -1,11 +1,11 @@
-import {useQuery} from '@tanstack/react-query'
-import {useDojo} from '@/DojoContext.tsx'
-import {getComponentValue, setComponent} from '@latticexyz/recs'
-import {getEntityIdFromKeys} from '@dojoengine/utils'
-import {BLOCK_TIME} from '@/global/constants.ts'
+import { useQuery } from '@tanstack/react-query'
+import { useDojo } from '@/DojoContext.tsx'
+import { getComponentValue, setComponent } from '@latticexyz/recs'
+import { getEntityIdFromKeys } from '@dojoengine/utils'
+import { BLOCK_TIME } from '@/global/constants.ts'
 import isEqual from 'lodash/isEqual'
-import {useAtom} from 'jotai'
-import {isCanvasRenderAtom} from '@/global/states.ts'
+import { useAtom } from 'jotai'
+import { isCanvasRenderAtom } from '@/global/states.ts'
 
 export function useFilteredEntities(
   xMin: number,
@@ -17,6 +17,8 @@ export function useFilteredEntities(
     setup: {
       components: {
         Color,
+        Owner,
+        PixelType,
       },
       network: { graphSdk },
     },
@@ -40,6 +42,36 @@ export function useFilteredEntities(
 
         // to update latticexyz indexer
         setComponent(Color, entityId, {x, y, r, g, b})
+      }
+
+      if (!data || !data.ownerComponents?.edges) return { ownerComponents: { edges: [] } }
+      for (const edge of data.ownerComponents.edges) {
+        if (!edge || !edge.node) continue
+        const { x, y, address } = edge.node
+        const owner = address
+        const entityId = getEntityIdFromKeys([ BigInt(x), BigInt(y) ])
+        const currentOwner = getComponentValue(Owner, entityId)
+
+        // do not update if it's already equal
+        if (isEqual(currentOwner, owner)) continue
+
+        // to update latticexyz indexer
+        setComponent(Owner, entityId, { x, y, address: owner })
+      }
+
+      if (!data || !data.pixeltypeComponents?.edges) return { pixeltypeComponents: { edges: [] } }
+      for (const edge of data.pixeltypeComponents.edges) {
+        if (!edge || !edge.node) continue
+        const { x, y, name } = edge.node
+        const pixelType = name
+        const entityId = getEntityIdFromKeys([ BigInt(x), BigInt(y) ])
+        const currentPixelType = getComponentValue(PixelType, entityId)
+
+        // do not update if it's already equal
+        if (isEqual(currentPixelType, pixelType)) continue
+
+        // to update latticexyz indexer
+        setComponent(PixelType, entityId, { x, y, name: pixelType })
       }
 
       return data

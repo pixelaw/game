@@ -1,7 +1,4 @@
 import { GraphQLClient } from 'graphql-request';
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';
 import { print } from 'graphql'
 import gql from 'graphql-tag';
@@ -939,7 +936,7 @@ export type All_Filtered_EntitiesQueryVariables = Exact<{
 }>;
 
 
-export type All_Filtered_EntitiesQuery = { __typename?: 'Query', colorComponents?: { __typename?: 'ColorConnection', edges?: Array<{ __typename?: 'ColorEdge', node?: { __typename?: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, ownerComponents?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null };
+export type All_Filtered_EntitiesQuery = { __typename?: 'Query', colorComponents?: { __typename?: 'ColorConnection', edges?: Array<{ __typename?: 'ColorEdge', node?: { __typename?: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, ownerComponents?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, pixeltypeComponents?: { __typename?: 'PixelTypeConnection', edges?: Array<{ __typename?: 'PixelTypeEdge', node?: { __typename?: 'PixelType', x?: any | null, y?: any | null, name?: any | null } | null } | null> | null } | null };
 
 
 export const GetEntitiesDocument = gql`
@@ -1033,6 +1030,18 @@ export const All_Filtered_EntitiesDocument = gql`
       }
     }
   }
+  pixeltypeComponents(
+    first: $first
+    where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
+  ) {
+    edges {
+      node {
+        x
+        y
+        name
+      }
+    }
+  }
 }
     `;
 
@@ -1044,13 +1053,9 @@ const GetEntitiesDocumentString = print(GetEntitiesDocument);
 const All_Filtered_EntitiesDocumentString = print(All_Filtered_EntitiesDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetEntitiesQuery>(GetEntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getEntities', 'query');
     },
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     all_filtered_entities(variables?: All_Filtered_EntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: All_Filtered_EntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<All_Filtered_EntitiesQuery>(All_Filtered_EntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'all_filtered_entities', 'query');
     }

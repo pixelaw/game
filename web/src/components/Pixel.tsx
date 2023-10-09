@@ -47,7 +47,7 @@ export default function Pixel( { position}: PixelProps){
   //   } = useDojo()
   //
   //   const keys = position.map(p => BigInt(p))
-  //   const entityId = getEntityIdFromKeys(keys)
+  //   const entityId = \(keys)
   //
   //   const color = useComponentValue(Color, entityId)
   //   // const text = useComponentValue(Text, entityId)

@@ -1,17 +1,17 @@
-import React from "react";
-import {cn} from "@/lib/utils";
-import Image from "@/components/ui/Image"
-import {plugins} from "@/global/config";
-import {Button} from "@/components/ui/button";
-import Footer from "@/components/Footer";
-import { coordinatesAtom, gameModeAtom } from '@/global/states'
+import React from 'react'
+import { cn } from '@/lib/utils'
+import Image from '@/components/ui/Image'
+import { plugins } from '@/global/config'
+import { Button } from '@/components/ui/button'
+import Footer from '@/components/Footer'
+import { gameModeAtom, positionWithAddressAndTypeAtom } from '@/global/states'
 import { useAtom } from 'jotai'
 
 export default function Plugin() {
     const [isOpen, setIsOpen] = React.useState<boolean>(false)
 
     const [gameMode, setGameMode] = useAtom(gameModeAtom)
-    const [coordinate] = useAtom(coordinatesAtom)
+  const [ positionWithAddressAndType ] = useAtom(positionWithAddressAndTypeAtom)
 
     return (
         <>
@@ -98,7 +98,10 @@ export default function Plugin() {
                         }
                     </div>
 
-                    <Footer coordinates={{x: coordinate.x, y: coordinate.y}} collapsed={isOpen}/>
+                  <Footer
+                    coordinates={{ x: Number(positionWithAddressAndType.x), y: Number(positionWithAddressAndType.y) }}
+                    collapsed={isOpen} type={String(positionWithAddressAndType.pixel)}
+                    owner={String(positionWithAddressAndType.address)} />
                 </div>
             </div>
         </>
