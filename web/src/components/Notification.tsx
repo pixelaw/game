@@ -119,8 +119,6 @@ export default function Notification() {
                       <Notif entityIndex={notif} key={notif} />
                     ))}
 
-
-
                 </div>
             </div>
         </>

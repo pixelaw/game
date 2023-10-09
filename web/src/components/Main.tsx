@@ -7,8 +7,8 @@ import { useAtom, useAtomValue } from 'jotai'
 import { EXECUTION_STATUS, MAX_CELL_SIZE } from '@/global/constants'
 import DrawPanel, { Coordinate } from '@/components/shared/DrawPanel'
 import { usePaintCanvas } from '@/hooks/systems/usePaintCanvas'
-import { getComponentValue, Has } from '@latticexyz/recs'
-import { useFilteredEntities } from '@/hooks/entities/useFilteredEntities.ts'
+import { getComponentValue, getComponentValueStrict, Has, HasValue } from '@latticexyz/recs'
+import { useFilteredEntities } from '@/hooks/entities/useFilteredEntities'
 import {
   colorAtom,
   gameModeAtom,
@@ -17,23 +17,14 @@ import {
   zoomLevelAtom,
 } from '@/global/states'
 import { useEntityQuery } from '@dojoengine/react'
+import { Account, PositionWithAddressAndType } from '@/global/types'
+import { useNeedsAttention } from '@/hooks/entities/useNeedsAttention'
 
 const FilteredComponents: React.FC<{ xMin: number, xMax: number, yMin: number, yMax: number }> = ({xMin, xMax, yMin, yMax}) => {
   //it always rerender this query because of refetch interval to set the value of component in dojo
   useFilteredEntities(xMin, xMax, yMin, yMax)
+  useNeedsAttention()
   return <></>
-}
-
-type Account = {
-  address: string,
-  active: boolean
-}
-
-export type PositionWithAddressAndType = {
-  x: number | undefined
-  y: number | undefined
-  address?: string | number
-  pixel?: string | number
 }
 
 const Main = () => {
@@ -50,10 +41,10 @@ const Main = () => {
         Color,
         Owner,
         PixelType,
+        NeedsAttention,
       },
     },
   } = useDojo()
-
   //return list of accounts ({address: '0x00...', active: boolean})[]
   const accounts = list()
 
@@ -62,6 +53,7 @@ const Main = () => {
 
   const accountParamInt = parseInt(accountParam ?? '1')
   const index = isNaN(accountParamInt) ? 1 : accountParamInt
+
   const selectedAccount = accounts[index - 1] as Account | undefined
   const hasAccount = !!selectedAccount
   const isAlreadySelected = account.address === selectedAccount?.address
@@ -133,6 +125,21 @@ const Main = () => {
       return getComponentValue(PixelType, entityId)
     })
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const notifEntitiyIds = useEntityQuery([ HasValue(NeedsAttention, { value: true }), HasValue(Owner, { address: account.address }) ])
+
+  const needAttentionData: Record<`[${number},${number}]`, boolean | undefined> = {}
+
+  const entityNeedsAttentions = notifEntitiyIds
+    .map(entityId => {
+      return getComponentValueStrict(NeedsAttention, entityId)
+    })
+
+  entityNeedsAttentions.forEach(entityNeedsAttention => {
+    needAttentionData[`[${entityNeedsAttention.x},${entityNeedsAttention.y}]`] = entityNeedsAttention.value
+  })
+
   const handleVisibleAreaCoordinate = (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => {
     const expansionFactor = 10
     const minLimit = 0, maxLimit = 256
@@ -168,23 +175,23 @@ const Main = () => {
   }
 
   const handleCellClick = (position: Coordinate) => {
-    setCoordinates([position[0], position[1]])
-
-    updatePixelData(position, selectedHexColor)
-
-    paintCanvas.mutateAsync({
-      position,
-      rgbColor: hexToRgb(selectedHexColor) ?? [0, 0, 0],
-    })
-      .then((response) => {
-        if (response.execution_status === EXECUTION_STATUS.SUCCEEDED) {
-          setCoordinates(undefined)
-        }
-      })
-      .catch(err => {
-        console.error('reversing color because of: ', err)
-        setCoordinates(undefined)
-      })
+    // setCoordinates([position[0], position[1]])
+    //
+    // updatePixelData(position, selectedHexColor)
+    //
+    // paintCanvas.mutateAsync({
+    //   position,
+    //   rgbColor: hexToRgb(selectedHexColor) ?? [0, 0, 0],
+    // })
+    //   .then((response) => {
+    //     if (response.execution_status === EXECUTION_STATUS.SUCCEEDED) {
+    //       setCoordinates(undefined)
+    //     }
+    //   })
+    //   .catch(err => {
+    //     console.error('reversing color because of: ', err)
+    //     setCoordinates(undefined)
+    //   })
   }
 
   const handleColorChange = (color: ColorResult) => {
@@ -200,6 +207,15 @@ const Main = () => {
       return {
         coordinates: key.match(/\d+/g)?.map(Number) as [ number, number ],
         hexColor: value,
+      }
+    })
+  }
+
+  const handleNeedsAttentionData = () => {
+    return Object.entries(needAttentionData).map(([ key, value ]) => {
+      return {
+        coordinates: key.match(/\d+/g)?.map(Number) as [ number, number ],
+        value: value,
       }
     })
   }
@@ -240,6 +256,7 @@ const Main = () => {
                           <DrawPanel
                             isCanvasRender={isCanvasRender}
                             data={handleData()}
+                            handleNeedsAttentionData={handleNeedsAttentionData()}
                             coordinates={coordinates}
                             cellSize={cellSize}
                             gameMode={gameMode}
@@ -273,4 +290,3 @@ const Main = () => {
 };
 
 export default Main
-

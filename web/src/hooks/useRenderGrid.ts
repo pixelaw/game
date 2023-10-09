@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { CellDatum } from '@/components/shared/DrawPanel.tsx'
+import { CellDatum, NeedsAttentionDatum } from '@/components/shared/DrawPanel.tsx'
 
 export function useRenderGrid() {
   return useCallback((ctx: CanvasRenderingContext2D, options: {
@@ -15,6 +15,7 @@ export function useRenderGrid() {
     visibleAreaYStart: number,
     visibleAreaYEnd: number,
     pixels: Array<CellDatum | undefined> | undefined,
+    needsAttention:  Array<NeedsAttentionDatum | undefined> | undefined,
   }) => {
     const {
       cellSize,
@@ -29,8 +30,11 @@ export function useRenderGrid() {
       visibleAreaYStart,
       visibleAreaYEnd,
       pixels,
+      needsAttention,
     } = options
     ctx.clearRect(0, 0, width, height)
+
+
 
     for (let row = visibleAreaXStart; row <= visibleAreaXEnd; row++) {
       for (let col = visibleAreaYStart; col <= visibleAreaYEnd; col++) {
@@ -53,6 +57,18 @@ export function useRenderGrid() {
               // Skip this iteration if the pixel color hasn't changed
               continue
             }
+          }
+        }
+
+        if(needsAttention && needsAttention.length > 0){
+          const pixelNeedAttention = needsAttention.find(p => p && p.coordinates[0] === row && p.coordinates[1] === col)
+          if(pixelNeedAttention){
+            ctx.strokeStyle = '#FFFFFF'
+            ctx.shadowColor = '#FFFFFF'
+            ctx.shadowBlur = 10
+            ctx.strokeRect(x, y, cellSize, cellSize)
+            ctx.shadowColor = 'transparent'
+            ctx.shadowBlur = 0
           }
         }
 

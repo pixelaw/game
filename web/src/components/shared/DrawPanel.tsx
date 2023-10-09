@@ -12,12 +12,18 @@ export type CellDatum = {
   hexColor: string
 }
 
+export type NeedsAttentionDatum = {
+  coordinates: Array<number>
+  value: boolean | undefined
+}
+
 type DrawPanelProps = {
   gameMode: 'none' | 'paint' | 'rps' | 'snake',
   selectedColor: string
   onLoadingPixel?: (position: Array<[ number, number ]>) => void,
 
   data?: Array<CellDatum | undefined> | undefined,
+  handleNeedsAttentionData?: Array<NeedsAttentionDatum | undefined> | undefined,
   cellSize: number,
   onCellClick?: (position: [ number, number ]) => void,
   coordinates: [ number | undefined, number | undefined ] | undefined
@@ -39,8 +45,8 @@ const DrawPanel = (props: DrawPanelProps) => {
     onVisibleAreaCoordinate,
     data,
     onHover,
+    handleNeedsAttentionData,
   } = props
-
   //moving the canvas
   const [ panning, setPanning ] = React.useState<boolean>(false)
 
@@ -93,6 +99,7 @@ const DrawPanel = (props: DrawPanelProps) => {
         visibleAreaYStart,
         visibleAreaYEnd,
         pixels: data,
+        needsAttention: handleNeedsAttentionData
       })
     }
   }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedColor, data, renderGrid, visibleAreaXStart, visibleAreaXEnd, visibleAreaYStart, visibleAreaYEnd ])
@@ -172,6 +179,20 @@ const DrawPanel = (props: DrawPanelProps) => {
     } else {
       onMouseHover(clientX, clientY)
     }
+  }
+
+  function panToCoordinate(x: number, y: number) {
+    const targetPixelX = x * cellSize;
+    const targetPixelY = y * cellSize;
+
+    const offsetX = targetPixelX - CANVAS_WIDTH / 2;
+    const offsetY = targetPixelY - CANVAS_HEIGHT / 2;
+
+    const maxOffsetX = -(MAX_ROWS_COLS * cellSize - CANVAS_WIDTH);
+    const maxOffsetY = -(MAX_ROWS_COLS * cellSize - CANVAS_HEIGHT);
+
+    setPanOffsetX(offsetX > 0 ? 0 : Math.abs(offsetX) > Math.abs(maxOffsetX) ? maxOffsetX : -offsetX);
+    setPanOffsetY(offsetY > 0 ? 0 : Math.abs(offsetY) > Math.abs(maxOffsetY) ? maxOffsetY : -offsetY);
   }
 
   return (

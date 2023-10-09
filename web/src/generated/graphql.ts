@@ -938,6 +938,14 @@ export type All_Filtered_EntitiesQueryVariables = Exact<{
 
 export type All_Filtered_EntitiesQuery = { __typename?: 'Query', colorComponents?: { __typename?: 'ColorConnection', edges?: Array<{ __typename?: 'ColorEdge', node?: { __typename?: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, ownerComponents?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, pixeltypeComponents?: { __typename?: 'PixelTypeConnection', edges?: Array<{ __typename?: 'PixelTypeEdge', node?: { __typename?: 'PixelType', x?: any | null, y?: any | null, name?: any | null } | null } | null> | null } | null };
 
+export type GetNeedsAttentionQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']['input']>;
+  address?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type GetNeedsAttentionQuery = { __typename?: 'Query', ownerComponents?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null } | null } | null> | null } | null, needsattentionComponents?: { __typename?: 'NeedsAttentionConnection', edges?: Array<{ __typename?: 'NeedsAttentionEdge', node?: { __typename?: 'NeedsAttention', x?: any | null, y?: any | null, value?: any | null } | null } | null> | null } | null };
+
 
 export const GetEntitiesDocument = gql`
     query getEntities {
@@ -1044,6 +1052,28 @@ export const All_Filtered_EntitiesDocument = gql`
   }
 }
     `;
+export const GetNeedsAttentionDocument = gql`
+    query getNeedsAttention($first: Int, $address: String) {
+  ownerComponents(first: $first, where: {address: $address}) {
+    edges {
+      node {
+        x
+        y
+        address
+      }
+    }
+  }
+  needsattentionComponents(first: $first, where: {value: 1}) {
+    edges {
+      node {
+        x
+        y
+        value
+      }
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string) => Promise<T>;
 
@@ -1051,6 +1081,7 @@ export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, str
 const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType) => action();
 const GetEntitiesDocumentString = print(GetEntitiesDocument);
 const All_Filtered_EntitiesDocumentString = print(All_Filtered_EntitiesDocument);
+const GetNeedsAttentionDocumentString = print(GetNeedsAttentionDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
     getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
@@ -1058,6 +1089,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     all_filtered_entities(variables?: All_Filtered_EntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: All_Filtered_EntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<All_Filtered_EntitiesQuery>(All_Filtered_EntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'all_filtered_entities', 'query');
+    },
+    getNeedsAttention(variables?: GetNeedsAttentionQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetNeedsAttentionQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetNeedsAttentionQuery>(GetNeedsAttentionDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getNeedsAttention', 'query');
     }
   };
 }

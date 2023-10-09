@@ -69,3 +69,14 @@ export type MainLayoutType = {
   setCurrentPage:   React.Dispatch<React.SetStateAction<number>>
 }
 
+export type Account = {
+  address: string,
+  active: boolean
+}
+
+export type PositionWithAddressAndType = {
+  x: number | undefined
+  y: number | undefined
+  address?: string | number
+  pixel?: string | number
+}

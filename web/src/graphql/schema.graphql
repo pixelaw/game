@@ -100,3 +100,24 @@ query all_filtered_entities($first: Int, $xMin: Int, $xMax: Int, $yMin: Int, $yM
     }
   }
 }
+
+query getNeedsAttention($first: Int, $address: String){
+  ownerComponents(first: $first, where: { address: $address}) {
+    edges {
+      node {
+        x
+        y
+        address
+      }
+    }
+  }
+  needsattentionComponents(first:$first, where: { value: 1}){
+    edges{
+      node{
+        x
+        y
+        value
+      }
+    }
+  }
+}
