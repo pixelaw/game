@@ -59,10 +59,10 @@ const LobbyMap: React.FC<PropsType> = ({ onMapClick, visitable = MAX_MAPS }) => 
     for (let i = 0; i < MAX_MAPS; i++) {
       if (i < visitable) {
         sections.push(
-          <VisitableSection src={imageSrc} onClick={() => onMapClick(i)} />
+          <VisitableSection key={i} src={imageSrc} onClick={() => onMapClick(i)} />
         )
       } else {
-        sections.push(<NonVisitableSection />)
+        sections.push(<NonVisitableSection key={i}/>)
       }
     }
     return sections
