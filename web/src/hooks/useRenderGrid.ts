@@ -9,13 +9,13 @@ export function useRenderGrid() {
     coordinates: [ number | undefined, number | undefined ] | undefined
     panOffsetX: number,
     panOffsetY: number,
-    selectedColor: string,
+    selectedHexColor: string,
     visibleAreaXStart: number,
     visibleAreaXEnd: number,
     visibleAreaYStart: number,
     visibleAreaYEnd: number,
     pixels: Array<CellDatum | undefined> | undefined,
-    needsAttention:  Array<NeedsAttentionDatum | undefined> | undefined,
+    needsAttentionData:  Array<NeedsAttentionDatum | undefined> | undefined,
   }) => {
     const {
       cellSize,
@@ -24,13 +24,13 @@ export function useRenderGrid() {
       panOffsetX,
       panOffsetY,
       coordinates,
-      selectedColor,
+      selectedHexColor,
       visibleAreaXStart,
       visibleAreaXEnd,
       visibleAreaYStart,
       visibleAreaYEnd,
       pixels,
-      needsAttention,
+      needsAttentionData,
     } = options
     ctx.clearRect(0, 0, width, height)
 
@@ -60,8 +60,8 @@ export function useRenderGrid() {
           }
         }
 
-        if(needsAttention && needsAttention.length > 0){
-          const pixelNeedAttention = needsAttention.find(p => p && p.coordinates[0] === row && p.coordinates[1] === col)
+        if(needsAttentionData && needsAttentionData.length > 0){
+          const pixelNeedAttention = needsAttentionData.find(p => p && p.coordinates[0] === row && p.coordinates[1] === col)
           if(pixelNeedAttention){
             ctx.strokeStyle = '#FFFFFF'
             ctx.shadowColor = '#FFFFFF'
@@ -73,7 +73,7 @@ export function useRenderGrid() {
         }
 
         if (coordinates && row === coordinates[0] && col === coordinates[1]) {
-          pixelColor = selectedColor
+          pixelColor = selectedHexColor
         }
 
         ctx.fillStyle = pixelColor

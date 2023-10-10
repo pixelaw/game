@@ -2,10 +2,9 @@ import React from 'react'
 import { clsx } from 'clsx'
 import { useRenderGrid } from '@/hooks/useRenderGrid'
 import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_ROWS_COLS } from '@/global/constants'
+import { useDrawPanel } from '@/providers/DrawPanelProvider.tsx'
 
 export type Coordinate = [ number, number ]
-
-type VisibleCoordinates = Coordinate[]
 
 export type CellDatum = {
   coordinates: Array<number>
@@ -17,42 +16,25 @@ export type NeedsAttentionDatum = {
   value: boolean | undefined
 }
 
-type DrawPanelProps = {
-  gameMode: 'none' | 'paint' | 'rps' | 'snake',
-  selectedColor: string
-  onLoadingPixel?: (position: Array<[ number, number ]>) => void,
-
-  data?: Array<CellDatum | undefined> | undefined,
-  handleNeedsAttentionData?: Array<NeedsAttentionDatum | undefined> | undefined,
-  cellSize: number,
-  onCellClick?: (position: [ number, number ]) => void,
-  coordinates: [ number | undefined, number | undefined ] | undefined
-  onVisisbleCoordinateChanged?: (visibleCoordinates: VisibleCoordinates) => void
-  onOffsetChanged?: (offsetCoordinate: Coordinate) => void
-  onVisibleAreaCoordinate?: (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => void
-  onHover?: (coordinate: Coordinate) => void
-  isCanvasRender: boolean
-}
-
-const DrawPanel = (props: DrawPanelProps) => {
+const DrawPanel = () => {
   const {
     gameMode,
-    selectedColor,
-
-    coordinates,
     cellSize,
+    coordinates,
+    selectedHexColor,
+    data,
+    needsAttentionData,
+    panOffsetX,
+    panOffsetY,
+    setPanOffsetX,
+    setPanOffsetY,
     onCellClick,
     onVisibleAreaCoordinate,
-    data,
     onHover,
-    handleNeedsAttentionData,
-  } = props
+  } = useDrawPanel()
+
   //moving the canvas
   const [ panning, setPanning ] = React.useState<boolean>(false)
-
-  // offset is a negative value
-  const [ panOffsetX, setPanOffsetX ] = React.useState<number>(0)
-  const [ panOffsetY, setPanOffsetY ] = React.useState<number>(0)
 
   const [ initialPositionX, setInitialPositionX ] = React.useState<number>(0)
   const [ initialPositionY, setInitialPositionY ] = React.useState<number>(0)
@@ -64,6 +46,8 @@ const DrawPanel = (props: DrawPanelProps) => {
   // max: [x,y]: [20,20]
   const visibleAreaXEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_WIDTH - panOffsetX) / cellSize))
   const visibleAreaYEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_HEIGHT - panOffsetY) / cellSize))
+
+  // console.info("visibleAreaXStart", visibleAreaXStart,visibleAreaXEnd, visibleAreaYStart, visibleAreaYEnd);
 
   // Add a new state for storing the mousedown time
   const [ mouseDownTime, setMouseDownTime ] = React.useState<number>(0)
@@ -93,16 +77,16 @@ const DrawPanel = (props: DrawPanelProps) => {
         coordinates,
         panOffsetX,
         panOffsetY,
-        selectedColor,
+        selectedHexColor,
         visibleAreaXStart,
         visibleAreaXEnd,
         visibleAreaYStart,
         visibleAreaYEnd,
         pixels: data,
-        needsAttention: handleNeedsAttentionData
+        needsAttentionData,
       })
     }
-  }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedColor, data, renderGrid, visibleAreaXStart, visibleAreaXEnd, visibleAreaYStart, visibleAreaYEnd ])
+  }, [ coordinates, panOffsetX, panOffsetY, cellSize, selectedHexColor, data, renderGrid, visibleAreaXStart, visibleAreaXEnd, visibleAreaYStart, visibleAreaYEnd ])
 
   function onClickCoordinates(clientX: number, clientY: number) {
     if (!gridCanvasRef.current) return
@@ -181,24 +165,29 @@ const DrawPanel = (props: DrawPanelProps) => {
     }
   }
 
-  function panToCoordinate(x: number, y: number) {
-    const targetPixelX = x * cellSize;
-    const targetPixelY = y * cellSize;
+  // function panToCoordinate(x: number, y: number) {
+  //   const targetPixelX = x * cellSize;
+  //   const targetPixelY = y * cellSize;
+  //
+  //   const offsetX = targetPixelX - CANVAS_WIDTH / 2;
+  //   const offsetY = targetPixelY - CANVAS_HEIGHT / 2;
+  //
+  //   const maxOffsetX = -(MAX_ROWS_COLS * cellSize - CANVAS_WIDTH);
+  //   const maxOffsetY = -(MAX_ROWS_COLS * cellSize - CANVAS_HEIGHT);
+  //
+  //   console.info("offsetX", offsetX > 0 ? 0 : Math.abs(offsetX) > Math.abs(maxOffsetX) ? maxOffsetX : -offsetX );
+  //   console.info("offsetY", offsetY > 0 ? 0 : Math.abs(offsetY) > Math.abs(maxOffsetY) ? maxOffsetY : -offsetY );
+  //   setPanOffsetX(offsetX > 0 ? 0 : Math.abs(offsetX) > Math.abs(maxOffsetX) ? maxOffsetX : -offsetX);
+  //   setPanOffsetY(offsetY > 0 ? 0 : Math.abs(offsetY) > Math.abs(maxOffsetY) ? maxOffsetY : -offsetY);
+  // }
 
-    const offsetX = targetPixelX - CANVAS_WIDTH / 2;
-    const offsetY = targetPixelY - CANVAS_HEIGHT / 2;
 
-    const maxOffsetX = -(MAX_ROWS_COLS * cellSize - CANVAS_WIDTH);
-    const maxOffsetY = -(MAX_ROWS_COLS * cellSize - CANVAS_HEIGHT);
 
-    setPanOffsetX(offsetX > 0 ? 0 : Math.abs(offsetX) > Math.abs(maxOffsetX) ? maxOffsetX : -offsetX);
-    setPanOffsetY(offsetY > 0 ? 0 : Math.abs(offsetY) > Math.abs(maxOffsetY) ? maxOffsetY : -offsetY);
-  }
 
   return (
     <React.Fragment>
       <div className={clsx([
-        'mt-20 w-full h-[704px] ',
+        'mt-20 w-full h-[704px]',
       ])}>
         <div id={'canvas-container'} className={clsx([
           ' h-full max-w-[1728px] overflow-hidden',

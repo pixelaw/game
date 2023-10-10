@@ -80,3 +80,9 @@ export type PositionWithAddressAndType = {
   address?: string | number
   pixel?: string | number
 }
+
+export type NotificationDataType = {
+  x: number | undefined
+  y: number | undefined
+  pixelType?: string | number
+}

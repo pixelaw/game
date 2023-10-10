@@ -1,11 +1,13 @@
-import React from "react";
-import {cn} from "@/lib/utils";
-import {Button} from "@/components/ui/button";
-import Image from "@/components/ui/Image"
+import React from 'react'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import Image from '@/components/ui/Image'
 import { useComponentValue, useEntityQuery } from '@dojoengine/react'
 import { useDojo } from '@/DojoContext'
 import { EntityIndex, HasValue } from '@latticexyz/recs'
 import { felt252ToString } from '@/global/utils'
+import { notificationDataAtom } from '@/global/states.ts'
+import { useSetAtom } from 'jotai'
 
 const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
   const {
@@ -17,7 +19,16 @@ const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
   const pixelType = useComponentValue(PixelType, entityIndex)
   const name = felt252ToString(pixelType?.name ?? 'Unknown')
 
-  // TODO: add focus on Notif click...coordinates is inside pixelType
+  const setNotificationData = useSetAtom(notificationDataAtom)
+
+  const handleOnClickNotification = () => {
+    if (!pixelType) return
+    setNotificationData({
+      x: pixelType.x,
+      y: pixelType.y,
+      pixelType: felt252ToString(pixelType.name),
+    })
+  }
 
   return (
     <div
@@ -33,6 +44,7 @@ const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
         <h2 className={cn(['text-white text-left text-sm font-semibold'])}>{name} pixel needs your attention</h2>
       </div>
       <Button
+        onClick={handleOnClickNotification}
         variant={'icon'}
         size={'icon'}
         className={cn(['w-[20px] grow-0 font-emoji text-xl text-brand-skyblue'])}
@@ -79,7 +91,7 @@ export default function Notification() {
             <div
                 className={cn(
                     [
-                        'fixed bottom-0 z-50',
+                      'fixed bottom-0 z-50 overflow-y-auto',
                         'h-[calc(100vh-var(--header-height))] w-[237px]',
                         'bg-brand-violet border-r-[1px] border-black',
                         'py-sm pr-sm pl-xs',

@@ -1,6 +1,6 @@
 import {atom} from "jotai";
 import {hexToRgb} from "./utils";
-import { PositionWithAddressAndType } from '@/components/Main.tsx'
+import { NotificationDataType, PositionWithAddressAndType } from '@/global/types.ts'
 
 export const colorAtom = atom('#FFFFFF')
 export const rgbColorAtom = atom(
@@ -32,3 +32,5 @@ export const positionWithAddressAndTypeAtom = atom<PositionWithAddressAndType>({
   address: '',
   pixel: '',
 })
+
+export const notificationDataAtom = atom<NotificationDataType | undefined>(undefined)
