@@ -293,3 +293,74 @@ mod core_actions {
 
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use starknet::class_hash::Felt252TryIntoClassHash;
+
+  use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
+
+  use dojo::test_utils::{spawn_test_world, deploy_contract};
+
+  use pixelaw::models::owner::Owner;
+  use pixelaw::models::owner::owner;
+  use pixelaw::models::permission::Permission;
+  use pixelaw::models::permission::permission;
+  use pixelaw::models::position::Position;
+  use pixelaw::models::pixel_type::PixelType;
+  use pixelaw::models::pixel_type::pixel_type;
+  use pixelaw::models::timestamp::Timestamp;
+  use pixelaw::models::timestamp::timestamp;
+  use pixelaw::models::text::Text;
+  use pixelaw::models::text::text;
+  use pixelaw::models::color::Color;
+  use pixelaw::models::color::color;
+
+  use super::{core_actions, ICoreActionsDispatcher, ICoreActionsDispatcherTrait};
+
+  const SPAWN_PIXEL_ENTRYPOINT: felt252 = 0x01c199924ae2ed5de296007a1ac8aa672140ef2a973769e4ad1089829f77875a;
+
+  #[test]
+  #[available_gas(30000000)]
+  fn test_process_queue() {
+    let caller = starknet::contract_address_const::<0x0>();
+
+    // models
+    let mut models = array![
+      owner::TEST_CLASS_HASH,
+      permission::TEST_CLASS_HASH,
+      pixel_type::TEST_CLASS_HASH,
+      timestamp::TEST_CLASS_HASH,
+      text::TEST_CLASS_HASH,
+      color::TEST_CLASS_HASH,
+    ];
+    // deploy world with models
+    let world = spawn_test_world(models);
+
+    // deploy systems contract
+    let contract_address = world
+      .deploy_contract(0, core_actions::TEST_CLASS_HASH.try_into().unwrap());
+
+    let core_actions_system = ICoreActionsDispatcher { contract_address };
+    let id = 0;
+
+    let position = Position {
+      x: 0,
+      y: 0
+    };
+
+    let mut calldata = ArrayTrait::new();
+    calldata.append('snake');
+    position.serialize(ref calldata);
+    calldata.append('snake');
+    calldata.append(0);
+
+
+    core_actions_system.process_queue(
+      id,
+      core_actions::TEST_CLASS_HASH.try_into().unwrap(),
+      SPAWN_PIXEL_ENTRYPOINT,
+      calldata.span()
+    );
+  }
+}
