@@ -1,6 +1,9 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use pixelaw::models::position::Position;
 use pixelaw::models::color::Color;
+use pixelaw::models::owner::Owner;
+use pixelaw::models::text::Text;
+use pixelaw::models::pixel_type::PixelType;
 use starknet::{ContractAddress, ClassHash};
 
 // trait: specify functions to implement
@@ -9,6 +12,11 @@ trait ICoreActions<TContractState> {
   fn has_write_access(self: @TContractState, position: Position, caller_system: felt252) -> bool;
   fn process_queue(self: @TContractState, id: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
   fn schedule_queue(self: @TContractState, unlock: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
+  fn spawn_pixel(self: @TContractState, caller_system: felt252, position: Position, pixel_type: felt252, allowlist: Array<felt252>);
+  fn update_color(self: @TContractState, caller_system: felt252, position: Position, new_color: Color);
+  fn update_owner(self: @TContractState, caller_system: felt252, position: Position, new_owner: Owner);
+  fn update_text(self: @TContractState, caller_system: felt252, position: Position, new_text: Text);
+  fn update_pixel_type(self: @TContractState, caller_system: felt252, position: Position, new_type: PixelType);
 }
 
 #[system]
@@ -18,6 +26,10 @@ mod core_actions {
   use pixelaw::models::owner::Owner;
   use pixelaw::models::permission::Permission;
   use pixelaw::models::position::Position;
+  use pixelaw::models::pixel_type::PixelType;
+  use pixelaw::models::timestamp::Timestamp;
+  use pixelaw::models::text::Text;
+  use pixelaw::models::color::Color;
   use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
 
 
@@ -34,11 +46,45 @@ mod core_actions {
     id: u64
   }
 
+  #[derive(Drop, starknet::Event)]
+  struct ColorUpdated {
+    color: Color,
+    caller: felt252
+  }
+
+  #[derive(Drop, starknet::Event)]
+  struct OwnerUpdated {
+    owner: Owner,
+    caller: felt252
+  }
+
+  #[derive(Drop, starknet::Event)]
+  struct TextUpdated {
+    text: Text,
+    caller: felt252
+  }
+
+  #[derive(Drop, starknet::Event)]
+  struct PixelTypeUpdated {
+    pixel_type: PixelType,
+    caller: felt252
+  }
+
   #[event]
   #[derive(Drop, starknet::Event)]
   enum Event {
     QueueStarted: QueueStarted,
-    QueueFinished: QueueFinished
+    QueueFinished: QueueFinished,
+    ColorUpdated: ColorUpdated,
+    OwnerUpdated: OwnerUpdated,
+    TextUpdated: TextUpdated,
+    PixelTypeUpdated: PixelTypeUpdated
+  }
+
+  fn assert_has_write_access(self: @ContractState, position: Position, caller_system: felt252) {
+    // Check if the caller is authorized to change the pixel
+    let has_access = self.has_write_access(position, caller_system);
+    assert(has_access, 'Not authorized to change pixel!');
   }
 
   // impl: implement functions specified in trait
@@ -65,7 +111,7 @@ mod core_actions {
       let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
       let executor = IExecutorDispatcher { contract_address: world.executor() };
       executor.call(class_hash, entry_point, calldata);
-      emit!(world, Event::QueueFinished(QueueFinished { id }));
+      emit!(world, QueueFinished { id });
     }
 
     fn schedule_queue(self: @ContractState, unlock: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>) {
@@ -75,13 +121,174 @@ mod core_actions {
 
       emit!(
         world,
-        Event::QueueStarted(QueueStarted {
+        QueueStarted {
           id,
           class_hash,
           entry_point,
           calldata
-        })
+        }
       );
+    }
+
+    fn spawn_pixel(self: @ContractState, caller_system: felt252, position: Position, pixel_type: felt252, allowlist: Array<felt252>) {
+      assert_has_write_access(self, position, caller_system);
+      let player_id: felt252 = get_caller_address().into();
+      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+
+      // Check if the pixel already exists
+      let pixel_type = get!(world, (position.x, position.y).into(), (PixelType));
+      assert(pixel_type.name == 0, 'Pixel already exists!');
+
+
+      // Set Pixel components
+      set !(
+        world,
+        (
+          Owner {
+            x: position.x,
+            y: position.y,
+            address: player_id
+          },
+          PixelType {
+            x: position.x,
+            y: position.y,
+            name: pixel_type.name
+          },
+          Timestamp {
+            x: position.x,
+            y: position.y,
+            created_at: starknet::get_block_timestamp(),
+            updated_at: starknet::get_block_timestamp()
+          },
+        )
+      );
+
+      let mut index = 0;
+      let len = allowlist.len();
+      loop {
+        if index == len {
+          break;
+        }
+        set !(
+          world, // pixel + system is the storage key
+          (
+            Permission {
+            x: position.x,
+            y: position.y,
+            caller_system: *allowlist[index],
+            allowed: true
+            }
+          )
+        );
+        index += 1;
+      };
+    }
+
+    fn update_color(self: @ContractState, caller_system: felt252, position: Position, new_color: Color) {
+      assert_has_write_access(self, position, caller_system);
+
+      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+
+      // Retrieve the timestamp of the pixel
+      let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
+
+      // Update the pixel's color and timestamp in the world state at the specified position
+      set !(
+        world,
+        (
+          new_color,
+          Timestamp {
+            x: position.x,
+            y: position.y,
+            created_at: timestamp.created_at,
+            updated_at: starknet::get_block_timestamp()
+          },
+        )
+      );
+
+      let player_id: felt252 = get_caller_address().into();
+
+      emit!(
+        world,
+        ColorUpdated {
+          color: new_color,
+          caller: player_id
+        }
+      )
+    }
+
+    fn update_owner(self: @ContractState, caller_system: felt252, position: Position, new_owner: Owner) {
+      assert_has_write_access(self, position, caller_system);
+      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+
+      // Retrieve the timestamp of the pixel
+      let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
+
+      // Update the pixel's owner and timestamp in the world state at the specified position
+      set !(
+        world,
+        (
+          new_owner,
+          Timestamp {
+            x: position.x,
+            y: position.y,
+            created_at: timestamp.created_at, updated_at: starknet::get_block_timestamp()
+          },
+        )
+      );
+
+      let player_id: felt252 = get_caller_address().into();
+      emit!(world, OwnerUpdated { owner: new_owner, caller: player_id })
+    }
+
+    fn update_text(self: @ContractState, caller_system: felt252, position: Position, new_text: Text){
+      assert_has_write_access(self, position, caller_system);
+      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+
+      // Retrieve the timestamp of the pixel
+      let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
+
+      // Update the pixel's owner and timestamp in the world state at the specified position
+      set !(
+        world,
+        (
+          new_text,
+          Timestamp {
+            x: position.x,
+            y: position.y,
+            created_at: timestamp.created_at,
+            updated_at: starknet::get_block_timestamp()
+          },
+        )
+      );
+
+      let player_id: felt252 = get_caller_address().into();
+      emit!(world, TextUpdated { text: new_text, caller: player_id })
+    }
+
+    fn update_pixel_type(self: @ContractState, caller_system: felt252, position: Position, new_type: PixelType) {
+      assert_has_write_access(self, position, caller_system);
+      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+
+      // Retrieve the timestamp of the pixel
+      let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
+
+      // Update the pixel's owner and timestamp in the world state at the specified position
+      set !(
+        world,
+        (
+          new_type,
+          Timestamp {
+            x: position.x,
+            y: position.y,
+            created_at: timestamp.created_at,
+            updated_at: starknet::get_block_timestamp()
+        },
+        )
+      );
+
+      let player_id: felt252 = get_caller_address().into();
+      emit!(world, PixelTypeUpdated { pixel_type: new_type, caller: player_id })
     }
 
   }
