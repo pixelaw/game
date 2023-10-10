@@ -32,9 +32,8 @@ export function useRenderGrid() {
       pixels,
       needsAttentionData,
     } = options
+
     ctx.clearRect(0, 0, width, height)
-
-
 
     for (let row = visibleAreaXStart; row <= visibleAreaXEnd; row++) {
       for (let col = visibleAreaYStart; col <= visibleAreaYEnd; col++) {

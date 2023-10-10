@@ -47,8 +47,6 @@ const DrawPanel = () => {
   const visibleAreaXEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_WIDTH - panOffsetX) / cellSize))
   const visibleAreaYEnd = Math.min(MAX_ROWS_COLS, Math.ceil((CANVAS_HEIGHT - panOffsetY) / cellSize))
 
-  // console.info("visibleAreaXStart", visibleAreaXStart,visibleAreaXEnd, visibleAreaYStart, visibleAreaYEnd);
-
   // Add a new state for storing the mousedown time
   const [ mouseDownTime, setMouseDownTime ] = React.useState<number>(0)
 
@@ -164,25 +162,6 @@ const DrawPanel = () => {
       onMouseHover(clientX, clientY)
     }
   }
-
-  // function panToCoordinate(x: number, y: number) {
-  //   const targetPixelX = x * cellSize;
-  //   const targetPixelY = y * cellSize;
-  //
-  //   const offsetX = targetPixelX - CANVAS_WIDTH / 2;
-  //   const offsetY = targetPixelY - CANVAS_HEIGHT / 2;
-  //
-  //   const maxOffsetX = -(MAX_ROWS_COLS * cellSize - CANVAS_WIDTH);
-  //   const maxOffsetY = -(MAX_ROWS_COLS * cellSize - CANVAS_HEIGHT);
-  //
-  //   console.info("offsetX", offsetX > 0 ? 0 : Math.abs(offsetX) > Math.abs(maxOffsetX) ? maxOffsetX : -offsetX );
-  //   console.info("offsetY", offsetY > 0 ? 0 : Math.abs(offsetY) > Math.abs(maxOffsetY) ? maxOffsetY : -offsetY );
-  //   setPanOffsetX(offsetX > 0 ? 0 : Math.abs(offsetX) > Math.abs(maxOffsetX) ? maxOffsetX : -offsetX);
-  //   setPanOffsetY(offsetY > 0 ? 0 : Math.abs(offsetY) > Math.abs(maxOffsetY) ? maxOffsetY : -offsetY);
-  // }
-
-
-
 
   return (
     <React.Fragment>
