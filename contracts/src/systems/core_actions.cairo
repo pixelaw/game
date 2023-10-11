@@ -4,6 +4,7 @@ use pixelaw::models::color::Color;
 use pixelaw::models::owner::Owner;
 use pixelaw::models::text::Text;
 use pixelaw::models::pixel_type::PixelType;
+use pixelaw::models::needs_attention::NeedsAttention;
 use starknet::{ContractAddress, ClassHash};
 
 // trait: specify functions to implement
@@ -17,6 +18,7 @@ trait ICoreActions<TContractState> {
   fn update_owner(self: @TContractState, caller_system: felt252, position: Position, new_owner: Owner);
   fn update_text(self: @TContractState, caller_system: felt252, position: Position, new_text: Text);
   fn update_pixel_type(self: @TContractState, caller_system: felt252, position: Position, new_type: PixelType);
+  fn update_needs_attention(self: @TContractState, caller_system: felt252, position: Position, new_needs_attention: NeedsAttention);
 }
 
 #[system]
@@ -30,6 +32,7 @@ mod core_actions {
   use pixelaw::models::timestamp::Timestamp;
   use pixelaw::models::text::Text;
   use pixelaw::models::color::Color;
+  use pixelaw::models::needs_attention::NeedsAttention;
   use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
 
 
@@ -70,6 +73,12 @@ mod core_actions {
     caller: felt252
   }
 
+  #[derive(Drop, starknet::Event)]
+  struct NeedsAttentionUpdated {
+    needs_attention: NeedsAttention,
+    caller: felt252
+  }
+
   #[event]
   #[derive(Drop, starknet::Event)]
   enum Event {
@@ -78,7 +87,8 @@ mod core_actions {
     ColorUpdated: ColorUpdated,
     OwnerUpdated: OwnerUpdated,
     TextUpdated: TextUpdated,
-    PixelTypeUpdated: PixelTypeUpdated
+    PixelTypeUpdated: PixelTypeUpdated,
+    NeedsAttentionUpdated: NeedsAttentionUpdated
   }
 
   fn assert_has_write_access(self: @ContractState, position: Position, caller_system: felt252) {
@@ -289,6 +299,31 @@ mod core_actions {
 
       let player_id: felt252 = get_caller_address().into();
       emit!(world, PixelTypeUpdated { pixel_type: new_type, caller: player_id })
+    }
+
+    fn update_needs_attention(self: @ContractState, caller_system: felt252, position: Position, new_needs_attention: NeedsAttention) {
+      assert_has_write_access(self, position, caller_system);
+      let world = self.world_dispatcher.read();
+
+      // Retrieve the timestamp of the pixel
+      let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
+
+      // Update the pixel's owner and timestamp in the world state at the specified position
+      set !(
+        world,
+        (
+          new_needs_attention,
+          Timestamp {
+          x: position.x,
+          y: position.y,
+          created_at: timestamp.created_at,
+          updated_at: starknet::get_block_timestamp()
+          },
+        )
+      );
+
+      let player_id: felt252 = get_caller_address().into();
+      emit!(world, NeedsAttentionUpdated { needs_attention: new_needs_attention, caller: player_id })
     }
 
   }
