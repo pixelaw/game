@@ -92,7 +92,7 @@ mod core_actions {
   impl CoreActionsImpl of ICoreActions<ContractState> {
     // ContractState is defined by system decorator expansion
     fn has_write_access(self: @ContractState, position: Position, caller_system: felt252) -> bool {
-      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+      let world = self.world_dispatcher.read();
 
       let permission = get!(world, (position.x, position.y, caller_system).into(), (Permission));
       if permission.allowed {
@@ -108,14 +108,14 @@ mod core_actions {
 
     fn process_queue(self: @ContractState, id: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>) {
       assert(id <= starknet::get_block_timestamp() * 1_000, 'unlock time not passed');
-      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+      let world = self.world_dispatcher.read();
       let executor = IExecutorDispatcher { contract_address: world.executor() };
       executor.call(class_hash, entry_point, calldata);
       emit!(world, QueueFinished { id });
     }
 
     fn schedule_queue(self: @ContractState, unlock: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>) {
-      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+      let world = self.world_dispatcher.read();
       let random_number = starknet::get_block_timestamp() % 1_000;
       let id = unlock * 1_000 + random_number;
 
@@ -133,7 +133,7 @@ mod core_actions {
     fn spawn_pixel(self: @ContractState, caller_system: felt252, position: Position, pixel_type: felt252, allowlist: Array<felt252>) {
       assert_has_write_access(self, position, caller_system);
       let player_id: felt252 = get_caller_address().into();
-      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+      let world = self.world_dispatcher.read();
 
       // Check if the pixel already exists
       let pixel_type = get!(world, (position.x, position.y).into(), (PixelType));
@@ -187,7 +187,7 @@ mod core_actions {
     fn update_color(self: @ContractState, caller_system: felt252, position: Position, new_color: Color) {
       assert_has_write_access(self, position, caller_system);
 
-      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+      let world = self.world_dispatcher.read();
 
       // Retrieve the timestamp of the pixel
       let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
@@ -219,7 +219,7 @@ mod core_actions {
 
     fn update_owner(self: @ContractState, caller_system: felt252, position: Position, new_owner: Owner) {
       assert_has_write_access(self, position, caller_system);
-      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+      let world = self.world_dispatcher.read();
 
       // Retrieve the timestamp of the pixel
       let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
@@ -243,7 +243,7 @@ mod core_actions {
 
     fn update_text(self: @ContractState, caller_system: felt252, position: Position, new_text: Text){
       assert_has_write_access(self, position, caller_system);
-      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+      let world = self.world_dispatcher.read();
 
       // Retrieve the timestamp of the pixel
       let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
@@ -268,7 +268,7 @@ mod core_actions {
 
     fn update_pixel_type(self: @ContractState, caller_system: felt252, position: Position, new_type: PixelType) {
       assert_has_write_access(self, position, caller_system);
-      let world = IWorldDispatcher { contract_address: self.world_dispatcher.read() };
+      let world = self.world_dispatcher.read();
 
       // Retrieve the timestamp of the pixel
       let timestamp = get !(world, (position.x, position.y).into(), Timestamp);
@@ -349,7 +349,7 @@ mod tests {
       y: 0
     };
 
-    let mut calldata = ArrayTrait::new();
+    let mut calldata: Array<felt252> = ArrayTrait::new();
     calldata.append('snake');
     position.serialize(ref calldata);
     calldata.append('snake');
