@@ -10,7 +10,8 @@ use starknet::{ContractAddress, ClassHash};
 // trait: specify functions to implement
 #[starknet::interface]
 trait ICoreActions<TContractState> {
-  fn setup(self: @TContractState);
+  fn init(self: @TContractState);
+  fn update_app_name(self: @TContractState, name: felt252);
   fn has_write_access(self: @TContractState, player_id: felt252, position: Position, caller_system: felt252) -> bool;
   fn process_queue(self: @TContractState, id: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
   fn schedule_queue(self: @TContractState, unlock: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
@@ -27,6 +28,7 @@ mod core_actions {
   use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
   use super::ICoreActions;
   use pixelaw::models::owner::Owner;
+  use pixelaw::models::app::App;
   use pixelaw::models::permission::Permission;
   use pixelaw::models::position::Position;
   use pixelaw::models::pixel_type::PixelType;
@@ -81,6 +83,12 @@ mod core_actions {
     caller: felt252
   }
 
+  #[derive(Drop, starknet::Event)]
+  struct AppNameUpdated {
+    app: App,
+    caller: felt252
+  }
+
   #[event]
   #[derive(Drop, starknet::Event)]
   enum Event {
@@ -90,13 +98,15 @@ mod core_actions {
     OwnerUpdated: OwnerUpdated,
     TextUpdated: TextUpdated,
     PixelTypeUpdated: PixelTypeUpdated,
-    NeedsAttentionUpdated: NeedsAttentionUpdated
+    NeedsAttentionUpdated: NeedsAttentionUpdated,
+    AppNameUpdated: AppNameUpdated
   }
 
   fn assert_has_write_access(self: @ContractState, player_id: felt252, position: Position) {
     // Check if the caller is authorized to change the pixel
-    let caller_system: felt252 = get_caller_address().into();
-    let has_access = self.has_write_access(player_id, position, caller_system);
+    let world = self.world_dispatcher.read();
+    let system = get!(world, get_caller_address(), (App));
+    let has_access = self.has_write_access(player_id, position, system.name);
     assert(has_access, 'Not authorized to change pixel!');
   }
 
@@ -104,7 +114,7 @@ mod core_actions {
   #[external(v0)]
   impl CoreActionsImpl of ICoreActions<ContractState> {
     // ContractState is defined by system decorator expansion
-    fn setup(self: @ContractState) {
+    fn init(self: @ContractState) {
       let world = self.world_dispatcher.read();
       set!(
         world,
@@ -115,6 +125,25 @@ mod core_actions {
           }
         )
       )
+    }
+
+    fn update_app_name(self: @ContractState, name: felt252) {
+      // TODO: later need to check if someone is using the same name
+
+      let world = self.world_dispatcher.read();
+      let app_address = get_contract_address();
+      let app = get!(world, app_address, (App));
+      assert(app.name == 0, 'app name already set');
+      set!(
+        world,
+        (
+          App {
+            system: get_contract_address(),
+            name
+          }
+        )
+      );
+
     }
 
     fn has_write_access(self: @ContractState, player_id: felt252, position: Position, caller_system: felt252) -> bool {

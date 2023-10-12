@@ -4,6 +4,7 @@ use pixelaw::models::color::Color;
 
 #[starknet::interface]
 trait IPaintActions<TContractState> {
+  fn init(self: @TContractState);
   fn put_color(self: @TContractState, position: Position, new_color: Color);
   fn remove_color(self: @TContractState, position: Position);
 }
@@ -27,9 +28,19 @@ mod paint_actions {
 
   const REMOVE_COLOR_ENTRYPOINT: felt252 = 0x016af38c75fbaa0eb1f1b769bd94962da4e5d65456a470acc8f056e9c20a7d93;
 
+  fn core_actions_system(self: @ContractState) -> ICoreActionsDispatcher {
+    let world = self.world_dispatcher.read();
+    let core_actions_address = CoreActionsModelTrait::address(world);
+    ICoreActionsDispatcher { contract_address: core_actions_address }
+  }
+
   // impl: implement functions specified in trait
   #[external(v0)]
   impl PaintActionsImpl of IPaintActions<ContractState> {
+    fn init(self: @ContractState) {
+      let core_actions_system = core_actions_system(self);
+      core_actions_system.update_app_name(PIXEL_TYPE);
+    }
     fn put_color(self: @ContractState, position: Position, new_color: Color) {
       let world = self.world_dispatcher.read();
 
@@ -42,9 +53,7 @@ mod paint_actions {
         needs_attention
       ) = get !(world, (position.x, position.y).into(), (PixelType, Timestamp, Owner, Color, NeedsAttention));
 
-      let core_actions_address = CoreActionsModelTrait::address(world);
-
-      let core_actions_system = ICoreActionsDispatcher { contract_address: core_actions_address };
+      let core_actions_system = core_actions_system(self);
 
       let player: felt252 = get_caller_address().into();
 
@@ -157,12 +166,13 @@ mod tests {
     // deploy core actions contract
     let core_actions_address = world.deploy_contract(0, core_actions::TEST_CLASS_HASH.try_into().unwrap());
     let core_actions_system = ICoreActionsDispatcher { contract_address: core_actions_address };
-    core_actions_system.setup();
+    core_actions_system.init();
 
     let contract_address = world.
       deploy_contract(0, paint_actions::TEST_CLASS_HASH.try_into().unwrap());
 
     let paint_actions_system = IPaintActionsDispatcher { contract_address };
+    paint_actions_system.init();
 
     let position = Position {
       x: 0,
