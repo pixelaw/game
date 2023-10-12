@@ -129,7 +129,7 @@ mod core_actions {
 
     fn update_app_name(self: @ContractState, name: felt252) {
       let world = self.world_dispatcher.read();
-      let system = get_contract_address();
+      let system = get_caller_address();
       let app = AppTrait::new(world, system, name);
       emit!(world, AppNameUpdated { app, caller: system.into() });
 
