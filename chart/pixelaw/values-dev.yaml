@@ -7,6 +7,10 @@ appType:
 
 replicaSet: 1
 
+minReplicas: 1
+maxReplicas: 3
+averageUtilization: 50
+
 webappContainerService:
   type: ClusterIP  # {{ .Values.webappContainerService.type }}
   port: 3000       # {{ .Values.webappContainerService.port }}

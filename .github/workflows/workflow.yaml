@@ -70,40 +70,40 @@ jobs:
           sudo mv argocd /usr/local/bin
           export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
           export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
-          argocd app create $PROJECTNAME-dev --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./chart/pixelaw --values values-dev.yaml --dest-namespace $PROJECTNAME-dev  --dest-server https://kubernetes.default.svc --upsert
+          argocd app create $PROJECTNAME-dev --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./chart/$PROJECTNAME --values values-dev.yaml --dest-namespace $PROJECTNAME-dev  --dest-server https://kubernetes.default.svc --upsert
           argocd app sync $PROJECTNAME-dev
           argocd app wait $PROJECTNAME-dev
           argocd app actions run $PROJECTNAME-dev --namespace $PROJECTNAME-dev restart --kind Deployment 
 
 
-  helmRelease:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+  # helmRelease:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+  #     - name: Configure Git
+  #       run: |
+  #         git config user.name "$GITHUB_ACTOR"
+  #         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Install Helm
-        uses: azure/setup-helm@v1
-        with:
-          version: v3.8.1
+  #     - name: Install Helm
+  #       uses: azure/setup-helm@v1
+  #       with:
+  #         version: v3.8.1
 
-      - name: custom packaging
-        run: |
-          rm -rf .cr-release-packages
-          mkdir -p .cr-release-packages
-          helm package chart/$PROJECTNAME --app-version=${VERSION:1} --version=${VERSION:1} --destination=.cr-release-packages
+  #     - name: custom packaging
+  #       run: |
+  #         rm -rf .cr-release-packages
+  #         mkdir -p .cr-release-packages
+  #         helm package chart/$PROJECTNAME --app-version=${VERSION:1} --version=${VERSION:1} --destination=.cr-release-packages
 
-      - name: Run chart-releaser
-        # switch back to helm/chart-releaser-action if this contribution is ever mergedd
-        uses: askcloudarchitech/chart-releaser-action@skip-packaging-option
-        with:
-          skip_packaging: true
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+  #     - name: Run chart-releaser
+  #       # switch back to helm/chart-releaser-action if this contribution is ever mergedd
+  #       uses: askcloudarchitech/chart-releaser-action@skip-packaging-option
+  #       with:
+  #         skip_packaging: true
+  #       env:
+  #         CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
