@@ -76,11 +76,11 @@ mod paint_actions {
           'Cooldown not over'
       );
 
-      core_actions_system.update_color(PIXEL_TYPE, position, new_color);
+      core_actions_system.update_color(player, position, new_color);
 
       if needs_attention.value {
         core_actions_system.update_needs_attention(
-          PIXEL_TYPE,
+          player,
           position,
           NeedsAttention {
             x: position.x,

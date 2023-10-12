@@ -178,8 +178,8 @@ mod core_actions {
       let world = self.world_dispatcher.read();
 
       // Check if the pixel already exists
-      let pixel_type = get!(world, (position.x, position.y).into(), (PixelType));
-      assert(pixel_type.name == 0, 'Pixel already exists!');
+      let current_pixel_type = get!(world, (position.x, position.y).into(), (PixelType));
+      assert(current_pixel_type.name == 0, 'Pixel already exists!');
 
 
       // Set Pixel components
@@ -194,7 +194,7 @@ mod core_actions {
           PixelType {
             x: position.x,
             y: position.y,
-            name: pixel_type.name
+            name: pixel_type
           },
           Timestamp {
             x: position.x,
