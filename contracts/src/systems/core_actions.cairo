@@ -11,15 +11,15 @@ use starknet::{ContractAddress, ClassHash};
 #[starknet::interface]
 trait ICoreActions<TContractState> {
   fn setup(self: @TContractState);
-  fn has_write_access(self: @TContractState, position: Position, caller_system: felt252) -> bool;
+  fn has_write_access(self: @TContractState, player_id: felt252, position: Position, caller_system: felt252) -> bool;
   fn process_queue(self: @TContractState, id: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
   fn schedule_queue(self: @TContractState, unlock: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
-  fn spawn_pixel(self: @TContractState, caller_system: felt252, position: Position, pixel_type: felt252, allowlist: Array<felt252>);
-  fn update_color(self: @TContractState, caller_system: felt252, position: Position, new_color: Color);
-  fn update_owner(self: @TContractState, caller_system: felt252, position: Position, new_owner: Owner);
-  fn update_text(self: @TContractState, caller_system: felt252, position: Position, new_text: Text);
-  fn update_pixel_type(self: @TContractState, caller_system: felt252, position: Position, new_type: PixelType);
-  fn update_needs_attention(self: @TContractState, caller_system: felt252, position: Position, new_needs_attention: NeedsAttention);
+  fn spawn_pixel(self: @TContractState, player_id: felt252, position: Position, pixel_type: felt252, allowlist: Array<felt252>);
+  fn update_color(self: @TContractState, player_id: felt252, position: Position, new_color: Color);
+  fn update_owner(self: @TContractState, player_id: felt252, position: Position, new_owner: Owner);
+  fn update_text(self: @TContractState, player_id: felt252, position: Position, new_text: Text);
+  fn update_pixel_type(self: @TContractState, player_id: felt252, position: Position, new_type: PixelType);
+  fn update_needs_attention(self: @TContractState, player_id: felt252, position: Position, new_needs_attention: NeedsAttention);
 }
 
 #[dojo::contract]
@@ -93,9 +93,10 @@ mod core_actions {
     NeedsAttentionUpdated: NeedsAttentionUpdated
   }
 
-  fn assert_has_write_access(self: @ContractState, position: Position, caller_system: felt252) {
+  fn assert_has_write_access(self: @ContractState, player_id: felt252, position: Position) {
     // Check if the caller is authorized to change the pixel
-    let has_access = self.has_write_access(position, caller_system);
+    let caller_system: felt252 = get_caller_address().into();
+    let has_access = self.has_write_access(player_id, position, caller_system);
     assert(has_access, 'Not authorized to change pixel!');
   }
 
@@ -115,8 +116,8 @@ mod core_actions {
         )
       )
     }
-    
-    fn has_write_access(self: @ContractState, position: Position, caller_system: felt252) -> bool {
+
+    fn has_write_access(self: @ContractState, player_id: felt252, position: Position, caller_system: felt252) -> bool {
       let world = self.world_dispatcher.read();
 
       let permission = get!(world, (position.x, position.y, caller_system).into(), (Permission));
@@ -127,8 +128,7 @@ mod core_actions {
       // If caller is owner or not owned by anyone, allow
       // Retrieve the existing pixel at the specified position
       let owner = get !(world, (position.x, position.y).into(), (Owner));
-      let origin: felt252 = get_caller_address().into();
-      owner.address == origin || owner.address == 0
+      owner.address == player_id || owner.address == 0
     }
 
     fn process_queue(self: @ContractState, id: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>) {
@@ -155,9 +155,8 @@ mod core_actions {
       );
     }
 
-    fn spawn_pixel(self: @ContractState, caller_system: felt252, position: Position, pixel_type: felt252, allowlist: Array<felt252>) {
-      assert_has_write_access(self, position, caller_system);
-      let player_id: felt252 = get_caller_address().into();
+    fn spawn_pixel(self: @ContractState, player_id: felt252, position: Position, pixel_type: felt252, allowlist: Array<felt252>) {
+      assert_has_write_access(self, player_id, position);
       let world = self.world_dispatcher.read();
 
       // Check if the pixel already exists
@@ -209,8 +208,9 @@ mod core_actions {
       };
     }
 
-    fn update_color(self: @ContractState, caller_system: felt252, position: Position, new_color: Color) {
-      assert_has_write_access(self, position, caller_system);
+    fn update_color(self: @ContractState, player_id: felt252, position: Position, new_color: Color) {
+      assert_has_write_access(self, player_id, position);
+
 
       let world = self.world_dispatcher.read();
 
@@ -231,8 +231,6 @@ mod core_actions {
         )
       );
 
-      let player_id: felt252 = get_caller_address().into();
-
       emit!(
         world,
         ColorUpdated {
@@ -242,8 +240,9 @@ mod core_actions {
       )
     }
 
-    fn update_owner(self: @ContractState, caller_system: felt252, position: Position, new_owner: Owner) {
-      assert_has_write_access(self, position, caller_system);
+    fn update_owner(self: @ContractState, player_id: felt252, position: Position, new_owner: Owner) {
+      assert_has_write_access(self, player_id, position);
+
       let world = self.world_dispatcher.read();
 
       // Retrieve the timestamp of the pixel
@@ -262,12 +261,12 @@ mod core_actions {
         )
       );
 
-      let player_id: felt252 = get_caller_address().into();
       emit!(world, OwnerUpdated { owner: new_owner, caller: player_id })
     }
 
-    fn update_text(self: @ContractState, caller_system: felt252, position: Position, new_text: Text){
-      assert_has_write_access(self, position, caller_system);
+    fn update_text(self: @ContractState, player_id: felt252, position: Position, new_text: Text){
+      assert_has_write_access(self, player_id, position);
+
       let world = self.world_dispatcher.read();
 
       // Retrieve the timestamp of the pixel
@@ -287,12 +286,11 @@ mod core_actions {
         )
       );
 
-      let player_id: felt252 = get_caller_address().into();
       emit!(world, TextUpdated { text: new_text, caller: player_id })
     }
 
-    fn update_pixel_type(self: @ContractState, caller_system: felt252, position: Position, new_type: PixelType) {
-      assert_has_write_access(self, position, caller_system);
+    fn update_pixel_type(self: @ContractState, player_id: felt252, position: Position, new_type: PixelType) {
+      assert_has_write_access(self, player_id, position);
       let world = self.world_dispatcher.read();
 
       // Retrieve the timestamp of the pixel
@@ -312,12 +310,12 @@ mod core_actions {
         )
       );
 
-      let player_id: felt252 = get_caller_address().into();
       emit!(world, PixelTypeUpdated { pixel_type: new_type, caller: player_id })
     }
 
-    fn update_needs_attention(self: @ContractState, caller_system: felt252, position: Position, new_needs_attention: NeedsAttention) {
-      assert_has_write_access(self, position, caller_system);
+    fn update_needs_attention(self: @ContractState, player_id: felt252, position: Position, new_needs_attention: NeedsAttention) {
+      assert_has_write_access(self, player_id, position);
+
       let world = self.world_dispatcher.read();
 
       // Retrieve the timestamp of the pixel
@@ -337,7 +335,6 @@ mod core_actions {
         )
       );
 
-      let player_id: felt252 = get_caller_address().into();
       emit!(world, NeedsAttentionUpdated { needs_attention: new_needs_attention, caller: player_id })
     }
 

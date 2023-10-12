@@ -8,9 +8,11 @@ trait IPaintActions<TContractState> {
   fn remove_color(self: @TContractState, position: Position);
 }
 
+const PIXEL_TYPE: felt252 = 'paint';
+
 #[dojo::contract]
 mod paint_actions {
-  use starknet::{get_caller_address};
+  use starknet::{get_caller_address, get_contract_address};
 
   use super::IPaintActions;
   use pixelaw::models::position::Position;
@@ -21,8 +23,8 @@ mod paint_actions {
   use pixelaw::models::needs_attention::NeedsAttention;
   use pixelaw::models::core_actions_model::CoreActionsModelTrait;
   use pixelaw::systems::core_actions::{core_actions, ICoreActionsDispatcher, ICoreActionsDispatcherTrait};
+  use super::PIXEL_TYPE;
 
-  const PIXEL_TYPE: felt252 = 'paint';
   const REMOVE_COLOR_ENTRYPOINT: felt252 = 0x016af38c75fbaa0eb1f1b769bd94962da4e5d65456a470acc8f056e9c20a7d93;
 
   // impl: implement functions specified in trait
@@ -44,17 +46,18 @@ mod paint_actions {
 
       let core_actions_system = ICoreActionsDispatcher { contract_address: core_actions_address };
 
+      let player: felt252 = get_caller_address().into();
+
       if owner.address == 0 {
         let mut allowlist: Array<felt252> = ArrayTrait::new();
-        allowlist.append(PIXEL_TYPE);
-        allowlist.append('snake');
-        core_actions_system.spawn_pixel(PIXEL_TYPE, position, PIXEL_TYPE, allowlist)
+        let contract_address: felt252 = get_contract_address().into();
+        allowlist.append(contract_address);
+        core_actions_system.spawn_pixel(player, position, PIXEL_TYPE, allowlist)
       } else {
         // only check pixel type if pixel has already been spawned
         assert(pixel_type.name == 'paint', 'PixelType is not paint!')
       }
 
-      let player: felt252 = get_caller_address().into();
 
       // Check if 5 seconds have passed or if the sender is the owner
       assert(
@@ -117,17 +120,21 @@ mod tests {
   use dojo::test_utils::{spawn_test_world, deploy_contract};
 
   use pixelaw::models::owner::owner;
+  use pixelaw::models::owner::Owner;
   use pixelaw::models::permission::permission;
   use pixelaw::models::position::Position;
   use pixelaw::models::pixel_type::pixel_type;
+  use pixelaw::models::pixel_type::PixelType;
   use pixelaw::models::timestamp::timestamp;
+  use pixelaw::models::timestamp::Timestamp;
   use pixelaw::models::text::text;
   use pixelaw::models::color::Color;
   use pixelaw::models::color::color;
   use pixelaw::models::core_actions_model::core_actions_model;
+  use debug::PrintTrait;
 
   use pixelaw::systems::core_actions::{core_actions, ICoreActionsDispatcher, ICoreActionsDispatcherTrait};
-  use super::{paint_actions, IPaintActionsDispatcher, IPaintActionsDispatcherTrait};
+  use super::{paint_actions, IPaintActionsDispatcher, IPaintActionsDispatcherTrait, PIXEL_TYPE};
 
   #[test]
   #[available_gas(30000000)]
@@ -171,5 +178,23 @@ mod tests {
     };
 
     paint_actions_system.put_color(position, new_color);
+
+    let (owner, pixel_type, timestamp) = get!(world, (position.x, position.y).into(), (Owner, PixelType, Timestamp));
+
+    // check owner
+    assert(owner.address == caller.into(), 'incorrect owner.address');
+    assert(owner.x == position.x, 'incorrect owner.x');
+    assert(owner.y == position.y, 'incorrect owner.y');
+
+    // check pixel_type
+    assert(pixel_type.name == PIXEL_TYPE, 'incorrect pixel_type.name');
+    assert(pixel_type.x == position.x, 'incorrect pixel_type.x');
+    assert(pixel_type.y == position.y, 'incorrect pixel_type.y');
+
+    // check timestamp
+    assert(timestamp.created_at == starknet::get_block_timestamp(), 'incorrect timestamp.created_at');
+    assert(timestamp.updated_at == starknet::get_block_timestamp(), 'incorrect timestamp.updated_at');
+    assert(timestamp.x == position.x, 'incorrect timestamp.x');
+    assert(timestamp.y == position.y, 'incorrect timestamp.y');
   }
 }
