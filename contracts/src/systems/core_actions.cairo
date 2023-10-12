@@ -28,7 +28,7 @@ mod core_actions {
   use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
   use super::ICoreActions;
   use pixelaw::models::owner::Owner;
-  use pixelaw::models::app::App;
+  use pixelaw::models::app::{App, AppTrait};
   use pixelaw::models::permission::Permission;
   use pixelaw::models::position::Position;
   use pixelaw::models::pixel_type::PixelType;
@@ -128,21 +128,10 @@ mod core_actions {
     }
 
     fn update_app_name(self: @ContractState, name: felt252) {
-      // TODO: later need to check if someone is using the same name
-
       let world = self.world_dispatcher.read();
-      let app_address = get_contract_address();
-      let app = get!(world, app_address, (App));
-      assert(app.name == 0, 'app name already set');
-      set!(
-        world,
-        (
-          App {
-            system: get_contract_address(),
-            name
-          }
-        )
-      );
+      let system = get_contract_address();
+      let app = AppTrait::new(world, system, name);
+      emit!(world, AppNameUpdated { app, caller: system.into() });
 
     }
 
