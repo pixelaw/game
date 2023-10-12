@@ -74,8 +74,6 @@ jobs:
           argocd app sync $PROJECTNAME-dev
           argocd app wait $PROJECTNAME-dev
           argocd app actions run $PROJECTNAME-dev --namespace $PROJECTNAME-dev restart --kind Deployment 
-
-
   # helmRelease:
   #   runs-on: ubuntu-latest
   #   steps:
