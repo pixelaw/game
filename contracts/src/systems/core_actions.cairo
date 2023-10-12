@@ -10,6 +10,7 @@ use starknet::{ContractAddress, ClassHash};
 // trait: specify functions to implement
 #[starknet::interface]
 trait ICoreActions<TContractState> {
+  fn setup(self: @TContractState);
   fn has_write_access(self: @TContractState, position: Position, caller_system: felt252) -> bool;
   fn process_queue(self: @TContractState, id: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
   fn schedule_queue(self: @TContractState, unlock: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
@@ -21,9 +22,9 @@ trait ICoreActions<TContractState> {
   fn update_needs_attention(self: @TContractState, caller_system: felt252, position: Position, new_needs_attention: NeedsAttention);
 }
 
-#[system]
+#[dojo::contract]
 mod core_actions {
-  use starknet::{ContractAddress, get_caller_address, ClassHash};
+  use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
   use super::ICoreActions;
   use pixelaw::models::owner::Owner;
   use pixelaw::models::permission::Permission;
@@ -33,6 +34,7 @@ mod core_actions {
   use pixelaw::models::text::Text;
   use pixelaw::models::color::Color;
   use pixelaw::models::needs_attention::NeedsAttention;
+  use pixelaw::models::core_actions_model::{CoreActionsModel, KEY};
   use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
 
 
@@ -101,6 +103,19 @@ mod core_actions {
   #[external(v0)]
   impl CoreActionsImpl of ICoreActions<ContractState> {
     // ContractState is defined by system decorator expansion
+    fn setup(self: @ContractState) {
+      let world = self.world_dispatcher.read();
+      set!(
+        world,
+        (
+          CoreActionsModel {
+            key: KEY,
+            value: get_contract_address()
+          }
+        )
+      )
+    }
+    
     fn has_write_access(self: @ContractState, position: Position, caller_system: felt252) -> bool {
       let world = self.world_dispatcher.read();
 

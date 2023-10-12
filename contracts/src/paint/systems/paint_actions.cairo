@@ -8,7 +8,7 @@ trait IPaintActions<TContractState> {
   fn remove_color(self: @TContractState, position: Position);
 }
 
-#[system]
+#[dojo::contract]
 mod paint_actions {
   use starknet::{get_caller_address};
 
@@ -19,6 +19,7 @@ mod paint_actions {
   use pixelaw::models::timestamp::Timestamp;
   use pixelaw::models::owner::Owner;
   use pixelaw::models::needs_attention::NeedsAttention;
+  use pixelaw::models::core_actions_model::CoreActionsModelTrait;
   use pixelaw::systems::core_actions::{core_actions, ICoreActionsDispatcher, ICoreActionsDispatcherTrait};
 
   const PIXEL_TYPE: felt252 = 'paint';
@@ -39,7 +40,9 @@ mod paint_actions {
         needs_attention
       ) = get !(world, (position.x, position.y).into(), (PixelType, Timestamp, Owner, Color, NeedsAttention));
 
-      let core_actions_system = ICoreActionsDispatcher { contract_address: world.contract_address };
+      let core_actions_address = CoreActionsModelTrait::address(world);
+
+      let core_actions_system = ICoreActionsDispatcher { contract_address: core_actions_address };
 
       if owner.address == 0 {
         let mut allowlist: Array<felt252> = ArrayTrait::new();
@@ -113,19 +116,15 @@ mod tests {
 
   use dojo::test_utils::{spawn_test_world, deploy_contract};
 
-  use pixelaw::models::owner::Owner;
   use pixelaw::models::owner::owner;
-  use pixelaw::models::permission::Permission;
   use pixelaw::models::permission::permission;
   use pixelaw::models::position::Position;
-  use pixelaw::models::pixel_type::PixelType;
   use pixelaw::models::pixel_type::pixel_type;
-  use pixelaw::models::timestamp::Timestamp;
   use pixelaw::models::timestamp::timestamp;
-  use pixelaw::models::text::Text;
   use pixelaw::models::text::text;
   use pixelaw::models::color::Color;
   use pixelaw::models::color::color;
+  use pixelaw::models::core_actions_model::core_actions_model;
 
   use pixelaw::systems::core_actions::{core_actions, ICoreActionsDispatcher, ICoreActionsDispatcherTrait};
   use super::{paint_actions, IPaintActionsDispatcher, IPaintActionsDispatcherTrait};
@@ -143,12 +142,16 @@ mod tests {
       timestamp::TEST_CLASS_HASH,
       text::TEST_CLASS_HASH,
       color::TEST_CLASS_HASH,
+      core_actions_model::TEST_CLASS_HASH
     ];
     // deploy world with models
     let world = spawn_test_world(models);
 
     // deploy core actions contract
-    world.deploy_contract(0, core_actions::TEST_CLASS_HASH.try_into().unwrap());
+    let core_actions_address = world.deploy_contract(0, core_actions::TEST_CLASS_HASH.try_into().unwrap());
+    let core_actions_system = ICoreActionsDispatcher { contract_address: core_actions_address };
+    core_actions_system.setup();
+
     let contract_address = world.
       deploy_contract(0, paint_actions::TEST_CLASS_HASH.try_into().unwrap());
 
