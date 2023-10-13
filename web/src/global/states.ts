@@ -34,3 +34,5 @@ export const positionWithAddressAndTypeAtom = atom<PositionWithAddressAndType>({
 })
 
 export const notificationDataAtom = atom<NotificationDataType | undefined>(undefined)
+
+export const hasNotificationAtom = atom<boolean>(false)
