@@ -6,8 +6,8 @@ import { useComponentValue, useEntityQuery } from '@dojoengine/react'
 import { useDojo } from '@/DojoContext'
 import { EntityIndex, HasValue } from '@latticexyz/recs'
 import { felt252ToString } from '@/global/utils'
-import { notificationDataAtom } from '@/global/states.ts'
-import { useSetAtom } from 'jotai'
+import { hasNotificationAtom, notificationDataAtom } from '@/global/states.ts'
+import { useAtom, useSetAtom } from 'jotai'
 
 const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
   const {
@@ -56,7 +56,8 @@ const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
 }
 
 export default function Notification() {
-    const [isOpen, setIsOpen] = React.useState<boolean>(false)
+  const [ isOpen, setIsOpen ] = React.useState<boolean>(false)
+  const [ hasNotification, setHasNotification ] = useAtom(hasNotificationAtom)
 
   const {
     setup: {
@@ -68,6 +69,12 @@ export default function Notification() {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const notifs = useEntityQuery([HasValue(NeedsAttention, { value: true }), HasValue(Owner, { address: account.address })])
+
+  React.useEffect(() => {
+    if (notifs && notifs.length > 0) {
+      setHasNotification(true)
+    }
+  }, [ notifs ])
 
     return (
         <>
@@ -84,7 +91,7 @@ export default function Notification() {
                 <span className={cn(['relative'])}>
                     &#x1F514;
                     <div
-                        className={cn(['absolute top-[9px] right-[5px] border h-2 w-2 rounded-full bg-brand-danger'])}/>
+                      className={cn([ 'absolute top-[9px] right-[5px] border h-2 w-2 rounded-full bg-brand-danger', { 'hidden': !hasNotification } ])} />
                 </span>
             </Button>
 
