@@ -22,11 +22,11 @@ const useEntities = () => {
       const { data } = await graphSdk.getEntities()
       if (!data || !data?.entities?.edges || ! data?.entities?.edges) return { entities: { edges: [] } }
       for (const edge of data.entities.edges) {
-        if (!edge?.node?.components) continue
+        if (!edge?.node?.models) continue
         const keys = edge.node.keys
         if (!keys) continue
         const entityId = getEntityIdFromKeys(keys.map(key => BigInt(convertToDecimal(key ?? '0x0'))))
-        if (!edge?.node?.components) continue
+        if (!edge?.node?.models) continue
         // eslint-disable-next-line no-unsafe-optional-chaining
         for (const component of edge?.node?.components) {
           if (!component) continue

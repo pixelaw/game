@@ -1,24 +1,8 @@
 import { SetupNetworkResult } from "./setupNetwork";
-import { Account, BigNumberish } from 'starknet'
+import { Account } from 'starknet'
 export function createSystemCalls(
     { execute }: SetupNetworkResult,
 ) {
-    const spawn_pixel_system = async (
-        signer: Account,
-        position: number[],
-        pixel_type: BigNumberish
-
-    ) => {
-
-        return await execute(signer, "spawn_pixel_system", [
-            position[0],
-            position[1],
-            pixel_type,
-            0
-
-        ]);
-    };
-
     const put_color = async (
         signer: Account,
         position: number[],
@@ -26,7 +10,7 @@ export function createSystemCalls(
 
     ) => {
 
-        return await execute(signer, "put_color_system", [
+        return await execute(signer, "paint_actions", 'put_color', [
             position[0],
             position[1],
             position[0],
@@ -38,6 +22,6 @@ export function createSystemCalls(
     };
 
     return {
-        spawn_pixel_system, put_color
+      put_color
     };
 }

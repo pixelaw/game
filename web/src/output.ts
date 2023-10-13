@@ -120,14 +120,13 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
-    ColorCount: (() => {
-      const name = "ColorCount";
+    CoreActionsModel: (() => {
+      const name = "CoreActionsModel";
       return defineComponent(
         world,
         {
-          x: RecsType.Number,
-          y: RecsType.Number,
-          count: RecsType.Number,
+          key: RecsType.Number,
+          value: RecsType.Number,
         },
         {
           metadata: {
@@ -136,23 +135,13 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
-    Game: (() => {
-      const name = "Game";
+    App: (() => {
+      const name = "App";
       return defineComponent(
         world,
         {
-          x: RecsType.Number,
-          y: RecsType.Number,
-          game_id: RecsType.Number,
-          state: RecsType.Number,
-          player1: RecsType.Number,
-          player2: RecsType.Number,
-          player1_hash: RecsType.Number,
-          player2_hash: RecsType.Number,
-          player1_commit: RecsType.Number,
-          player2_commit: RecsType.Number,
-          started_timestamp: RecsType.Number,
-          winner: RecsType.Number,
+          system: RecsType.Number,
+          name: RecsType.Number,
         },
         {
           metadata: {
@@ -161,13 +150,13 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
-    Player: (() => {
-      const name = "Player";
+    AppName: (() => {
+      const name = "AppName";
       return defineComponent(
         world,
         {
-          player_id: RecsType.Number,
-          wins: RecsType.Number,
+          name: RecsType.Number,
+          system: RecsType.Number,
         },
         {
           metadata: {

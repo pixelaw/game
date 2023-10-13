@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Path to the input JSON file
-const jsonFilePath = path.resolve(__dirname, "manifest.json");
+const jsonFilePath = path.resolve(__dirname, "./dojo/manifest.json");
 
 // Path to the output JS file
 const jsFilePath = path.resolve(__dirname, "output.ts");
@@ -27,7 +27,7 @@ fs.readFile(jsonFilePath, "utf8", (err, jsonString) => {
     fileContent += `export function defineContractComponents(world: World) {\n  return {\n`;
 
     // Generate a section for each component
-    data.components.forEach((component) => {
+    data.models.forEach((component) => {
       const tableName = component.name;
       fileContent += `    ${tableName}: (() => {\n`;
       fileContent += `      const name = "${tableName}";\n`;

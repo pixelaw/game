@@ -3,8 +3,9 @@ import { world } from "./world";
 import { RPCProvider, Query, } from "@dojoengine/core";
 import { Account, num } from "starknet";
 import { GraphQLClient } from 'graphql-request';
-import { getSdk } from '../generated/graphql';
+import { getSdk } from '@/generated/graphql';
 import { streamToString } from '@/global/utils'
+import manifest from "./manifest.json";
 
 export type SetupNetworkResult = Awaited<ReturnType<typeof setupNetwork>>;
 
@@ -13,6 +14,11 @@ const getWorldAddress = async () => {
   const stream = result.body
   if (!stream) return ''
   return streamToString(stream)
+}
+
+// TODO: should serve manifest.json in the server instead
+const getContractByName = (name: string) => {
+  return manifest.contracts.find((contract) => contract.name === name);
 }
 
 export async function setupNetwork() {
@@ -39,8 +45,8 @@ export async function setupNetwork() {
     graphSdk: createGraphSdk(),
 
     // Execute function.
-    execute: async (signer: Account, system: string, call_data: num.BigNumberish[]) => {
-      return provider.execute(signer, system, call_data);
+    execute: async (signer: Account, contract: string, system: string, call_data: num.BigNumberish[]) => {
+      return provider.execute(signer, getContractByName(contract)?.address || "", system, call_data);
     },
 
     // Entity query function.
