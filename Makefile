@@ -1,8 +1,8 @@
 build:
 	cd contracts;sozo build;
-	cp contracts/target/dev/manifest.json web/src/dojo/manifest.json;
-	node web/src/generateComponents.cjs;
-	cp web/src/output.ts web/src/dojo/contractComponents.ts
+#	cp contracts/target/dev/manifest.json web/src/dojo/manifest.json;
+#	node web/src/generateComponents.cjs;
+#	cp web/src/output.ts web/src/dojo/contractComponents.ts
 
 test:
 	cd contracts; sozo test

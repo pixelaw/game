@@ -29,6 +29,7 @@ query getEntities {
             x
             y
             string
+            __typename
           }
           ... on PixelType {
             x

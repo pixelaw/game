@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useDojo } from '@/DojoContext'
 import { BLOCK_TIME } from '@/global/constants'
-import { convertToDecimal } from '@/global/utils'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { Component, getComponentValue, setComponent } from '@latticexyz/recs'
 import _ from 'lodash'
 
@@ -25,20 +26,26 @@ const useEntities = () => {
         if (!edge?.node?.models) continue
         const keys = edge.node.keys
         if (!keys) continue
-        const entityId = getEntityIdFromKeys(keys.map(key => BigInt(convertToDecimal(key ?? '0x0'))))
+        const entityId = getEntityIdFromKeys(
+          keys.split("/")
+            .filter(key => !!key)
+            .map(key => BigInt(key))
+        )
         if (!edge?.node?.models) continue
         // eslint-disable-next-line no-unsafe-optional-chaining
-        for (const component of edge?.node?.components) {
-          if (!component) continue
-          const componentType = componentTypes.find(componentType => componentType.metadata?.name === component?.__typename)
+        for (const model of edge?.node?.models) {
+          if (!model) continue
+          const componentType = componentTypes.find(
+            componentType => componentType.metadata?.name === model?.__typename
+          )
           if (!componentType) continue
-          delete component["__typename"]
+          delete model["__typename"]
           const currentValue = getComponentValue(componentType, entityId)
 
           // do not update if it's already equal
-          if (_.isEqual(componentType, currentValue)) return
+          if (_.isEqual(model, currentValue)) continue
 
-          setComponent(componentType, entityId, component)
+          setComponent(componentType, entityId, model)
         }
       }
       return data

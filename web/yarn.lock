@@ -1861,7 +1861,7 @@
     react "^18.2.0"
     rxjs "7.5.5"
 
-"@latticexyz/recs@2.0.0-snapshot-test-32d38619", "@latticexyz/recs@^2.0.0-next.9":
+"@latticexyz/recs@2.0.0-snapshot-test-32d38619", "@latticexyz/recs@^2.0.0-next.11", "@latticexyz/recs@^2.0.0-next.9":
   version "2.0.0-snapshot-test-32d38619"
   resolved "https://registry.yarnpkg.com/@latticexyz/recs/-/recs-2.0.0-snapshot-test-32d38619.tgz#18daf1727ef505dadbfe569eba7017d0fd1ccf7c"
   integrity sha512-7730rgGjVAzXvkAclghy3P65y/s7ELgCf6CnIkcujeNOwBjJjH7UPj718ddzdW1VEoJzzD5+9NHME+GBCR4llg==
@@ -1870,11 +1870,6 @@
     "@latticexyz/utils" "2.0.0-snapshot-test-32d38619"
     mobx "^6.7.0"
     rxjs "7.5.5"
-
-"@latticexyz/recs@^1.43.0":
-  version "1.43.0"
-  resolved "https://registry.yarnpkg.com/@latticexyz/recs/-/recs-1.43.0.tgz#51d8bb0d164ef3c79b86bb8201870177d2eab91b"
-  integrity sha512-rWCtFeqeoPYT+hsu1whd47cVSvRtOrBe1tGngqxZdiYnLx1bbj5rW9xXzS1Vg+8PgLeX034yZCoV+RjcaGIRPg==
 
 "@latticexyz/schema-type@2.0.0-snapshot-test-32d38619":
   version "2.0.0-snapshot-test-32d38619"
@@ -1895,7 +1890,7 @@
     abitype "0.9.3"
     zod "^3.21.4"
 
-"@latticexyz/utils@2.0.0-snapshot-test-32d38619", "@latticexyz/utils@^2.0.0-next.9":
+"@latticexyz/utils@2.0.0-snapshot-test-32d38619", "@latticexyz/utils@^2.0.0-next.11", "@latticexyz/utils@^2.0.0-next.9":
   version "2.0.0-snapshot-test-32d38619"
   resolved "https://registry.yarnpkg.com/@latticexyz/utils/-/utils-2.0.0-snapshot-test-32d38619.tgz#def809eea74df31bd1283f3622e42a7d928e5d7a"
   integrity sha512-LKCni+jtKhIpGB67ZQV2A0imhFeR7Oh/u5HQj4IHWsNCdsLMPCFOKZPmd9QXGZ9pYTPO7kVHl8BJ3Z1PRrEcuA==
@@ -1904,13 +1899,6 @@
     mobx "^6.7.0"
     proxy-deep "^3.1.1"
     rxjs "7.5.5"
-
-"@latticexyz/utils@^1.43.0":
-  version "1.43.0"
-  resolved "https://registry.yarnpkg.com/@latticexyz/utils/-/utils-1.43.0.tgz#d8d4747124be541b9b10bb6cf32bf236c0aafaa1"
-  integrity sha512-8RmAqdg4ASYbOM+fDzIAZDe/1ZEmw1oRsgV18gX8iBjtvNOPImu6nixXE+iZbiOCL3wUifiPJcCThhfo2uKf1w==
-  dependencies:
-    typedoc-plugin-markdown "^3.13.6"
 
 "@noble/curves@1.1.0":
   version "1.1.0"
@@ -3642,18 +3630,6 @@ graphql@^16.7.1:
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.7.1.tgz#11475b74a7bff2aefd4691df52a0eca0abd9b642"
   integrity sha512-DRYR9tf+UGU0KOsMcKAlXeFfX89UiiIZ0dRU3mR0yJfu6OjZqUcp68NnFLnqQU5RexygFoDy1EW+ccOYcPfmHg==
 
-handlebars@^4.7.7:
-  version "4.7.7"
-  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
-  integrity sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==
-  dependencies:
-    minimist "^1.2.5"
-    neo-async "^2.6.0"
-    source-map "^0.6.1"
-    wordwrap "^1.0.0"
-  optionalDependencies:
-    uglify-js "^3.1.4"
-
 has-flag@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-3.0.0.tgz#b5d454dc2199ae225699f3467e5a07f3b955bafd"
@@ -4256,7 +4232,7 @@ minimatch@^4.2.3:
   dependencies:
     brace-expansion "^1.1.7"
 
-minimist@^1.2.5, minimist@^1.2.6:
+minimist@^1.2.6:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
@@ -4304,11 +4280,6 @@ natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
-
-neo-async@^2.6.0:
-  version "2.6.2"
-  resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
-  integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
 no-case@^3.0.4:
   version "3.0.4"
@@ -5124,11 +5095,6 @@ source-map-js@^1.0.2:
   resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.0.2.tgz#adbc361d9c62df380125e7f161f71c826f1e490c"
   integrity sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==
 
-source-map@^0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
-  integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
-
 sponge-case@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/sponge-case/-/sponge-case-1.0.1.tgz#260833b86453883d974f84854cdb63aecc5aef4c"
@@ -5388,13 +5354,6 @@ type-fest@^0.21.3:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.21.3.tgz#d260a24b0198436e133fa26a524a6d65fa3b2e37"
   integrity sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==
 
-typedoc-plugin-markdown@^3.13.6:
-  version "3.15.3"
-  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.15.3.tgz#f5419a32b93efbdc0fcba60ca4de37727aeb8ba9"
-  integrity sha512-idntFYu3vfaY3eaD+w9DeRd0PmNGqGuNLKihPU9poxFGnATJYGn9dPtEhn2QrTdishFMg7jPXAhos+2T6YCWRQ==
-  dependencies:
-    handlebars "^4.7.7"
-
 typescript@^4.9.5:
   version "4.9.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
@@ -5409,11 +5368,6 @@ ua-parser-js@^1.0.35:
   version "1.0.36"
   resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-1.0.36.tgz#a9ab6b9bd3a8efb90bb0816674b412717b7c428c"
   integrity sha512-znuyCIXzl8ciS3+y3fHJI/2OhQIXbXw9MWC/o3qwyR+RGppjZHrM27CGFSKCJXi2Kctiz537iOu2KnXs1lMQhw==
-
-uglify-js@^3.1.4:
-  version "3.17.4"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.17.4.tgz#61678cf5fa3f5b7eb789bb345df29afb8257c22c"
-  integrity sha512-T9q82TJI9e/C1TAxYvfb16xO120tMVFZrGA3f9/P4424DNu6ypK103y0GPFVa17yotwSyZW5iYXgjYHkGrJW/g==
 
 unc-path-regex@^0.1.2:
   version "0.1.2"
@@ -5570,11 +5524,6 @@ which@^2.0.1:
   integrity sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==
   dependencies:
     isexe "^2.0.0"
-
-wordwrap@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-1.0.0.tgz#27584810891456a4171c8d0226441ade90cbcaeb"
-  integrity sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==
 
 wrap-ansi@^6.0.1, wrap-ansi@^6.2.0:
   version "6.2.0"
