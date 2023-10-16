@@ -6,7 +6,7 @@ use pixelaw::models::color::Color;
 trait IPaintActions<TContractState> {
   fn init(self: @TContractState);
   fn put_color(self: @TContractState, position: Position, new_color: Color);
-  fn remove_color(self: @TContractState, position: Position);
+  fn remove_color(self: @TContractState, player_id: felt252, position: Position);
 }
 
 const PIXEL_TYPE: felt252 = 'paint';
@@ -92,6 +92,7 @@ mod paint_actions {
 
       let unlock_time = starknet::get_block_timestamp() + 10;
       let mut calldata: Array<felt252> = ArrayTrait::new();
+      calldata.append(player);
       position.serialize(ref calldata);
       core_actions_system.schedule_queue(
         unlock_time,
@@ -100,9 +101,8 @@ mod paint_actions {
         calldata.span());
     }
 
-    fn remove_color(self: @ContractState, position: Position){
-      let world = self.world_dispatcher.read();
-      let core_actions_system = ICoreActionsDispatcher { contract_address: world.contract_address };
+    fn remove_color(self: @ContractState, player_id: felt252, position: Position){
+      let core_actions_system = core_actions_system(self);
 
       let removed_color = Color {
         x: position.x,
@@ -111,14 +111,14 @@ mod paint_actions {
         g: 0,
         b: 0
       };
-      core_actions_system.update_color(PIXEL_TYPE, position, removed_color);
+      core_actions_system.update_color(player_id, position, removed_color);
 
       let needs_attention = NeedsAttention {
         x: position.x,
         y: position.y,
         value: true
       };
-      core_actions_system.update_needs_attention(PIXEL_TYPE, position, needs_attention);
+      core_actions_system.update_needs_attention(player_id, position, needs_attention);
     }
   }
 }

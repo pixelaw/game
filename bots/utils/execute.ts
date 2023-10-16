@@ -1,22 +1,13 @@
 // based on dojo execute command
-import fetchApi from './fetchApi'
-
-let worldAddress = ''
-
-const execute = async (account, system, call_data) => {
-  if (!worldAddress) {
-    worldAddress = await fetchApi<string>("world-address", "string")
-  }
-
-  console.log(`executing ${system} with args: ${call_data.join(", ")}`)
-
+import { Account, num } from 'starknet'
+const execute = async (account: Account, system: string, selector: string, calldata: num.BigNumberish[]) => {
   try {
     const nonce = await account?.getNonce()
     return await account?.execute(
       {
-        contractAddress: worldAddress,
-        entrypoint: 'execute',
-        calldata: [system, call_data.length, ...call_data]
+        contractAddress: system,
+        entrypoint: selector,
+        calldata
       },
       undefined,
       {

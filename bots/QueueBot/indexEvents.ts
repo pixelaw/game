@@ -29,12 +29,13 @@ async function indexEvents () {
         .map(event => event.data[0])
 
       for (const queueStartedEvent of queueStartedEvents) {
-        const [id, execution, _, ...args] = queueStartedEvent.data
+        const [id, system, selector, _, ...args] = queueStartedEvent.data
         if (queueFinishedIds.includes(id)) delete eventsToProcess[id]
         else if (!eventsToProcess[id])  {
           eventsToProcess[id] = {
             id: Number(BigInt(id)),
-            execution,
+            system,
+            selector,
             args
           }
         }
