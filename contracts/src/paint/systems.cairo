@@ -187,7 +187,7 @@ mod tests {
       b: 1
     };
 
-    paint_actions_system.put_color(position, new_color);
+    paint_actions_system.put_color(position.clone(), new_color);
 
     let (owner, pixel_type, timestamp) = get!(world, (position.x, position.y).into(), (Owner, PixelType, Timestamp));
 
