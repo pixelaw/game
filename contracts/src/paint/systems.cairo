@@ -91,7 +91,8 @@ mod paint_actions {
       }
 
       let unlock_time = starknet::get_block_timestamp() + 10;
-      let calldata: Array<felt252> = ArrayTrait::new();
+      let mut calldata: Array<felt252> = ArrayTrait::new();
+      position.serialize(ref calldata);
       core_actions_system.schedule_queue(
         unlock_time,
         PIXEL_TYPE,
