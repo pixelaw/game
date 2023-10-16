@@ -4,8 +4,7 @@ import { DEFAULT_COLOR, GET_ENTITIES } from './constants'
 import convertToDecimal from '../utils/convertToDecimal'
 import getEnv from '../utils/getEnv'
 
-// TODO: need to check if this will work over the internet. if not, replace this
-const TORII_URI = getEnv<string>("TORII_URI", 'http://0.0.0.0:8080')
+const TORII_URI = getEnv<string>("TORII_URI", 'http://0.0.0.0:8080/graphql')
 
 const client = createClient(TORII_URI)
 
@@ -27,8 +26,8 @@ type TextComponent = {
 
 type EntityGqlReturn = {
   __typename: 'Entity',
-  keys: string[],
-  components: Array<ColorComponent | TextComponent | {__typename: undefined}>
+  keys: string,
+  models: Array<ColorComponent | TextComponent | {__typename: undefined}>
 }
 
 const getState: () => Promise<Pixel[]> = async () => {
@@ -40,30 +39,35 @@ const getState: () => Promise<Pixel[]> = async () => {
 
     // Process the response here
     const entities: EntityGqlReturn[] =  response.data.entities.edges
-      .filter((edge) => edge.node.keys.length === 2)
-      .map((edge) => edge.node);
+      .filter((edge) => edge.node.keys.split("/").filter(k => !!k).length === 2)
+      .map((edge) => {
+        return {
+          ...edge.node,
+          keys: edge.node.keys.split("/").filter(k => !!k)
+        }
+      });
 
     return entities.map(entity => {
-      let colorComponent: ColorComponent | undefined;
-      let textComponent: TextComponent | undefined;
+      let colorModel: ColorComponent | undefined;
+      let textModel: TextComponent | undefined;
 
-      for (const component of entity.components) {
+      for (const component of entity.models) {
         if (component.__typename === 'Color') {
-          colorComponent = component as ColorComponent;
+          colorModel = component as ColorComponent;
         } else if (component.__typename === 'Text') {
-          textComponent = component as TextComponent;
+          textModel = component as TextComponent;
         }
       }
 
       return {
         x: convertToDecimal(entity.keys[0]),
         y: convertToDecimal(entity.keys[1]),
-        color: colorComponent ? {
-          r: colorComponent.r,
-          g: colorComponent.g,
-          b: colorComponent.b
+        color: colorModel ? {
+          r: colorModel.r,
+          g: colorModel.g,
+          b: colorModel.b
         } : DEFAULT_COLOR,
-        text: textComponent?.string ?? ''
+        text: textModel?.string ?? ''
       }
     })
   } catch (error) {
