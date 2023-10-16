@@ -10,12 +10,12 @@ import _ from 'lodash'
 const useEntities = () => {
   const {
     setup: {
-      components: { Color, Text, NeedsAttention, Timestamp, Owner, PixelType },
+      components: { _Color, Text, _NeedsAttention, Timestamp, _Owner, _PixelType },
       network: { graphSdk }
     }
   } = useDojo()
 
-  const componentTypes: Component[] = [Color, Text, NeedsAttention, Timestamp, Owner, PixelType]
+  const componentTypes: Component[] = [_Color, Text, _NeedsAttention, Timestamp, _Owner, _PixelType]
 
   return useQuery(
     ['entities'],
