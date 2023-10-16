@@ -13,8 +13,8 @@ trait ICoreActions<TContractState> {
   fn init(self: @TContractState);
   fn update_app_name(self: @TContractState, name: felt252);
   fn has_write_access(self: @TContractState, player_id: felt252, position: Position, caller_system: felt252) -> bool;
-  fn process_queue(self: @TContractState, id: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
-  fn schedule_queue(self: @TContractState, unlock: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>);
+  fn process_queue(self: @TContractState, id: u64, system: ContractAddress, selector: felt252, calldata: Span<felt252>);
+  fn schedule_queue(self: @TContractState, unlock: u64, system: felt252, selector: felt252, calldata: Span<felt252>);
   fn spawn_pixel(self: @TContractState, player_id: felt252, position: Position, pixel_type: felt252, allowlist: Array<felt252>);
   fn update_color(self: @TContractState, player_id: felt252, position: Position, new_color: Color);
   fn update_owner(self: @TContractState, player_id: felt252, position: Position, new_owner: Owner);
@@ -28,7 +28,7 @@ mod core_actions {
   use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
   use super::ICoreActions;
   use pixelaw::models::owner::Owner;
-  use pixelaw::models::app::{App, AppTrait};
+  use pixelaw::models::app::{App, AppName, AppTrait};
   use pixelaw::models::permission::Permission;
   use pixelaw::models::position::Position;
   use pixelaw::models::pixel_type::PixelType;
@@ -43,8 +43,8 @@ mod core_actions {
   #[derive(Drop, starknet::Event)]
   struct QueueStarted {
     id: u64,
-    class_hash: ClassHash,
-    entry_point: felt252,
+    system: ContractAddress,
+    selector: felt252,
     calldata: Span<felt252>
   }
 
@@ -149,25 +149,25 @@ mod core_actions {
       owner.address == player_id || owner.address == 0
     }
 
-    fn process_queue(self: @ContractState, id: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>) {
+    fn process_queue(self: @ContractState, id: u64, system: ContractAddress, selector: felt252, calldata: Span<felt252>) {
       assert(id <= starknet::get_block_timestamp() * 1_000, 'unlock time not passed');
+      starknet::call_contract_syscall(system, selector, calldata);
       let world = self.world_dispatcher.read();
-      let executor = IExecutorDispatcher { contract_address: world.executor() };
-      executor.call(class_hash, entry_point, calldata);
       emit!(world, QueueFinished { id });
     }
 
-    fn schedule_queue(self: @ContractState, unlock: u64, class_hash: ClassHash, entry_point: felt252, calldata: Span<felt252>) {
+    fn schedule_queue(self: @ContractState, unlock: u64, system: felt252, selector: felt252, calldata: Span<felt252>) {
       let world = self.world_dispatcher.read();
       let random_number = starknet::get_block_timestamp() % 1_000;
       let id = unlock * 1_000 + random_number;
+      let app_name = get!(world, system, (AppName));
 
       emit!(
         world,
         QueueStarted {
           id,
-          class_hash,
-          entry_point,
+          system: app_name.system,
+          selector,
           calldata
         }
       );
@@ -361,25 +361,25 @@ mod core_actions {
 
 #[cfg(test)]
 mod tests {
-  use starknet::class_hash::Felt252TryIntoClassHash;
+  use starknet::class_hash::{ ClassHash, Felt252TryIntoClassHash};
 
   use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 
   use dojo::test_utils::{spawn_test_world, deploy_contract};
 
-  use pixelaw::models::owner::Owner;
-  use pixelaw::models::owner::owner;
-  use pixelaw::models::permission::Permission;
-  use pixelaw::models::permission::permission;
-  use pixelaw::models::position::Position;
-  use pixelaw::models::pixel_type::PixelType;
-  use pixelaw::models::pixel_type::pixel_type;
-  use pixelaw::models::timestamp::Timestamp;
-  use pixelaw::models::timestamp::timestamp;
-  use pixelaw::models::text::Text;
-  use pixelaw::models::text::text;
-  use pixelaw::models::color::Color;
+  use pixelaw::models::app::{app, app_name};
   use pixelaw::models::color::color;
+  use pixelaw::models::core_actions_model::core_actions_model;
+  use pixelaw::models::needs_attention::needs_attention;
+  use pixelaw::models::owner::owner;
+  use pixelaw::models::owner::Owner;
+  use pixelaw::models::permission::permission;
+  use pixelaw::models::pixel_type::pixel_type;
+  use pixelaw::models::pixel_type::PixelType;
+  use pixelaw::models::position::Position;
+  use pixelaw::models::text::text;
+  use pixelaw::models::timestamp::timestamp;
+  use pixelaw::models::timestamp::Timestamp;
 
   use super::{core_actions, ICoreActionsDispatcher, ICoreActionsDispatcherTrait};
 
@@ -392,6 +392,9 @@ mod tests {
 
     // models
     let mut models = array![
+      app::TEST_CLASS_HASH,
+      app_name::TEST_CLASS_HASH,
+      core_actions_model::TEST_CLASS_HASH,
       owner::TEST_CLASS_HASH,
       permission::TEST_CLASS_HASH,
       pixel_type::TEST_CLASS_HASH,
@@ -402,9 +405,11 @@ mod tests {
     // deploy world with models
     let world = spawn_test_world(models);
 
+    let class_hash: ClassHash = core_actions::TEST_CLASS_HASH.try_into().unwrap();
+
     // deploy systems contract
     let contract_address = world
-      .deploy_contract(0, core_actions::TEST_CLASS_HASH.try_into().unwrap());
+      .deploy_contract(0, class_hash);
 
     let core_actions_system = ICoreActionsDispatcher { contract_address };
     let id = 0;
@@ -423,9 +428,17 @@ mod tests {
 
     core_actions_system.process_queue(
       id,
-      core_actions::TEST_CLASS_HASH.try_into().unwrap(),
+      contract_address,
       SPAWN_PIXEL_ENTRYPOINT,
       calldata.span()
     );
+
+    let (owner, pixel_type, timestamp) = get!(world, (position.x, position.y).into(), (Owner, PixelType, Timestamp));
+
+    // check timestamp
+    assert(timestamp.created_at == starknet::get_block_timestamp(), 'incorrect timestamp.created_at');
+    assert(timestamp.updated_at == starknet::get_block_timestamp(), 'incorrect timestamp.updated_at');
+    assert(timestamp.x == position.x, 'incorrect timestamp.x');
+    assert(timestamp.y == position.y, 'incorrect timestamp.y');
   }
 }

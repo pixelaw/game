@@ -92,7 +92,11 @@ mod paint_actions {
 
       let unlock_time = starknet::get_block_timestamp() + 10;
       let calldata: Array<felt252> = ArrayTrait::new();
-      core_actions_system.schedule_queue(unlock_time, world.base(), REMOVE_COLOR_ENTRYPOINT, calldata.span());
+      core_actions_system.schedule_queue(
+        unlock_time,
+        PIXEL_TYPE,
+        REMOVE_COLOR_ENTRYPOINT,
+        calldata.span());
     }
 
     fn remove_color(self: @ContractState, position: Position){
