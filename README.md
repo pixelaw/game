@@ -64,10 +64,6 @@ http://localhost:5173/?account=1
 http://localhost:5173/?account=2
 ````
 
-Also, before starting the game, hit the play button, and then hit the paint button.
-![starting-screen.png](docs/starting-screen.png)
-![click-paint-pixel.png](docs/click-paint-pixel.png)
-
 ## Project Structure 
 This is an overview of the most important folders/files:
 - `Makefile` : A collection of helpful commands, mainly for Dojo
