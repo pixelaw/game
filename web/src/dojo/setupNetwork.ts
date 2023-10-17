@@ -5,7 +5,6 @@ import { Account, num } from "starknet";
 import { GraphQLClient } from 'graphql-request';
 import { getSdk } from '@/generated/graphql';
 import { streamToString } from '@/global/utils'
-import manifest from "./manifest.json";
 
 export type SetupNetworkResult = Awaited<ReturnType<typeof setupNetwork>>;
 
@@ -16,9 +15,11 @@ const getWorldAddress = async () => {
   return streamToString(stream)
 }
 
-// TODO: should serve manifest.json in the server instead
-const getContractByName = (name: string) => {
-  return manifest.contracts.find((contract) => contract.name === name);
+const getManifest: () => Promise<{ contracts: { name: string, address: string }[]}> = async () => {
+  const result = await  fetch("/world/manifest.json")
+  const stream = result.body
+  if (!stream) return {}
+  return JSON.parse( await streamToString(stream))
 }
 
 export async function setupNetwork() {
@@ -26,6 +27,14 @@ export async function setupNetwork() {
   const { VITE_PUBLIC_NODE_URL, VITE_PUBLIC_TORII } = import.meta.env;
 
   const worldAddress = await getWorldAddress()
+
+  const manifest = await getManifest()
+
+  const getContractByName = (name: string) => {
+    return manifest.contracts.find((contract) => contract.name === name);
+  }
+
+
 
   // Create a new RPCProvider instance.
   const provider = new RPCProvider(worldAddress, VITE_PUBLIC_NODE_URL);
