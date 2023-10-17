@@ -1,8 +1,8 @@
 {
   "world": {
     "name": "world",
-    "address": "0x1d5c85cb4a5d9f6ef41e6f2acb96c272a93dab95b668dc4cb9b48572e0f56d",
-    "class_hash": "0xfd35fc17c6a9334c70e38da27aeed6a13297d9faa697547edac8a477e64448",
+    "address": "0x774062823293a3fa8992367c2ed24f81250b097b8f33ac4bfb9c09b57c03197",
+    "class_hash": "0x2611f073498530f0faa0fda87956a405ae8cbd85cc6a28f4d8961d66cc51e4b",
     "abi": [
       {
         "type": "impl",
@@ -266,6 +266,22 @@
             "outputs": [
               {
                 "type": "(core::array::Span::<core::felt252>, core::array::Span::<core::array::Span::<core::felt252>>)"
+              }
+            ],
+            "state_mutability": "view"
+          },
+          {
+            "type": "function",
+            "name": "entity_ids",
+            "inputs": [
+              {
+                "name": "model",
+                "type": "core::felt252"
+              }
+            ],
+            "outputs": [
+              {
+                "type": "core::array::Span::<core::felt252>"
               }
             ],
             "state_mutability": "view"
@@ -799,8 +815,8 @@
   "contracts": [
     {
       "name": "core_actions",
-      "address": "0x2a231ad0f533463e2835ce2d6278948ffb5f9268c0f4cb79fecf5dc5d1476dc",
-      "class_hash": "0x957b160d5b77d32d53d794349dab1a8949572a03258a3cda18b852dd95b33f",
+      "address": "0xeda48002422fb34328d67a77f08fcacec996777fe9963d8c1a0863689b50bf",
+      "class_hash": "0x665c0e79817cae8f92776f5f648632d33b7246c7efd5341df49123062f6ba1b",
       "abi": [
         {
           "type": "impl",
@@ -999,11 +1015,11 @@
                   "type": "core::integer::u64"
                 },
                 {
-                  "name": "class_hash",
-                  "type": "core::starknet::class_hash::ClassHash"
+                  "name": "system",
+                  "type": "core::starknet::contract_address::ContractAddress"
                 },
                 {
-                  "name": "entry_point",
+                  "name": "selector",
                   "type": "core::felt252"
                 },
                 {
@@ -1023,11 +1039,11 @@
                   "type": "core::integer::u64"
                 },
                 {
-                  "name": "class_hash",
-                  "type": "core::starknet::class_hash::ClassHash"
+                  "name": "system",
+                  "type": "core::felt252"
                 },
                 {
-                  "name": "entry_point",
+                  "name": "selector",
                   "type": "core::felt252"
                 },
                 {
@@ -1186,12 +1202,12 @@
               "kind": "data"
             },
             {
-              "name": "class_hash",
-              "type": "core::starknet::class_hash::ClassHash",
+              "name": "system",
+              "type": "core::starknet::contract_address::ContractAddress",
               "kind": "data"
             },
             {
-              "name": "entry_point",
+              "name": "selector",
               "type": "core::felt252",
               "kind": "data"
             },
@@ -1381,8 +1397,8 @@
     },
     {
       "name": "paint_actions",
-      "address": "0x2b8bad69ccaf5e3a3928314380682ac40724d1ce80d94b45aa6d734e27a8ca",
-      "class_hash": "0x6859ba05fb44eb99d8b6f057b5a27b5d81d65e9798c21166d745af83e21a51f",
+      "address": "0x7ec9c860a965ff05aaf309cc1c027dca23e80666e9587be1720cb9009bc2feb",
+      "class_hash": "0xd62a94e755dc7f354a2afb08f9852673179b202d19692b65e22bb5a100f94a",
       "abi": [
         {
           "type": "impl",
@@ -1460,6 +1476,10 @@
               "type": "function",
               "name": "remove_color",
               "inputs": [
+                {
+                  "name": "player_id",
+                  "type": "core::felt252"
+                },
                 {
                   "name": "position",
                   "type": "pixelaw::models::position::Position"
