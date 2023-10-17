@@ -1,7 +1,7 @@
-import React, { SetStateAction } from 'react'
-import { CellDatum, Coordinate, NeedsAttentionDatum } from '@/components/shared/DrawPanel.tsx'
-import { useDojo } from '@/DojoContext.tsx'
-import { useAtom, useAtomValue } from 'jotai'
+import React, {SetStateAction} from 'react'
+import {CellDatum, Coordinate, NeedsAttentionDatum} from '@/components/shared/DrawPanel.tsx'
+import {useDojo} from '@/DojoContext.tsx'
+import {useAtom, useAtomValue, useSetAtom} from 'jotai'
 import {
   colorAtom,
   gameModeAtom,
@@ -9,15 +9,14 @@ import {
   positionWithAddressAndTypeAtom,
   zoomLevelAtom,
 } from '@/global/states.ts'
-import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_CELL_SIZE, MAX_ROWS_COLS } from '@/global/constants.ts'
-import { usePaintCanvas } from '@/hooks/systems/usePaintCanvas.ts'
-import { useSetAtom } from 'jotai'
-import { useEntityQuery } from '@dojoengine/react'
+import {CANVAS_HEIGHT, CANVAS_WIDTH, MAX_CELL_SIZE, MAX_ROWS_COLS} from '@/global/constants.ts'
+import {usePaintCanvas} from '@/hooks/systems/usePaintCanvas.ts'
+import {useEntityQuery} from '@dojoengine/react'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { getComponentValue, getComponentValueStrict, Has, HasValue } from '@latticexyz/recs'
-import { felt252ToString, hexToRgb, rgbToHex } from '@/global/utils.ts'
-import { PositionWithAddressAndType } from '@/global/types.ts'
+import {getComponentValue, getComponentValueStrict, Has, HasValue} from '@latticexyz/recs'
+import {felt252ToString, hexToRgb, rgbToHex} from '@/global/utils.ts'
+import {PositionWithAddressAndType} from '@/global/types.ts'
 
 type DrawPanelType = {
   gameMode: 'none' | 'paint' | 'rps' | 'snake',
@@ -171,8 +170,8 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       position,
       rgbColor: rgb,
     })
-      .then((response) => {
-        console.info("response", response);
+      .then(() => {
+        setCoordinates(undefined)
       })
       .catch(err => {
         console.error('reversing color because of: ', err)
