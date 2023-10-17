@@ -14,7 +14,7 @@ defaults:
     shell: bash
 
 jobs:
-  build_and_push:
+  buildImage:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -62,18 +62,17 @@ jobs:
           docker push $REGISTRY/$PROJECTNAME-dev:latest
           docker push $REGISTRY/$PROJECTNAME-dev:${VERSION}
 
-      - name: Deploy to ArgoCD
-        id: deploy-image
-        run: |
-          wget https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64 -O argocd
-          chmod +x argocd
-          sudo mv argocd /usr/local/bin
-          export ARGOCD_SERVER=${{ vars.ARGOCD_SERVER }}
-          export ARGOCD_AUTH_TOKEN=${{ secrets.ARGOCD_AUTH_TOKEN }}
-          argocd app create $PROJECTNAME-dev --repo https://github.com/$GITHUB_REPOSITORY.git --revision $GITHUB_REF_NAME --path ./chart/$PROJECTNAME --values values-dev.yaml --dest-namespace $PROJECTNAME-dev  --dest-server https://kubernetes.default.svc --upsert
-          argocd app sync $PROJECTNAME-dev
-          argocd app wait $PROJECTNAME-dev
-          argocd app actions run $PROJECTNAME-dev --namespace $PROJECTNAME-dev restart --kind Deployment 
+  testImage:
+    needs: [buildImage]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: 'oostvoort/dojorps-dev:latest'
+          severity: 'HIGH,CRITICAL' 
+          exit-code: '0'               
   # helmRelease:
   #   runs-on: ubuntu-latest
   #   steps:
@@ -105,3 +104,40 @@ jobs:
   #         skip_packaging: true
   #       env:
   #         CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+
+  deploy:
+    needs: [testImage]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install ArgoCD CLI if not exists
+        run: |
+          if ! command -v argocd &> /dev/null; then
+            curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+            chmod +x /usr/local/bin/argocd
+          fi
+
+      - name: Deploy Application Dry Run
+        env:
+          ARGOCD_SERVER: ${{ vars.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}   
+        run: |
+          argocd app create $PROJECTNAME-dev \
+            --repo https://github.com/$GITHUB_REPOSITORY.git \
+            --path /chart/$PROJECTNAME \
+            --revision $GITHUB_REF_NAME \
+            --helm-chart dojorps \
+            --dest-namespace $PROJECTNAME-dev \
+            --dest-server https://kubernetes.default.svc \
+            --values values-dev.yaml \
+            --helm-set-string dockerImage=oostvoort/dojorps-dev:${VERSION} \
+            --upsert \
+            --server $ARGOCD_SERVER \
+            --auth-token $ARGOCD_AUTH_TOKEN 
+          argocd app sync $PROJECTNAME-dev
+          argocd app wait $PROJECTNAME-dev
+          
+  
