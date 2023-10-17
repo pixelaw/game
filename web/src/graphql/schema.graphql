@@ -3,7 +3,7 @@ query getEntities {
     edges {
       node {
         keys
-        components {
+        models {
           ... on Color {
             __typename
             x
@@ -29,17 +29,12 @@ query getEntities {
             x
             y
             string
+            __typename
           }
           ... on PixelType {
             x
             y
             name
-            __typename
-          }
-          ... on ColorCount {
-            x
-            y
-            count
             __typename
           }
           ... on NeedsAttention {

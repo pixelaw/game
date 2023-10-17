@@ -9,7 +9,7 @@ export const GET_ENTITIES = gql`query getEntities {
     edges {
       node {
         keys
-        components {
+        models {
           ... on Color {
             __typename
             x
@@ -19,6 +19,7 @@ export const GET_ENTITIES = gql`query getEntities {
             b
           }
           ... on Text {
+            __typename
             x
             y
             string

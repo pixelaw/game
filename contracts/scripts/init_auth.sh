@@ -2,84 +2,33 @@
 set -euo pipefail
 pushd $(dirname "$0")/..
 
-export WORLD_ADDRESS=$1;
-export PRIVATE_KEY=$2;
-export ACCOUNT_ADDRESS=$3;
+# make sure to include this
+# this allows to have named variables for $WORLD_ADDRESS, $PRIVATE_KEY, $ACCOUNT_ADDRESS, $RPC_URL
+# systems are also named variables (their name being the name of the system)
+# -> e.g. $move_system points to its contract address
+for arg in "$@"
+do
+    eval "${arg}"
+done
 
 # make sure all components/systems are deployed
-COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player" "NeedsAttention")
-# TODO remove remove_color_system
-SYSTEMS=("spawn_pixel_system" "update_color_system" "update_owner_system" "update_text_system" "update_type_system" "put_color_system" "remove_color_system" "play_rps_system" "commit" "create" "reset" "reveal" "process_queue_system" "schedule_queue_system")
-
-# check components
-for component in ${COMPONENTS[@]}; do
-    sozo component entity --world $WORLD_ADDRESS $component
-done
-
-# check systems
-for system in ${SYSTEMS[@]}; do
-    SYSTEM_OUTPUT=$(sozo system get --world $WORLD_ADDRESS $system)
-    if [[ "$SYSTEM_OUTPUT" == "0x0" ]]; then
-        echo "Error: $system is not deployed"
-        exit 1
-    fi
-done
-
-# enable system -> component authorizations
-ADD_PIXEL_COMPONENTS=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount")
-UPDATE_COLOR_SYSTEM=("Color" "Timestamp")
-UPDATE_OWNER_SYSTEM=("Owner" "Timestamp")
-UPDATE_TEXT_SYSTEM=("Text" "Timestamp")
-PUT_COLOR_SYSTEM=("Color" "Timestamp" "ColorCount")
-HAS_WRITE_ACCESS_SYSTEM=("Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType")
-ALL_COMPONENTS=("289632186226" "341306140018" "379660685143453645500270" "5795978142210944878" "1415936116" "1557123341884594417008" "318453956533960458989172")
+COMPONENTS=("App" "AppName" "CoreActionsModel" "Color" "Owner" "Permission" "Text" "Timestamp" "ColorCount" "PixelType" "Game" "Player" "NeedsAttention")
 
 for component in ${COMPONENTS[@]}; do
     sleep 0.1
-    sozo auth writer $component spawn_pixel_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
+    sozo auth writer $component $core_actions --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
 done
 
 for component in ${COMPONENTS[@]}; do
     sleep 0.1
-    sozo auth writer $component has_write_access_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
+    sozo auth writer $component $paint_actions --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
 done
 
-for component in ${COMPONENTS[@]}; do
-    sleep 0.1
-    sozo auth writer $component update_color_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
-done
+# initialize systems
+sleep 0.1
+sozo execute $core_actions init --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
+sleep 0.1
+sozo execute $paint_actions init --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
 
-for component in ${COMPONENTS[@]}; do
-    sleep 0.1
-    sozo auth writer $component update_owner_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
-done
-
-for component in ${COMPONENTS[@]}; do
-    sleep 0.1
-    sozo auth writer $component update_text_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
-done
-
-for component in ${COMPONENTS[@]}; do
-    sleep 0.1
-    sozo auth writer $component update_type_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
-done
-
-for component in ${COMPONENTS[@]}; do
-    sleep 0.1
-    sozo auth writer $component put_color_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
-done
-
-# TODO remove me later
-for component in ${COMPONENTS[@]}; do
-    sleep 0.1
-    echo "auth writer $component remove_color_system"
-    sozo auth writer $component remove_color_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
-done
-
-for component in ${COMPONENTS[@]}; do
-    sleep 0.1
-    echo "sozo auth writer $component process_queue_system"
-    sozo auth writer $component process_queue_system --world $WORLD_ADDRESS --private-key $PRIVATE_KEY --account-address $ACCOUNT_ADDRESS
-done
 
 echo "Default authorizations have been successfully set."

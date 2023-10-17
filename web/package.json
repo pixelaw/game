@@ -12,12 +12,13 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "@dojoengine/core": "^0.0.17",
-    "@dojoengine/create-burner": "^0.0.18",
+    "@dojoengine/core": "^0.1.2",
+    "@dojoengine/create-burner": "^0.1.2",
+    "@dojoengine/utils": "^0.1.2",
     "@dojoengine/react": "^0.0.3",
-    "@dojoengine/utils": "^0.0.2",
-    "@latticexyz/recs": "^1.43.0",
-    "@latticexyz/utils": "^1.43.0",
+    "@latticexyz/react": "^2.0.0-next.11",
+    "@latticexyz/recs": "^2.0.0-next.11",
+    "@latticexyz/utils": "^2.0.0-next.11",
     "@radix-ui/react-slot": "^1.0.2",
     "@tanstack/react-query": "^4.29.25",
     "@types/lodash": "^4.14.199",

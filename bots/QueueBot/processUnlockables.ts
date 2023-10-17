@@ -1,5 +1,5 @@
 import fetchApi from '../utils/fetchApi'
-import { Account } from 'starknet'
+import { Account, num } from 'starknet'
 import execute from '../utils/execute'
 import { PROCESS_QUEUE_SYSTEM_IN_HEX, provider } from './constants'
 import { eventsToProcess } from './memory'
@@ -15,11 +15,17 @@ type AccountType = {
   public_key: string
 }
 
+// TODO: get this from manifest.json
+const CORE_ACTIONS_ADDRESS = "0x2a231ad0f533463e2835ce2d6278948ffb5f9268c0f4cb79fecf5dc5d1476dc"
+const CORE_ACTIONS_SELECTOR = "process_queue"
+
 // wrapper for the execute function and solely for processing the queue
-const processQueue = async (id, execution, args) => {
+const processQueue = async (id: number, system: string, selector: string, args: num.BigNumberish[]) => {
+  console.log(`executing ${system}-${selector} with args: ${args.join(", ")}`)
   const callData = [
     id,
-    execution,
+    system,
+    selector,
     args.length,
     ...args
   ]
@@ -32,7 +38,7 @@ const processQueue = async (id, execution, args) => {
   }
 
   const signer = new Account(provider, botAddress, botPrivateKey)
-  return execute(signer, PROCESS_QUEUE_SYSTEM_IN_HEX, callData)
+  return execute(signer, CORE_ACTIONS_ADDRESS, CORE_ACTIONS_SELECTOR, callData)
 }
 
 // actual queue processing
@@ -47,7 +53,7 @@ const processUnlockables = async () => {
   if (!unlockables.length) return
 
   for (const unlockable of unlockables) {
-    await processQueue(unlockable.id, unlockable.execution, unlockable.args)
+    await processQueue(unlockable.id, unlockable.system, unlockable.selector, unlockable.args)
   }
 }
 
