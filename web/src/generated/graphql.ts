@@ -1,7 +1,7 @@
 import { GraphQLClient } from 'graphql-request';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-ignore
-import { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types'
+// @ts-ignore
+import { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';
 import { print } from 'graphql'
 import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
@@ -975,22 +975,22 @@ export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?:
 
 export type All_Filtered_EntitiesQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
-  xMin?: InputMaybe<Scalars['Int']['input']>;
-  xMax?: InputMaybe<Scalars['Int']['input']>;
-  yMin?: InputMaybe<Scalars['Int']['input']>;
-  yMax?: InputMaybe<Scalars['Int']['input']>;
+  xMin?: InputMaybe<Scalars['u64']['input']>;
+  xMax?: InputMaybe<Scalars['u64']['input']>;
+  yMin?: InputMaybe<Scalars['u64']['input']>;
+  yMax?: InputMaybe<Scalars['u64']['input']>;
 }>;
 
 
-export type All_Filtered_EntitiesQuery = { __typename?: 'Query', colorComponents?: { __typename?: 'ColorConnection', edges?: Array<{ __typename?: 'ColorEdge', node?: { __typename?: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, ownerComponents?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, pixeltypeComponents?: { __typename?: 'PixelTypeConnection', edges?: Array<{ __typename?: 'PixelTypeEdge', node?: { __typename?: 'PixelType', x?: any | null, y?: any | null, name?: any | null } | null } | null> | null } | null };
+export type All_Filtered_EntitiesQuery = { __typename?: 'Query', colorModels?: { __typename?: 'ColorConnection', edges?: Array<{ __typename?: 'ColorEdge', node?: { __typename?: 'Color', x?: any | null, y?: any | null, r?: any | null, g?: any | null, b?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, ownerModels?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null, entity?: { __typename?: 'Entity', id?: string | null } | null } | null } | null> | null } | null, pixeltypeModels?: { __typename?: 'PixelTypeConnection', edges?: Array<{ __typename?: 'PixelTypeEdge', node?: { __typename?: 'PixelType', x?: any | null, y?: any | null, name?: any | null } | null } | null> | null } | null };
 
 export type GetNeedsAttentionQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
-  address?: InputMaybe<Scalars['String']['input']>;
+  address?: InputMaybe<Scalars['felt252']['input']>;
 }>;
 
 
-export type GetNeedsAttentionQuery = { __typename?: 'Query', ownerComponents?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null } | null } | null> | null } | null, needsattentionComponents?: { __typename?: 'NeedsAttentionConnection', edges?: Array<{ __typename?: 'NeedsAttentionEdge', node?: { __typename?: 'NeedsAttention', x?: any | null, y?: any | null, value?: any | null } | null } | null> | null } | null };
+export type GetNeedsAttentionQuery = { __typename?: 'Query', ownerModels?: { __typename?: 'OwnerConnection', edges?: Array<{ __typename?: 'OwnerEdge', node?: { __typename?: 'Owner', x?: any | null, y?: any | null, address?: any | null } | null } | null> | null } | null, needsattentionModels?: { __typename?: 'NeedsAttentionConnection', edges?: Array<{ __typename?: 'NeedsAttentionEdge', node?: { __typename?: 'NeedsAttention', x?: any | null, y?: any | null, value?: any | null } | null } | null> | null } | null };
 
 
 export const GetEntitiesDocument = gql`
@@ -1046,8 +1046,8 @@ export const GetEntitiesDocument = gql`
 }
     `;
 export const All_Filtered_EntitiesDocument = gql`
-    query all_filtered_entities($first: Int, $xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int) {
-  colorComponents(
+    query all_filtered_entities($first: Int, $xMin: u64, $xMax: u64, $yMin: u64, $yMax: u64) {
+  colorModels(
     first: $first
     where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
   ) {
@@ -1064,7 +1064,7 @@ export const All_Filtered_EntitiesDocument = gql`
       }
     }
   }
-  ownerComponents(
+  ownerModels(
     first: $first
     where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
   ) {
@@ -1079,7 +1079,7 @@ export const All_Filtered_EntitiesDocument = gql`
       }
     }
   }
-  pixeltypeComponents(
+  pixeltypeModels(
     first: $first
     where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
   ) {
@@ -1094,8 +1094,8 @@ export const All_Filtered_EntitiesDocument = gql`
 }
     `;
 export const GetNeedsAttentionDocument = gql`
-    query getNeedsAttention($first: Int, $address: String) {
-  ownerComponents(first: $first, where: {address: $address}) {
+    query getNeedsAttention($first: Int, $address: felt252) {
+  ownerModels(first: $first, where: {addressEQ: $address}) {
     edges {
       node {
         x
@@ -1104,7 +1104,7 @@ export const GetNeedsAttentionDocument = gql`
       }
     }
   }
-  needsattentionComponents(first: $first, where: {value: 1}) {
+  needsattentionModels(first: $first, where: {value: 1}) {
     edges {
       node {
         x
@@ -1125,18 +1125,19 @@ const All_Filtered_EntitiesDocumentString = print(All_Filtered_EntitiesDocument)
 const GetNeedsAttentionDocumentString = print(GetNeedsAttentionDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
+    getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; extensions?: any;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetEntitiesQuery>(GetEntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getEntities', 'query');
     },
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
+    // @ts-ignore
     all_filtered_entities(variables?: All_Filtered_EntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: All_Filtered_EntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<All_Filtered_EntitiesQuery>(All_Filtered_EntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'all_filtered_entities', 'query');
     },
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
+    // @ts-ignore
     getNeedsAttention(variables?: GetNeedsAttentionQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetNeedsAttentionQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetNeedsAttentionQuery>(GetNeedsAttentionDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getNeedsAttention', 'query');
     }

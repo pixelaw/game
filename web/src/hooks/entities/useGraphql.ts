@@ -1,6 +1,6 @@
 import {QueryKey, useQuery, UseQueryOptions} from "@tanstack/react-query";
 import request, {Variables} from "graphql-request";
-import {TORII_END_POINT} from "../../global/constants";
+import {TORII_END_POINT} from '@/global/constants';
 
 const useGraphql = <GQLQueryReturn, ReturnType>(
   queryKey: QueryKey,

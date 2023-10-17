@@ -49,10 +49,16 @@ query getEntities {
   }
 }
 
-query all_filtered_entities($first: Int, $xMin: Int, $xMax: Int, $yMin: Int, $yMax: Int) {
-  colorComponents(
+query all_filtered_entities(
+  $first: Int
+  $xMin: u64
+  $xMax: u64
+  $yMin: u64
+  $yMax: u64
+) {
+  colorModels(
     first: $first
-    where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
+    where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax }
   ) {
     edges {
       node {
@@ -67,9 +73,9 @@ query all_filtered_entities($first: Int, $xMin: Int, $xMax: Int, $yMin: Int, $yM
       }
     }
   }
-  ownerComponents(
+  ownerModels(
     first: $first
-    where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
+    where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax }
   ) {
     edges {
       node {
@@ -82,9 +88,9 @@ query all_filtered_entities($first: Int, $xMin: Int, $xMax: Int, $yMin: Int, $yM
       }
     }
   }
-  pixeltypeComponents(
+  pixeltypeModels(
     first: $first
-    where: {xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax}
+    where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax }
   ) {
     edges {
       node {
@@ -96,8 +102,8 @@ query all_filtered_entities($first: Int, $xMin: Int, $xMax: Int, $yMin: Int, $yM
   }
 }
 
-query getNeedsAttention($first: Int, $address: String){
-  ownerComponents(first: $first, where: { address: $address}) {
+query getNeedsAttention($first: Int, $address: felt252){
+  ownerModels(first: $first, where: { addressEQ: $address}) {
     edges {
       node {
         x
@@ -106,7 +112,7 @@ query getNeedsAttention($first: Int, $address: String){
       }
     }
   }
-  needsattentionComponents(first:$first, where: { value: 1}){
+  needsattentionModels(first:$first, where: { value: 1}){
     edges{
       node{
         x

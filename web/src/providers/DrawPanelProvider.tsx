@@ -1,7 +1,7 @@
 import React, { SetStateAction } from 'react'
 import { CellDatum, Coordinate, NeedsAttentionDatum } from '@/components/shared/DrawPanel.tsx'
 import { useDojo } from '@/DojoContext.tsx'
-import { useAtom, useAtomValue } from 'jotai/index'
+import { useAtom, useAtomValue } from 'jotai'
 import {
   colorAtom,
   gameModeAtom,
@@ -9,10 +9,12 @@ import {
   positionWithAddressAndTypeAtom,
   zoomLevelAtom,
 } from '@/global/states.ts'
-import { CANVAS_HEIGHT, CANVAS_WIDTH, EXECUTION_STATUS, MAX_CELL_SIZE, MAX_ROWS_COLS } from '@/global/constants.ts'
+import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_CELL_SIZE, MAX_ROWS_COLS } from '@/global/constants.ts'
 import { usePaintCanvas } from '@/hooks/systems/usePaintCanvas.ts'
 import { useSetAtom } from 'jotai'
 import { useEntityQuery } from '@dojoengine/react'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { getComponentValue, getComponentValueStrict, Has, HasValue } from '@latticexyz/recs'
 import { felt252ToString, hexToRgb, rgbToHex } from '@/global/utils.ts'
 import { PositionWithAddressAndType } from '@/global/types.ts'
@@ -162,14 +164,15 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
 
     updatePixelData(position, selectedHexColor)
 
+    const color = hexToRgb(selectedHexColor)
+    const rgb: [number, number, number] = [color?.r ?? 0, color?.g ?? 0, color?.b ?? 0]
+
     paintCanvas.mutateAsync({
       position,
-      rgbColor: hexToRgb(selectedHexColor) ?? [ 0, 0, 0 ],
+      rgbColor: rgb,
     })
       .then((response) => {
-        if (response.execution_status === EXECUTION_STATUS.SUCCEEDED) {
-          setCoordinates(undefined)
-        }
+        console.info("response", response);
       })
       .catch(err => {
         console.error('reversing color because of: ', err)

@@ -15,7 +15,7 @@ const usePaint = (position: [number, number]) => {
 
   return useMutation(
     ['usePaint', position[0], position[1]],
-    async () => put_color(account, position, rgbColor),
+    async () => put_color(account, position, rgbColor ?? [0, 0, 0]),
     {
       onError: error => console.error("usePaint", error),
     },

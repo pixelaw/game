@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button'
 import Image from '@/components/ui/Image'
 import { useComponentValue, useEntityQuery } from '@dojoengine/react'
 import { useDojo } from '@/DojoContext'
-import { EntityIndex, HasValue } from '@latticexyz/recs'
+// TODO: Remove ts ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { HasValue, EntityIndex } from '@latticexyz/recs'
 import { felt252ToString } from '@/global/utils'
 import { hasNotificationAtom, notificationDataAtom } from '@/global/states.ts'
 import { useAtom, useSetAtom } from 'jotai'

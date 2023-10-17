@@ -29,7 +29,3 @@ export const MAX_ROWS_COLS = 256
 
 export const CANVAS_WIDTH = 1728
 export const CANVAS_HEIGHT = 704
-
-export enum EXECUTION_STATUS {
-  SUCCEEDED = "SUCCEEDED"
-}
