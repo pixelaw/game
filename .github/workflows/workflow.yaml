@@ -70,7 +70,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'image'
-          image-ref: 'oostvoort/dojorps-dev:latest'
+          image-ref: 'oostvoort/pixelaw-dev:latest'
           severity: 'HIGH,CRITICAL' 
           exit-code: '0'               
   # helmRelease:
@@ -127,7 +127,7 @@ jobs:
         run: |
           argocd app create $PROJECTNAME-dev \
             --repo https://github.com/$GITHUB_REPOSITORY.git \
-            --path /chart/$PROJECTNAME \
+            --path chart/ \
             --revision $GITHUB_REF_NAME \
             --helm-chart dojorps \
             --dest-namespace $PROJECTNAME-dev \
