@@ -40,6 +40,8 @@ export async function setupNetwork() {
   const provider = new RPCProvider(worldAddress, VITE_PUBLIC_NODE_URL);
 
   // Utility function to get the SDK.
+  // Add in new queries or subscriptions in src/graphql/schema.graphql
+  // then generate them using the codegen and fix-codegen commands in package.json
   const createGraphSdk = () => getSdk(new GraphQLClient(VITE_PUBLIC_TORII));
 
   // Return the setup object.
