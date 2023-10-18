@@ -1,6 +1,6 @@
 services:
   dojo-forkserver:
-    image: oostvoort/dojo-forkserver:v1.2.6
+    image: oostvoort/dojo-forkserver:v1.2.9
     container_name: dojo-forkserver
     ports:
       - "5050:5050"
