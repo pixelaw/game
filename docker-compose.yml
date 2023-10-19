@@ -1,7 +1,7 @@
 services:
-  dojo-forkserver:
-    image: oostvoort/dojo-forkserver:v1.3.0
-    container_name: dojo-forkserver
+  keiko:
+    image: oostvoort/keiko:v0.0.1
+    container_name: keiko
     ports:
       - "5050:5050"
       - "3000:3000"

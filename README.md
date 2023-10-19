@@ -19,12 +19,11 @@ make build
 
 This command compiles your project and prepares it for execution.
 
-### Step 2: Start Dojo Forkserver
-The Dojo Forkserver is a container that has the [Katana RPC](https://book.dojoengine.org/framework/katana/overview.html),
-the [Torii World Indexer](https://book.dojoengine.org/framework/torii/overview.html), and a Forkserver
-Dashboard. Once the container starts, it starts running Katana, deploys the World Container from the repo
+### Step 2: Start Keiko
+The Keiko is a container that has the [Katana RPC](https://book.dojoengine.org/framework/katana/overview.html),
+the [Torii World Indexer](https://book.dojoengine.org/framework/torii/overview.html), and a Dashboard. Once the container starts, it starts running Katana, deploys the World Container from the repo
 via the contracts volume (See the docker-compose.yml for more details), runs the post_deploy script from
-the repo's Scarb.toml, and starts up Torii. The Dojo Forkserver Dashboard is accesible via http://localhost:3000/fork.
+the repo's Scarb.toml, and starts up Torii. Keiko Dashboard is accesible via http://localhost:3000/fork.
 
 ```shell
 make start_container
