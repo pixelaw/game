@@ -1,5 +1,5 @@
 #[derive(Model, Copy, Drop, Serde)]
-struct NeedsAttention {
+struct Alert {
     #[key]
     x: u64,
     #[key]

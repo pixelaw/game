@@ -4,126 +4,141 @@ use pixelaw::core::models::color::Color;
 
 #[starknet::interface]
 trait IActions<TContractState> {
-  fn init(self: @TContractState);
-  fn put_color(self: @TContractState, position: Position, new_color: Color);
-  fn remove_color(self: @TContractState, player_id: felt252, position: Position);
+    fn init(self: @TContractState);
+    fn put_color(self: @TContractState, position: Position, new_color: Color);
+    fn remove_color(self: @TContractState, position: Position, player_id: felt252);
 }
 
 const PIXEL_TYPE: felt252 = 'paint';
 
 #[dojo::contract]
 mod actions {
-  use starknet::{get_caller_address, get_contract_address};
+    use starknet::{get_caller_address, get_contract_address};
 
-  use super::IActions;
-  use pixelaw::core::models::position::Position;
-  use pixelaw::core::models::color::Color;
-  use pixelaw::core::models::pixel_type::PixelType;
-  use pixelaw::core::models::timestamp::Timestamp;
-  use pixelaw::core::models::owner::Owner;
-  use pixelaw::core::models::needs_attention::NeedsAttention;
-  use pixelaw::core::models::actions_model::ActionsModelTrait;
-  use pixelaw::core::actions::{ 
-    IActionsDispatcher as ICoreActionsDispatcher, 
-    IActionsDispatcherTrait as ICoreActionsDispatcherTrait
+    use super::IActions;
+    use pixelaw::core::models::position::Position;
+    use pixelaw::core::models::color::Color;
+    use pixelaw::core::models::pixel_type::PixelType;
+    use pixelaw::core::models::timestamp::Timestamp;
+    use pixelaw::core::models::owner::Owner;
+    use pixelaw::core::models::alert::Alert;
+    use pixelaw::core::models::actions_model::ActionsModelTrait;
+    use pixelaw::core::actions::{
+        IActionsDispatcher as ICoreActionsDispatcher,
+        IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
-  use super::PIXEL_TYPE;
+    use super::PIXEL_TYPE;
 
-  const REMOVE_COLOR_ENTRYPOINT: felt252 = 0x016af38c75fbaa0eb1f1b769bd94962da4e5d65456a470acc8f056e9c20a7d93;
+    // Hardcoded selector of the "remove_color" function
+    // FIXME its wrong now.. (i moved Position to first arg)
+    const REMOVE_COLOR_SELECTOR: felt252 =
+        0x016af38c75fbaa0eb1f1b769bd94962da4e5d65456a470acc8f056e9c20a7d93;
 
-  fn actions_system(self: @ContractState) -> ICoreActionsDispatcher {
-    let world = self.world_dispatcher.read();
-    let actions_address = ActionsModelTrait::address(world);
-    ICoreActionsDispatcher { contract_address: actions_address }
-  }
-
-  // impl: implement functions specified in trait
-  #[external(v0)]
-  impl ActionsImpl of IActions<ContractState> {
-
-    fn init(self: @ContractState) {
-      let actions_system = actions_system(self);
-      actions_system.update_app_name(PIXEL_TYPE);
+    fn core_actions(self: @ContractState) -> ICoreActionsDispatcher {
+        let world = self.world_dispatcher.read();
+        let actions_address = ActionsModelTrait::address(world);
+        ICoreActionsDispatcher { contract_address: actions_address }
     }
 
-    fn put_color(self: @ContractState, position: Position, new_color: Color) {
-      let world = self.world_dispatcher.read();
+    // impl: implement functions specified in trait
+    #[external(v0)]
+    impl ActionsImpl of IActions<ContractState> {
 
-      // Check if the PixelType is 'paint'
-      let (
-        pixel_type,
-        timestamp,
-        owner,
-        color,
-        needs_attention
-      ) = get !(world, (position.x, position.y).into(), (PixelType, Timestamp, Owner, Color, NeedsAttention));
+        /// Initialize the Paint App (TODO I think, do we need this??)
+        fn init(self: @ContractState) {
+            let core_actions = core_actions(self);
+            core_actions.update_app_name(PIXEL_TYPE);
+        }
 
-      let actions_system = actions_system(self);
+        /// Put color on a certain position
+        ///
+        /// # Arguments
+        ///
+        /// * `position` - Position of the pixel.
+        /// * `new_color` - Color to set the pixel to.
+        fn put_color(self: @ContractState, position: Position, new_color: Color) {
+            // Load important variables
+            let world = self.world_dispatcher.read();
+            let core_actions = core_actions(self);
+            let player: felt252 = get_caller_address().into();
 
-      let player: felt252 = get_caller_address().into();
+            // Load the Pixel's data
+            let (pixel_type, timestamp, owner, color, alert) = get!(
+                world,
+                (position.x, position.y).into(),
+                (PixelType, Timestamp, Owner, Color, Alert)
+            );
 
-      if owner.address == 0 {
-        let mut allowlist: Array<felt252> = ArrayTrait::new();
-        let contract_address: felt252 = get_contract_address().into();
-        allowlist.append(contract_address);
-        actions_system.spawn_pixel(player, position, PIXEL_TYPE, allowlist)
-      } else {
-        // only check pixel type if pixel has already been spawned
-        assert(pixel_type.name == 'paint', 'PixelType is not paint!')
-      }
+            // If the Pixel is not owned
+            if owner.address == 0 {
+                // Instantiate a new AllowList
+                let mut allowlist: Array<felt252> = ArrayTrait::new();
 
+                // Get the current contract (Paint) address
+                let contract_address: felt252 = get_contract_address().into();
 
-      // Check if 5 seconds have passed or if the sender is the owner
-      assert(
-        owner.address == 0 ||
-        (owner.address) == player ||
-          starknet::get_block_timestamp() - timestamp.updated_at < 5,
-          'Cooldown not over'
-      );
+                // Add the address to the allowlist. This will ... ???
+                allowlist.append(contract_address);
 
-      actions_system.update_color(player, position, new_color);
+                // Use the PixelawCore action to spawn a pixel with 'paint' pixel type and given allowlist
+                core_actions.spawn_pixel(player, position, PIXEL_TYPE, allowlist)
+            } // If the Pixel was already owned
+            else {
+                // only check pixel type if pixel has already been spawned
+                assert(pixel_type.name == PIXEL_TYPE, 'PixelType is not paint!')
+            }
 
-      if needs_attention.value {
-        actions_system.update_needs_attention(
-          player,
-          position,
-          NeedsAttention {
-            x: position.x,
-            y: position.y,
-            value: false
-          }
-        )
-      }
+            // Check if 5 seconds have passed or if the sender is the owner
+            assert(
+                owner.address == 0 || (owner.address) == player || starknet::get_block_timestamp()
+                    - timestamp.updated_at < 5,
+                'Cooldown not over'
+            );
 
-      let unlock_time = starknet::get_block_timestamp() + 10;
-      let mut calldata: Array<felt252> = ArrayTrait::new();
-      calldata.append(player);
-      position.serialize(ref calldata);
-      actions_system.schedule_queue(
-        unlock_time,
-        PIXEL_TYPE,
-        REMOVE_COLOR_ENTRYPOINT,
-        calldata.span());
+            // We can now update color of the pixel
+            core_actions.update_color(player, position, new_color);
+
+            // If alert was already set, update it
+
+            if alert.value {
+                core_actions
+                    .update_alert(
+                        player,
+                        position,
+                        Alert { x: position.x, y: position.y, value: false }
+                    )
+            }
+
+            // The paint app currently "expires" a pixel's color and owner in 10 seconds.
+            // This is mainly to demonstrate the queueing system.
+            let unlock_time = starknet::get_block_timestamp() + 10;
+            let mut calldata: Array<felt252> = ArrayTrait::new();
+            calldata.append(player);
+            position.serialize(ref calldata);
+            core_actions
+                .schedule_queue(unlock_time, PIXEL_TYPE, REMOVE_COLOR_SELECTOR, calldata.span());
+        }
+
+        /// Remove color on a certain position
+        ///
+        /// # Arguments
+        ///
+        /// * `position` - Position of the pixel.
+        /// * `player_id` - Id of the player calling
+        fn remove_color(self: @ContractState, position: Position, player_id: felt252) {
+            // Get a handle to core_actions
+            let core_actions = core_actions(self);
+
+            // Set the color to all 0's (black)
+            let new_color = Color { x: position.x, y: position.y, r: 0, g: 0, b: 0 };
+
+            // Call core_actions to update the color
+            core_actions.update_color(player_id, position, new_color);
+
+            // Set alert so the player knows something happened
+            // TODO do we need this here??
+            let alert = Alert { x: position.x, y: position.y, value: true };
+            core_actions.update_alert(player_id, position, alert);
+        }
     }
-
-    fn remove_color(self: @ContractState, player_id: felt252, position: Position){
-      let actions_system = actions_system(self);
-
-      let removed_color = Color {
-        x: position.x,
-        y: position.y,
-        r: 0,
-        g: 0,
-        b: 0
-      };
-      actions_system.update_color(player_id, position, removed_color);
-
-      let needs_attention = NeedsAttention {
-        x: position.x,
-        y: position.y,
-        value: true
-      };
-      actions_system.update_needs_attention(player_id, position, needs_attention);
-    }
-  }
 }

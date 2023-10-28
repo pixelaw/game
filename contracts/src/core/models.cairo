@@ -5,6 +5,6 @@ mod permission;
 mod text;
 mod timestamp;
 mod pixel_type;
-mod needs_attention;
+mod alert;
 mod actions_model;
 mod app;
