@@ -19,38 +19,7 @@ mod reveal {
 
     use dojo_rps::utils::random;
 
-    fn validate_commit(
-        committed_hash: felt252,
-        commit: u8,
-        salt: felt252
-    ) -> bool{
-
-        let mut hash_span = ArrayTrait::<felt252>::new();
-        hash_span.append(commit.into());
-        hash_span.append(salt.into());
-
-        let computed_hash: felt252 = poseidon_hash_span(hash_span.span());
-
-        committed_hash == computed_hash
-    }
-
-    fn decide(player1_commit: u8, player2_commit: u8) -> u8 {
-        if player1_commit == ROCK && player2_commit == PAPER {
-            2
-        }else if player1_commit == PAPER && player2_commit == ROCK {
-            1
-        }else if player1_commit == ROCK && player2_commit == SCISSORS {
-            1
-        }else if player1_commit == SCISSORS && player2_commit == ROCK {
-            2
-        }else if player1_commit == SCISSORS && player2_commit == PAPER {
-            1
-        }else if player1_commit == PAPER && player2_commit == SCISSORS {
-            2
-        }else{
-            0
-        }
-    }
+    
 
     fn execute(
         ctx: Context,

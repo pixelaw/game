@@ -2,21 +2,21 @@ use starknet::ContractAddress;
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 
 #[derive(Model, Copy, Drop, Serde)]
-struct CoreActionsModel {
+struct ActionsModel {
   #[key]
   key: felt252,
   value: ContractAddress
 }
 
-const KEY: felt252 = 'core_actions_model';
+const KEY: felt252 = 'actions_model';
 
-trait CoreActionsModelTrait {
+trait ActionsModelTrait {
   fn address(world: IWorldDispatcher) -> ContractAddress;
 }
 
-impl CoreActionsModelImpl of CoreActionsModelTrait {
+impl ActionsModelImpl of ActionsModelTrait {
   fn address(world: IWorldDispatcher) -> ContractAddress{
-    let core_actions_model = get!(world, KEY, (CoreActionsModel));
-    core_actions_model.value
+    let actions_model = get!(world, KEY, (ActionsModel));
+    actions_model.value
   }
 }

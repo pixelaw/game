@@ -1,4 +1,3 @@
-// Core
 mod color;
 mod owner;
 mod position;
@@ -7,5 +6,5 @@ mod text;
 mod timestamp;
 mod pixel_type;
 mod needs_attention;
-mod core_actions_model;
+mod actions_model;
 mod app;

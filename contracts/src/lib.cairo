@@ -1,6 +1,2 @@
-mod models;
-mod systems;
-
-// Default games
-mod paint;
-// mod rps;
+mod core;
+mod apps;

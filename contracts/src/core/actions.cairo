@@ -1,15 +1,15 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-use pixelaw::models::position::Position;
-use pixelaw::models::color::Color;
-use pixelaw::models::owner::Owner;
-use pixelaw::models::text::Text;
-use pixelaw::models::pixel_type::PixelType;
-use pixelaw::models::needs_attention::NeedsAttention;
+use pixelaw::core::models::position::Position;
+use pixelaw::core::models::color::Color;
+use pixelaw::core::models::owner::Owner;
+use pixelaw::core::models::text::Text;
+use pixelaw::core::models::pixel_type::PixelType;
+use pixelaw::core::models::needs_attention::NeedsAttention;
 use starknet::{ContractAddress, ClassHash};
 
 // trait: specify functions to implement
 #[starknet::interface]
-trait ICoreActions<TContractState> {
+trait IActions<TContractState> {
   fn init(self: @TContractState);
   fn update_app_name(self: @TContractState, name: felt252);
   fn has_write_access(self: @TContractState, player_id: felt252, position: Position, caller_system: felt252) -> bool;
@@ -24,19 +24,19 @@ trait ICoreActions<TContractState> {
 }
 
 #[dojo::contract]
-mod core_actions {
+mod actions {
   use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
-  use super::ICoreActions;
-  use pixelaw::models::owner::Owner;
-  use pixelaw::models::app::{App, AppName, AppTrait};
-  use pixelaw::models::permission::Permission;
-  use pixelaw::models::position::Position;
-  use pixelaw::models::pixel_type::PixelType;
-  use pixelaw::models::timestamp::Timestamp;
-  use pixelaw::models::text::Text;
-  use pixelaw::models::color::Color;
-  use pixelaw::models::needs_attention::NeedsAttention;
-  use pixelaw::models::core_actions_model::{CoreActionsModel, KEY};
+  use super::IActions;
+  use pixelaw::core::models::owner::Owner;
+  use pixelaw::core::models::app::{App, AppName, AppTrait};
+  use pixelaw::core::models::permission::Permission;
+  use pixelaw::core::models::position::Position;
+  use pixelaw::core::models::pixel_type::PixelType;
+  use pixelaw::core::models::timestamp::Timestamp;
+  use pixelaw::core::models::text::Text;
+  use pixelaw::core::models::color::Color;
+  use pixelaw::core::models::needs_attention::NeedsAttention;
+  use pixelaw::core::models::actions_model::{ActionsModel, KEY};
   use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
 
 
@@ -112,14 +112,14 @@ mod core_actions {
 
   // impl: implement functions specified in trait
   #[external(v0)]
-  impl CoreActionsImpl of ICoreActions<ContractState> {
+  impl ActionsImpl of IActions<ContractState> {
     // ContractState is defined by system decorator expansion
     fn init(self: @ContractState) {
       let world = self.world_dispatcher.read();
       set!(
         world,
         (
-          CoreActionsModel {
+          ActionsModel {
             key: KEY,
             value: get_contract_address()
           }
@@ -225,6 +225,8 @@ mod core_actions {
         index += 1;
       };
     }
+
+    // impl: implement functions specified in trait
 
     fn update_color(self: @ContractState, player_id: felt252, position: Position, new_color: Color) {
       assert_has_write_access(self, player_id, position);
@@ -367,21 +369,21 @@ mod tests {
 
   use dojo::test_utils::{spawn_test_world, deploy_contract};
 
-  use pixelaw::models::app::{app, app_name};
-  use pixelaw::models::color::color;
-  use pixelaw::models::core_actions_model::core_actions_model;
-  use pixelaw::models::needs_attention::needs_attention;
-  use pixelaw::models::owner::owner;
-  use pixelaw::models::owner::Owner;
-  use pixelaw::models::permission::permission;
-  use pixelaw::models::pixel_type::pixel_type;
-  use pixelaw::models::pixel_type::PixelType;
-  use pixelaw::models::position::Position;
-  use pixelaw::models::text::text;
-  use pixelaw::models::timestamp::timestamp;
-  use pixelaw::models::timestamp::Timestamp;
+  use pixelaw::core::models::app::{app, app_name};
+  use pixelaw::core::models::color::color;
+  use pixelaw::core::models::actions_model::actions_model;
+  use pixelaw::core::models::needs_attention::needs_attention;
+  use pixelaw::core::models::owner::owner;
+  use pixelaw::core::models::owner::Owner;
+  use pixelaw::core::models::permission::permission;
+  use pixelaw::core::models::pixel_type::pixel_type;
+  use pixelaw::core::models::pixel_type::PixelType;
+  use pixelaw::core::models::position::Position;
+  use pixelaw::core::models::text::text;
+  use pixelaw::core::models::timestamp::timestamp;
+  use pixelaw::core::models::timestamp::Timestamp;
 
-  use super::{core_actions, ICoreActionsDispatcher, ICoreActionsDispatcherTrait};
+  use super::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
   const SPAWN_PIXEL_ENTRYPOINT: felt252 = 0x01c199924ae2ed5de296007a1ac8aa672140ef2a973769e4ad1089829f77875a;
 
@@ -394,7 +396,7 @@ mod tests {
     let mut models = array![
       app::TEST_CLASS_HASH,
       app_name::TEST_CLASS_HASH,
-      core_actions_model::TEST_CLASS_HASH,
+      actions_model::TEST_CLASS_HASH,
       owner::TEST_CLASS_HASH,
       permission::TEST_CLASS_HASH,
       pixel_type::TEST_CLASS_HASH,
@@ -405,13 +407,13 @@ mod tests {
     // deploy world with models
     let world = spawn_test_world(models);
 
-    let class_hash: ClassHash = core_actions::TEST_CLASS_HASH.try_into().unwrap();
+    let class_hash: ClassHash = actions::TEST_CLASS_HASH.try_into().unwrap();
 
     // deploy systems contract
     let contract_address = world
       .deploy_contract(0, class_hash);
 
-    let core_actions_system = ICoreActionsDispatcher { contract_address };
+    let actions_system = IActionsDispatcher { contract_address };
     let id = 0;
 
     let position = Position {
@@ -426,7 +428,7 @@ mod tests {
     calldata.append(0);
 
 
-    core_actions_system.process_queue(
+    actions_system.process_queue(
       id,
       contract_address,
       SPAWN_PIXEL_ENTRYPOINT,
