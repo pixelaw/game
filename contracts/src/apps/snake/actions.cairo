@@ -9,7 +9,7 @@ trait IActions<TContractState> {
 }
 
 #[dojo::contract]
-mod actions {
+mod snake_actions {
     use starknet::{ContractAddress, get_caller_address};
     use pixelaw::apps::snake::models::{Position, Moves, Direction, Vec2};
     use pixelaw::apps::snake::utils::next_position;

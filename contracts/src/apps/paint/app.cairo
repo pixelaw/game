@@ -12,7 +12,7 @@ trait IActions<TContractState> {
 const APP_KEY: felt252 = 'paint';
 
 #[dojo::contract]
-mod actions {
+mod paint_actions {
     use starknet::{get_caller_address, get_contract_address};
 
     use super::IActions;

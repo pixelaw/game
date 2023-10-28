@@ -10,7 +10,7 @@ const STATE_COMMIT_2: u8 = 3;
 const STATE_REVEAL_1: u8 = 4;
 const STATE_DECIDED: u8 = 5;
 
-const PIXEL_TYPE: felt252 = 'rps';
+const APP_KEY: felt252 = 'rps';
 const GAME_MAX_DURATION: u64 = 20000;
 const ROCK: u8 = 1;
 const PAPER: u8 = 2;
@@ -23,6 +23,7 @@ struct RPSType {
     play: u8,
     other_position: Position
 }
+
 
 
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
@@ -62,7 +63,7 @@ trait IActions<TContractState> {
 }
 
 #[dojo::contract]
-mod actions {
+mod rps_actions {
     use poseidon::poseidon_hash_span;
     use debug::PrintTrait;
     use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
@@ -77,7 +78,7 @@ mod actions {
     };
 
     use super::IActions;
-    use super::{PIXEL_TYPE, GAME_MAX_DURATION, ROCK, PAPER, SCISSORS};
+    use super::{APP_KEY, GAME_MAX_DURATION, ROCK, PAPER, SCISSORS};
     use super::{Game, RPSType, Player};
     use super::{STATE_COMMIT_1, STATE_COMMIT_2, STATE_DECIDED, STATE_IDLE, STATE_REVEAL_1};
 
@@ -121,15 +122,14 @@ mod actions {
                 })
             );
 
-            emit!(world, GameCreated { game_id: game_id, creator: player_id });
-        // TODO fix event emit (new method in dojo 0.3)
-        // // emit game created
-        // let mut values = array::ArrayTrait::new();
-        // serde::Serde::serialize(@GameCreated { game_id, creator: player_id }, ref values);
-        // emit(ctx, 'GameCreated', values.span());
 
-        // (game_id, player_id)
+            emit!(world, GameCreated { game_id: game_id, creator: player_id });
+
         }
+
+
+
+
         fn commit(self: @ContractState, position: Position, hashed_commit: felt252) {
             let world = self.world_dispatcher.read();
 

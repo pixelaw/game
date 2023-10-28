@@ -6,7 +6,6 @@ use pixelaw::core::actions::{
     IActionsDispatcherTrait as ICoreActionsDispatcherTrait
 };
 
-
 #[derive(Model, Copy, Drop, Serde)]
 struct AppBySystem {
     #[key]
@@ -29,26 +28,38 @@ struct CoreActionsAddress {
 }
 
 
-const CORE_ACTIONS_KEY: felt252 = 'actions_model';
+const CORE_ACTIONS_KEY: felt252 = 'core_actions';
 
 #[generate_trait]
 impl RegistryImpl of Registry {
+
+    /// Returns the PixeLAW Core actions as Dispatcher, ready to use
     fn core_actions(world: IWorldDispatcher) -> ICoreActionsDispatcher {
         let address = get!(world, CORE_ACTIONS_KEY, (CoreActionsAddress));
         ICoreActionsDispatcher { contract_address: address.value }
     }
 
-    // fn core_actions_address(world: IWorldDispatcher) -> ContractAddress{
-    //   let actions_model = get!(world, KEY, (ActionsModel));
-    //   actions_model.value
-    // }
-
+    /// Sets the address of the PixeLAW Core actions in the registry
+    ///
+    /// # Arguments
+    ///
+    /// * `address` - The address of the contract
     fn set_core_actions_address(world: IWorldDispatcher, address: ContractAddress) {
       // TODO check if address already set, and if sender is authorized
 
         set!(world, (CoreActionsAddress { key: CORE_ACTIONS_KEY, value: address }))
     }
 
+    /// Registers an App
+    ///
+    /// # Arguments
+    ///
+    /// * `system` - Contract address of the app's systems
+    /// * `name` - Name of the app
+    ///
+    /// # Returns
+    ///
+    /// * `AppBySystem` - Struct with contractaddress and name fields
     fn new_app(world: IWorldDispatcher, system: ContractAddress, name: felt252) -> AppBySystem {
         // Load app_by_system
         let mut app_by_system = get!(world, system, (AppBySystem));
