@@ -14,8 +14,8 @@ mod tests {
   use pixelaw::core::models::owner::owner;
   use pixelaw::core::models::owner::Owner;
   use pixelaw::core::models::permission::permission;
-  use pixelaw::core::models::pixel_type::pixel_type;
-  use pixelaw::core::models::pixel_type::PixelType;
+  use pixelaw::core::models::app::app;
+  use pixelaw::core::models::app::PixelType;
   use pixelaw::core::models::position::Position;
   use pixelaw::core::models::text::text;
   use pixelaw::core::models::timestamp::timestamp;
@@ -37,7 +37,7 @@ mod tests {
       actions_model::TEST_CLASS_HASH,
       owner::TEST_CLASS_HASH,
       permission::TEST_CLASS_HASH,
-      pixel_type::TEST_CLASS_HASH,
+      app::TEST_CLASS_HASH,
       timestamp::TEST_CLASS_HASH,
       text::TEST_CLASS_HASH,
       color::TEST_CLASS_HASH,
@@ -73,7 +73,7 @@ mod tests {
       calldata.span()
     );
 
-    let (owner, pixel_type, timestamp) = get!(world, (position.x, position.y).into(), (Owner, PixelType, Timestamp));
+    let (owner, app, timestamp) = get!(world, (position.x, position.y).into(), (Owner, PixelType, Timestamp));
 
     // check timestamp
     assert(timestamp.created_at == starknet::get_block_timestamp(), 'incorrect timestamp.created_at');

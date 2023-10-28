@@ -13,8 +13,8 @@ mod tests {
   use pixelaw::core::models::owner::Owner;
   use pixelaw::core::models::permission::permission;
   use pixelaw::core::models::position::Position;
-  use pixelaw::core::models::pixel_type::pixel_type;
-  use pixelaw::core::models::pixel_type::PixelType;
+  use pixelaw::core::models::app::app;
+  use pixelaw::core::models::app::PixelType;
   use pixelaw::core::models::timestamp::timestamp;
   use pixelaw::core::models::timestamp::Timestamp;
   use pixelaw::core::models::text::text;
@@ -23,12 +23,12 @@ mod tests {
   use pixelaw::core::models::actions_model::actions_model;
   use debug::PrintTrait;
 
-  use pixelaw::core::actions::{ 
-    IActionsDispatcher as ICoreActionsDispatcher, 
+  use pixelaw::core::actions::{
+    IActionsDispatcher as ICoreActionsDispatcher,
     IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
-    
-  use super::{actions, IActionsDispatcher, IActionsDispatcherTrait, PIXEL_TYPE};
+
+  use super::{actions, IActionsDispatcher, IActionsDispatcherTrait, APP_KEY};
 
   #[test]
   #[available_gas(30000000)]
@@ -39,7 +39,7 @@ mod tests {
     let mut models = array![
       owner::TEST_CLASS_HASH,
       permission::TEST_CLASS_HASH,
-      pixel_type::TEST_CLASS_HASH,
+      app::TEST_CLASS_HASH,
       timestamp::TEST_CLASS_HASH,
       text::TEST_CLASS_HASH,
       color::TEST_CLASS_HASH,
@@ -74,17 +74,17 @@ mod tests {
 
     actions_system.put_color(position.clone(), new_color);
 
-    let (owner, pixel_type, timestamp) = get!(world, (position.x, position.y).into(), (Owner, PixelType, Timestamp));
+    let (owner, app, timestamp) = get!(world, (position.x, position.y).into(), (Owner, PixelType, Timestamp));
 
     // check owner
     assert(owner.address == caller.into(), 'incorrect owner.address');
     assert(owner.x == position.x, 'incorrect owner.x');
     assert(owner.y == position.y, 'incorrect owner.y');
 
-    // check pixel_type
-    assert(pixel_type.name == PIXEL_TYPE, 'incorrect pixel_type.name');
-    assert(pixel_type.x == position.x, 'incorrect pixel_type.x');
-    assert(pixel_type.y == position.y, 'incorrect pixel_type.y');
+    // check app
+    assert(app.name == APP_KEY, 'incorrect app.name');
+    assert(app.x == position.x, 'incorrect app.x');
+    assert(app.y == position.y, 'incorrect app.y');
 
     // check timestamp
     assert(timestamp.created_at == starknet::get_block_timestamp(), 'incorrect timestamp.created_at');

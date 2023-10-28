@@ -1,5 +1,5 @@
 #[derive(Model, Copy, Drop, Serde)]
-struct PixelType {
+struct App {
     #[key]
     x: u64,
     #[key]

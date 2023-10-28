@@ -3,7 +3,7 @@ use pixelaw::core::models::position::Position;
 use pixelaw::core::models::color::Color;
 use pixelaw::core::models::owner::Owner;
 use pixelaw::core::models::text::Text;
-use pixelaw::core::models::pixel_type::PixelType;
+use pixelaw::core::models::app::App;
 use pixelaw::core::models::alert::Alert;
 use starknet::{ContractAddress, ClassHash};
 
@@ -33,7 +33,7 @@ trait IActions<TContractState> {
         self: @TContractState,
         player_id: felt252,
         position: Position,
-        pixel_type: felt252,
+        app: felt252,
         allowlist: Array<felt252>
     );
     fn update_color(
@@ -43,8 +43,8 @@ trait IActions<TContractState> {
         self: @TContractState, player_id: felt252, position: Position, new_owner: Owner
     );
     fn update_text(self: @TContractState, player_id: felt252, position: Position, new_text: Text);
-    fn update_pixel_type(
-        self: @TContractState, player_id: felt252, position: Position, new_type: PixelType
+    fn update_app(
+        self: @TContractState, player_id: felt252, position: Position, new_type: App
     );
     fn update_alert(
         self: @TContractState,
@@ -63,7 +63,7 @@ mod actions {
     use pixelaw::core::models::registry::{AppBySystem, AppByName, Registry};
     use pixelaw::core::models::permission::Permission;
     use pixelaw::core::models::position::Position;
-    use pixelaw::core::models::pixel_type::PixelType;
+    use pixelaw::core::models::app::App;
     use pixelaw::core::models::timestamp::Timestamp;
     use pixelaw::core::models::text::Text;
     use pixelaw::core::models::color::Color;
@@ -103,8 +103,8 @@ mod actions {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct PixelTypeUpdated {
-        pixel_type: PixelType,
+    struct AppUpdated {
+        app: App,
         caller: felt252
     }
 
@@ -128,7 +128,7 @@ mod actions {
         ColorUpdated: ColorUpdated,
         OwnerUpdated: OwnerUpdated,
         TextUpdated: TextUpdated,
-        PixelTypeUpdated: PixelTypeUpdated,
+        AppUpdated: AppUpdated,
         AlertUpdated: AlertUpdated,
         AppNameUpdated: AppNameUpdated
     }
@@ -244,28 +244,28 @@ mod actions {
         ///
         /// * `player_id` - Player ID spawning
         /// * `position` - Position of the Pixel being spawned
-        /// * `pixel_type` - Type of the pixel
+        /// * `app` - Type of the pixel
         /// * `allowlist` - Allowlist for the pixel
         fn spawn_pixel(
             self: @ContractState,
             player_id: felt252,
             position: Position,
-            pixel_type: felt252,
+            app: felt252,
             allowlist: Array<felt252>
         ) {
             assert_has_write_access(self, player_id, position);
             let world = self.world_dispatcher.read();
 
             // Check if the pixel already exists
-            let current_pixel_type = get!(world, (position.x, position.y).into(), (PixelType));
-            assert(current_pixel_type.name == 0, 'Pixel already exists!');
+            let current_app = get!(world, (position.x, position.y).into(), (App));
+            assert(current_app.name == 0, 'Pixel already exists!');
 
             // Set Pixel components
             set!(
                 world,
                 (
                     Owner { x: position.x, y: position.y, address: player_id },
-                    PixelType { x: position.x, y: position.y, name: pixel_type },
+                    App { x: position.x, y: position.y, name: app },
                     Timestamp {
                         x: position.x,
                         y: position.y,
@@ -406,8 +406,8 @@ mod actions {
         /// * `player_id` - Player ID
         /// * `position` - Position of the Pixel being changed
         /// * `new_type` - New app
-        fn update_pixel_type(
-            self: @ContractState, player_id: felt252, position: Position, new_type: PixelType
+        fn update_app(
+            self: @ContractState, player_id: felt252, position: Position, new_type: App
         ) {
             assert_has_write_access(self, player_id, position);
             let world = self.world_dispatcher.read();
@@ -429,7 +429,7 @@ mod actions {
                 )
             );
 
-            emit!(world, PixelTypeUpdated { pixel_type: new_type, caller: player_id })
+            emit!(world, AppUpdated { app: new_type, caller: player_id })
         }
 
         /// Update Alert of a Pixel

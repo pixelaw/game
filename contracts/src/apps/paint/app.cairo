@@ -9,8 +9,7 @@ trait IActions<TContractState> {
     fn remove_color(self: @TContractState, position: Position, player_id: felt252);
 }
 
-const PIXEL_TYPE: felt252 = 'paint';
-
+const APP_KEY: felt252 = 'paint';
 
 #[dojo::contract]
 mod actions {
@@ -19,7 +18,7 @@ mod actions {
     use super::IActions;
     use pixelaw::core::models::position::Position;
     use pixelaw::core::models::color::Color;
-    use pixelaw::core::models::pixel_type::PixelType;
+    use pixelaw::core::models::app::App;
     use pixelaw::core::models::timestamp::Timestamp;
     use pixelaw::core::models::owner::Owner;
     use pixelaw::core::models::alert::Alert;
@@ -28,16 +27,14 @@ mod actions {
         IActionsDispatcher as ICoreActionsDispatcher,
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
-    use super::PIXEL_TYPE;
-
+    use super::APP_KEY;
 
     // Hardcoded selector of the "remove_color" function
     // FIXME its wrong now.. (i moved Position to first arg)
     const REMOVE_COLOR_SELECTOR: felt252 =
         0x016af38c75fbaa0eb1f1b769bd94962da4e5d65456a470acc8f056e9c20a7d93;
 
-
-
+    // impl: implement functions specified in trait
     #[external(v0)]
     impl ActionsImpl of IActions<ContractState> {
 
@@ -45,7 +42,7 @@ mod actions {
         fn init(self: @ContractState) {
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
-            core_actions.update_app_name(PIXEL_TYPE);
+            core_actions.update_app_name(APP_KEY);
         }
 
         /// Put color on a certain position
@@ -61,10 +58,10 @@ mod actions {
             let player: felt252 = get_caller_address().into();
 
             // Load the Pixel's data
-            let (pixel_type, timestamp, owner, color, alert) = get!(
+            let (app, timestamp, owner, color, alert) = get!(
                 world,
                 (position.x, position.y).into(),
-                (PixelType, Timestamp, Owner, Color, Alert)
+                (App, Timestamp, Owner, Color, Alert)
             );
 
             // If the Pixel is not owned
@@ -79,11 +76,11 @@ mod actions {
                 allowlist.append(contract_address);
 
                 // Use the PixelawCore action to spawn a pixel with 'paint' pixel type and given allowlist
-                core_actions.spawn_pixel(player, position, PIXEL_TYPE, allowlist)
+                core_actions.spawn_pixel(player, position, APP_KEY, allowlist)
             } // If the Pixel was already owned
             else {
                 // only check pixel type if pixel has already been spawned
-                assert(pixel_type.name == PIXEL_TYPE, 'PixelType is not paint!')
+                assert(app.name == APP_KEY, 'App is not paint!')
             }
 
             // Check if 5 seconds have passed or if the sender is the owner
@@ -114,7 +111,7 @@ mod actions {
             calldata.append(player);
             position.serialize(ref calldata);
             core_actions
-                .schedule_queue(unlock_time, PIXEL_TYPE, REMOVE_COLOR_SELECTOR, calldata.span());
+                .schedule_queue(unlock_time, APP_KEY, REMOVE_COLOR_SELECTOR, calldata.span());
         }
 
         /// Remove color on a certain position

@@ -4,6 +4,7 @@ mod position;
 mod permission;
 mod text;
 mod timestamp;
-mod pixel_type;
+mod app;
 mod alert;
 mod registry;
+
