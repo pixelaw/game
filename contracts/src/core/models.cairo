@@ -7,4 +7,4 @@ mod timestamp;
 mod pixel_type;
 mod alert;
 mod actions_model;
-mod app;
+mod apps;

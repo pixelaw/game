@@ -59,7 +59,7 @@ mod actions {
     use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
     use super::IActions;
     use pixelaw::core::models::owner::Owner;
-    use pixelaw::core::models::app::{App, AppName, AppTrait};
+    use pixelaw::core::models::apps::{AppBySystem, AppByName, Apps};
     use pixelaw::core::models::permission::Permission;
     use pixelaw::core::models::position::Position;
     use pixelaw::core::models::pixel_type::PixelType;
@@ -67,7 +67,7 @@ mod actions {
     use pixelaw::core::models::text::Text;
     use pixelaw::core::models::color::Color;
     use pixelaw::core::models::alert::Alert;
-    use pixelaw::core::models::actions_model::{ActionsModel, KEY};
+    use pixelaw::core::models::actions_model::{ActionsModel, KEY as ACTIONS_MODEL_KEY};
     use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
 
 
@@ -116,7 +116,7 @@ mod actions {
 
     #[derive(Drop, starknet::Event)]
     struct AppNameUpdated {
-        app: App,
+        app: AppBySystem,
         caller: felt252
     }
 
@@ -136,7 +136,7 @@ mod actions {
     fn assert_has_write_access(self: @ContractState, player_id: felt252, position: Position) {
         // Check if the caller is authorized to change the pixel
         let world = self.world_dispatcher.read();
-        let system = get!(world, get_caller_address(), (App));
+        let system = get!(world, get_caller_address(), (AppBySystem));
         let has_access = self.has_write_access(player_id, position, system.name);
         assert(has_access, 'Not authorized to change pixel!');
     }
@@ -148,7 +148,7 @@ mod actions {
         /// Initializes the Pixelaw actions model
         fn init(self: @ContractState) {
             let world = self.world_dispatcher.read();
-            set!(world, (ActionsModel { key: KEY, value: get_contract_address() }))
+            set!(world, (ActionsModel { key: ACTIONS_MODEL_KEY, value: get_contract_address() }))
         }
 
         /// Updates the name of an app in the registry
@@ -159,7 +159,7 @@ mod actions {
         fn update_app_name(self: @ContractState, name: felt252) {
             let world = self.world_dispatcher.read();
             let system = get_caller_address();
-            let app = AppTrait::new(world, system, name);
+            let app = Apps::new(world, system, name);
             emit!(world, AppNameUpdated { app, caller: system.into() });
         }
 
@@ -232,7 +232,7 @@ mod actions {
             let world = self.world_dispatcher.read();
             let random_number = starknet::get_block_timestamp() % 1_000;
             let id = unlock * 1_000 + random_number;
-            let app_name = get!(world, system, (AppName));
+            let app_name = get!(world, system, (AppByName));
 
             emit!(world, QueueStarted { id, system: app_name.system, selector, calldata });
         }

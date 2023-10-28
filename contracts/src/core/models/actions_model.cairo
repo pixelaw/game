@@ -10,10 +10,9 @@ struct ActionsModel {
 
 const KEY: felt252 = 'actions_model';
 
-trait ActionsModelTrait {
-  fn address(world: IWorldDispatcher) -> ContractAddress;
-}
 
+
+#[generate_trait]
 impl ActionsModelImpl of ActionsModelTrait {
   fn address(world: IWorldDispatcher) -> ContractAddress{
     let actions_model = get!(world, KEY, (ActionsModel));
