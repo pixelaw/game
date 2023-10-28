@@ -11,6 +11,7 @@ trait IActions<TContractState> {
 
 const PIXEL_TYPE: felt252 = 'paint';
 
+
 #[dojo::contract]
 mod actions {
     use starknet::{get_caller_address, get_contract_address};
@@ -22,31 +23,28 @@ mod actions {
     use pixelaw::core::models::timestamp::Timestamp;
     use pixelaw::core::models::owner::Owner;
     use pixelaw::core::models::alert::Alert;
-    use pixelaw::core::models::actions_model::ActionsModelTrait;
+    use pixelaw::core::models::registry::Registry;
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
     use super::PIXEL_TYPE;
 
+
     // Hardcoded selector of the "remove_color" function
     // FIXME its wrong now.. (i moved Position to first arg)
     const REMOVE_COLOR_SELECTOR: felt252 =
         0x016af38c75fbaa0eb1f1b769bd94962da4e5d65456a470acc8f056e9c20a7d93;
 
-    fn core_actions(self: @ContractState) -> ICoreActionsDispatcher {
-        let world = self.world_dispatcher.read();
-        let actions_address = ActionsModelTrait::address(world);
-        ICoreActionsDispatcher { contract_address: actions_address }
-    }
 
-    // impl: implement functions specified in trait
+
     #[external(v0)]
     impl ActionsImpl of IActions<ContractState> {
 
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(self: @ContractState) {
-            let core_actions = core_actions(self);
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+
             core_actions.update_app_name(PIXEL_TYPE);
         }
 
@@ -59,7 +57,7 @@ mod actions {
         fn put_color(self: @ContractState, position: Position, new_color: Color) {
             // Load important variables
             let world = self.world_dispatcher.read();
-            let core_actions = core_actions(self);
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
             let player: felt252 = get_caller_address().into();
 
             // Load the Pixel's data
@@ -127,7 +125,7 @@ mod actions {
         /// * `player_id` - Id of the player calling
         fn remove_color(self: @ContractState, position: Position, player_id: felt252) {
             // Get a handle to core_actions
-            let core_actions = core_actions(self);
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
             // Set the color to all 0's (black)
             let new_color = Color { x: position.x, y: position.y, r: 0, g: 0, b: 0 };

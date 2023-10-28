@@ -70,7 +70,7 @@ mod actions {
 
     use pixelaw::core::models::position::Position;
     use pixelaw::core::models::color::Color;
-    use pixelaw::core::models::actions_model::ActionsModelTrait;
+    use pixelaw::core::models::registry::Registry;
 
     use pixelaw::core::actions::{
         actions, IActionsDispatcher, IActionsDispatcherTrait
@@ -91,13 +91,7 @@ mod actions {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        GameCreated: GameCreated,
-    }
-
-    fn actions_system(self: @ContractState) -> IActionsDispatcher {
-        let world = self.world_dispatcher.read();
-        let actions_address = ActionsModelTrait::address(world);
-        IActionsDispatcher { contract_address: actions_address }
+        GameCreated: GameCreated
     }
 
     #[external(v0)]
