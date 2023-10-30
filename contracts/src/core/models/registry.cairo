@@ -74,6 +74,7 @@ impl RegistryImpl of Registry {
             'app already set'
         );
 
+
         // Associate system with name
         app_by_system.name = name;
 

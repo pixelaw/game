@@ -13,8 +13,8 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "@dojoengine/core": "^0.1.27",
-    "@dojoengine/create-burner": "^0.1.27",
+    "@dojoengine/core": "^0.1.30",
+    "@dojoengine/create-burner": "^0.1.30",
     "@dojoengine/react": "^0.0.3",
     "@dojoengine/utils": "^0.1.27",
     "@latticexyz/react": "^1.43.0",

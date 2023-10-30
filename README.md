@@ -1,6 +1,71 @@
 # PixeLAW Game
 A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoort.work/)
 
+## Concepts
+- World : A Cartesian plane (2d grid), where every coordinate represents a "Pixel"
+- Pixel : One x/y Position, that has 6 primitive properties and one behavior template (App)
+- App : A Pixel can have only one App that defines its behavior
+- App2App : Interactions between Apps, where allowed
+- Action : A specific behavior in the context of an App
+- Queued Action : Action to be executed in the future, can be scheduled during an Action
+
+## Pixel Behavior
+- update(app,color,owner,text,alert)
+- update_app
+- update_color
+- update_owner
+- update_text
+- update_alert
+
+## Pixel Properties (every Pixel has these)
+- app
+- color
+- owner
+- text
+- alert
+
+## App Core Behavior (for owner)
+- register : Register the App in the World
+- unregister : Remove the App from the World
+- allow_app
+- disallow_disallow
+
+## App Properties
+- name
+- permissions (bool hashmap of appname+property)
+
+
+## Default App
+- paint (put_color , remove_color)
+
+## Checking Permissions
+- Is calling Player the owner of the pixel -> they can do anything
+- Is calling App allowed to update the Property?
+
+
+## Scheduling Actions
+- Can schedule anything through the Core.ScheduleAction function (?)
+- This stores a hash onchain that will be removed once executed
+- Core.ProcessScheduleAction takes the calldata and 
+  - checks if the hash exists
+  - checks if it's not too early 
+
+## Todo
+- handle unregistered apps
+- research feasibility of "hooks"
+- Properly hook up process_queue so it is allowed to do player_id, but normal calls are not.
+
+
+
+## Snake moves onto a non-owned Paint Pixel
+- action: snake_move
+- check pixel that will be occupied
+  - call update_color on that pixel
+  - is PaintApp allowing update_color from Snake?
+
+
+
+
 ## Prerequisites
 
 -   Rust - install [here](https://www.rust-lang.org/tools/install)

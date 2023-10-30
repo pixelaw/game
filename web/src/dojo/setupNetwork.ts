@@ -37,7 +37,7 @@ export async function setupNetwork() {
 
 
   // Create a new RPCProvider instance.
-  const provider = new RPCProvider(worldAddress, VITE_PUBLIC_NODE_URL);
+  const provider = new RPCProvider(worldAddress, manifest,VITE_PUBLIC_NODE_URL);
 
   // Utility function to get the SDK.
   // Add in new queries or subscriptions in src/graphql/schema.graphql
@@ -56,8 +56,8 @@ export async function setupNetwork() {
     graphSdk: createGraphSdk(),
 
     // Execute function.
-    execute: async (signer: Account, contract: string, system: string, call_data: num.BigNumberish[]) => {
-      return provider.execute(signer, getContractByName(contract)?.address || "", system, call_data);
+    execute: async (signer: Account, contractName: string, system: string, call_data: num.BigNumberish[]) => {
+      return provider.execute(signer, contractName, system, call_data);
     },
 
     // Entity query function.

@@ -13,9 +13,7 @@ use starknet::{ContractAddress, ClassHash};
 trait IActions<TContractState> {
     fn init(self: @TContractState);
     fn update_app_name(self: @TContractState, name: felt252);
-    fn has_write_access(
-        self: @TContractState, player_id: felt252, position: Position, caller_system: felt252
-    ) -> bool;
+    fn has_write_access(self: @TContractState, position: Position) -> bool;
     fn process_queue(
         self: @TContractState,
         id: u64,
@@ -53,7 +51,9 @@ trait IActions<TContractState> {
 
 #[dojo::contract]
 mod actions {
-    use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address, get_tx_info};
+    use starknet::{
+        ContractAddress, get_caller_address, ClassHash, get_contract_address, get_tx_info
+    };
     use starknet::info::TxInfo;
     use super::IActions;
     use pixelaw::core::models::owner::Owner;
@@ -130,11 +130,11 @@ mod actions {
         AppNameUpdated: AppNameUpdated
     }
 
-    fn assert_has_write_access(self: @ContractState, player_id: felt252, position: Position) {
+    fn assert_has_write_access(self: @ContractState, position: Position) {
         // Check if the caller is authorized to change the pixel
         let world = self.world_dispatcher.read();
         let app_by_system = get!(world, get_caller_address(), (AppBySystem));
-        let has_access = self.has_write_access(player_id, position, app_by_system.name);
+        let has_access = self.has_write_access(position);
         assert(has_access, 'Not authorized to change pixel!');
     }
 
@@ -151,45 +151,41 @@ mod actions {
         ///
         /// # Arguments
         ///
-        /// * `player_id` - Id of the calling player
         /// * `position` - The Position being queried
-        /// * `caller_system` - System ID of the caller (if not a player)
         ///
         /// # Returns
         ///
         /// * `bool` - Has write access or not
-        fn has_write_access(
-            self: @ContractState, player_id: felt252, position: Position, caller_system: felt252
-        ) -> bool {
+        fn has_write_access(self: @ContractState, position: Position) -> bool {
             let world = self.world_dispatcher.read();
 
-            'caller'.print();
-            let caller = get_tx_info().unbox().account_contract_address;
-            caller.print();
+            // The originator of the transaction
+            let caller_account = get_tx_info().unbox().account_contract_address.into();
 
-            let player: felt252 = get_caller_address().into();
-            'player'.print();
-            player.print();
-            'player_id'.print();
-            player_id.print();
+            // The address making this call. Could be a System of an App
+            let caller_address: felt252 = get_caller_address().into();
 
-'caller_system'.print();
-caller_system.print();
-
-
-            let permission = get!(
-                world, (position.x, position.y, caller_system).into(), (Permission)
-            );
-
-            // If an explicit Permission was set for the caller system, its good
-            if permission.allowed {
+            // First check: Can we grant based on ownership?
+            // If caller is owner or not owned by anyone, allow
+            let owner = get!(world, (position.x, position.y).into(), (Owner));
+            if owner.address == caller_account || owner.address == 0 {
                 return true;
+            } else if caller_account == caller_address {
+                // The caller is not a System, and not owner, so no reason to keep looking.
+                return false;
             }
 
-            // If caller is owner or not owned by anyone, allow
-            // Retrieve the existing pixel at the specified position
-            let owner = get!(world, (position.x, position.y).into(), (Owner));
-            owner.address == player_id || owner.address == 0
+            // The caller_address is a System, let's see if it has access
+
+            // Retrieve the App of the given pixel
+            let pixel_app = get!(world, (position.x, position.y).into(), (App));
+
+            // Retrieve the App of the calling System
+            let caller_app = get!(world, get_caller_address(), (AppBySystem));
+
+            // TODO decide whether an App by default has write on a pixel with same App?
+
+            true
         }
 
 
@@ -271,7 +267,7 @@ caller_system.print();
             app: felt252,
             allowlist: Array<felt252>
         ) {
-            assert_has_write_access(self, player_id, position);
+            assert_has_write_access(self, position);
             let world = self.world_dispatcher.read();
 
             // Check if the pixel already exists
@@ -292,24 +288,6 @@ caller_system.print();
                     },
                 )
             );
-
-            let mut index = 0;
-            let len = allowlist.len();
-            loop {
-                if index == len {
-                    break;
-                }
-                set!(
-                    world, // pixel + system is the storage key
-                    (Permission {
-                        x: position.x,
-                        y: position.y,
-                        caller_system: *allowlist[index],
-                        allowed: true
-                    })
-                );
-                index += 1;
-            };
         }
 
         /// Update color of a pixel
@@ -323,7 +301,7 @@ caller_system.print();
             self: @ContractState, player_id: felt252, position: Position, new_color: Color
         ) {
             'update_color'.print();
-            assert_has_write_access(self, player_id, position);
+            assert_has_write_access(self, position);
 
             let world = self.world_dispatcher.read();
 
@@ -357,7 +335,7 @@ caller_system.print();
         fn update_owner(
             self: @ContractState, player_id: felt252, position: Position, new_owner: Owner
         ) {
-            assert_has_write_access(self, player_id, position);
+            assert_has_write_access(self, position);
 
             let world = self.world_dispatcher.read();
 
@@ -391,7 +369,7 @@ caller_system.print();
         fn update_text(
             self: @ContractState, player_id: felt252, position: Position, new_text: Text
         ) {
-            assert_has_write_access(self, player_id, position);
+            assert_has_write_access(self, position);
 
             let world = self.world_dispatcher.read();
 
@@ -423,7 +401,7 @@ caller_system.print();
         /// * `position` - Position of the Pixel being changed
         /// * `new_type` - New app
         fn update_app(self: @ContractState, player_id: felt252, position: Position, new_type: App) {
-            assert_has_write_access(self, player_id, position);
+            assert_has_write_access(self, position);
             let world = self.world_dispatcher.read();
 
             // Retrieve the timestamp of the pixel
@@ -456,7 +434,7 @@ caller_system.print();
         fn update_alert(
             self: @ContractState, player_id: felt252, position: Position, new_alert: Alert
         ) {
-            assert_has_write_access(self, player_id, position);
+            assert_has_write_access(self, position);
 
             let world = self.world_dispatcher.read();
 
