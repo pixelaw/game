@@ -28,6 +28,7 @@ mod paint_actions {
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
     use super::APP_KEY;
+    use debug::PrintTrait;
 
     // Hardcoded selector of the "remove_color" function
     // FIXME its wrong now.. (i moved Position to first arg)
@@ -52,6 +53,8 @@ mod paint_actions {
         /// * `position` - Position of the pixel.
         /// * `new_color` - Color to set the pixel to.
         fn put_color(self: @ContractState, position: Position, new_color: Color) {
+'put_color'.print();
+
             // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
@@ -84,6 +87,7 @@ mod paint_actions {
             }
 
             // Check if 5 seconds have passed or if the sender is the owner
+            // TODO error message confusing, have to split this
             assert(
                 owner.address == 0 || (owner.address) == player || starknet::get_block_timestamp()
                     - timestamp.updated_at < 5,
@@ -112,6 +116,8 @@ mod paint_actions {
             position.serialize(ref calldata);
             core_actions
                 .schedule_queue(unlock_time, APP_KEY, REMOVE_COLOR_SELECTOR, calldata.span());
+'put_color DONE'.print();
+
         }
 
         /// Remove color on a certain position

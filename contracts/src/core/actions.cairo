@@ -7,6 +7,7 @@ use pixelaw::core::models::app::App;
 use pixelaw::core::models::alert::Alert;
 use starknet::{ContractAddress, ClassHash};
 
+
 // trait: specify functions to implement
 #[starknet::interface]
 trait IActions<TContractState> {
@@ -43,21 +44,17 @@ trait IActions<TContractState> {
         self: @TContractState, player_id: felt252, position: Position, new_owner: Owner
     );
     fn update_text(self: @TContractState, player_id: felt252, position: Position, new_text: Text);
-    fn update_app(
-        self: @TContractState, player_id: felt252, position: Position, new_type: App
-    );
+    fn update_app(self: @TContractState, player_id: felt252, position: Position, new_type: App);
     fn update_alert(
-        self: @TContractState,
-        player_id: felt252,
-        position: Position,
-        new_alert: Alert
+        self: @TContractState, player_id: felt252, position: Position, new_alert: Alert
     );
 }
 
 
 #[dojo::contract]
 mod actions {
-    use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
+    use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address, get_tx_info};
+    use starknet::info::TxInfo;
     use super::IActions;
     use pixelaw::core::models::owner::Owner;
     use pixelaw::core::models::registry::{AppBySystem, AppByName, Registry};
@@ -69,7 +66,7 @@ mod actions {
     use pixelaw::core::models::color::Color;
     use pixelaw::core::models::alert::Alert;
     use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
-
+    use debug::PrintTrait;
 
     #[derive(Drop, starknet::Event)]
     struct QueueStarted {
@@ -144,23 +141,10 @@ mod actions {
 
     #[external(v0)]
     impl ActionsImpl of IActions<ContractState> {
-
         /// Initializes the Pixelaw actions model
         fn init(self: @ContractState) {
             let world = self.world_dispatcher.read();
             Registry::set_core_actions_address(world, get_contract_address());
-        }
-
-        /// Updates the name of an app in the registry
-        ///
-        /// # Arguments
-        ///
-        /// * `name` - The new name of the app
-        fn update_app_name(self: @ContractState, name: felt252) {
-            let world = self.world_dispatcher.read();
-            let system = get_caller_address();
-            let app = Registry::new_app(world, system, name);
-            emit!(world, AppNameUpdated { app, caller: system.into() });
         }
 
         /// Returns whether a given caller has write access to a position
@@ -179,9 +163,25 @@ mod actions {
         ) -> bool {
             let world = self.world_dispatcher.read();
 
+            'caller'.print();
+            let caller = get_tx_info().unbox().account_contract_address;
+            caller.print();
+
+            let player: felt252 = get_caller_address().into();
+            'player'.print();
+            player.print();
+            'player_id'.print();
+            player_id.print();
+
+'caller_system'.print();
+caller_system.print();
+
+
             let permission = get!(
                 world, (position.x, position.y, caller_system).into(), (Permission)
             );
+
+            // If an explicit Permission was set for the caller system, its good
             if permission.allowed {
                 return true;
             }
@@ -192,25 +192,17 @@ mod actions {
             owner.address == player_id || owner.address == 0
         }
 
-        /// Executes an item from the queue
+
+        /// Updates the name of an app in the registry
         ///
         /// # Arguments
         ///
-        /// * `id` - Queue id (TODO: explain how it relates to a timestamp)
-        /// * `system` - The Contract to be executed on
-        /// * `selector` - The selector of the function to be executed
-        /// * `calldata` - Optional calldata for the function call
-        fn process_queue(
-            self: @ContractState,
-            id: u64,
-            system: ContractAddress,
-            selector: felt252,
-            calldata: Span<felt252>
-        ) {
-            assert(id <= starknet::get_block_timestamp() * 1_000, 'unlock time not passed');
-            starknet::call_contract_syscall(system, selector, calldata);
+        /// * `name` - The new name of the app
+        fn update_app_name(self: @ContractState, name: felt252) {
             let world = self.world_dispatcher.read();
-            emit!(world, QueueFinished { id });
+            let system = get_caller_address();
+            let app = Registry::new_app(world, system, name);
+            emit!(world, AppNameUpdated { app, caller: system.into() });
         }
 
 
@@ -234,7 +226,33 @@ mod actions {
             let id = unlock * 1_000 + random_number;
             let app_name = get!(world, system, (AppByName));
 
+            // TODO check permissions
+
+            // TODO hash the call and store the hash for verification
+
             emit!(world, QueueStarted { id, system: app_name.system, selector, calldata });
+        }
+
+
+        /// Executes an item from the queue
+        ///
+        /// # Arguments
+        ///
+        /// * `id` - Queue id (TODO: explain how it relates to a timestamp)
+        /// * `system` - The Contract to be executed on
+        /// * `selector` - The selector of the function to be executed
+        /// * `calldata` - Optional calldata for the function call
+        fn process_queue(
+            self: @ContractState,
+            id: u64,
+            system: ContractAddress,
+            selector: felt252,
+            calldata: Span<felt252>
+        ) {
+            assert(id <= starknet::get_block_timestamp() * 1_000, 'unlock time not passed');
+            starknet::call_contract_syscall(system, selector, calldata);
+            let world = self.world_dispatcher.read();
+            emit!(world, QueueFinished { id });
         }
 
 
@@ -302,11 +320,9 @@ mod actions {
         /// * `position` - Position of the Pixel being changed
         /// * `new_color` - New color
         fn update_color(
-            self: @ContractState,
-            player_id: felt252,
-            position: Position,
-            new_color: Color
+            self: @ContractState, player_id: felt252, position: Position, new_color: Color
         ) {
+            'update_color'.print();
             assert_has_write_access(self, player_id, position);
 
             let world = self.world_dispatcher.read();
@@ -327,7 +343,7 @@ mod actions {
                     },
                 )
             );
-
+            'update_color DONE'.print();
             emit!(world, ColorUpdated { color: new_color, caller: player_id })
         }
 
@@ -406,9 +422,7 @@ mod actions {
         /// * `player_id` - Player ID
         /// * `position` - Position of the Pixel being changed
         /// * `new_type` - New app
-        fn update_app(
-            self: @ContractState, player_id: felt252, position: Position, new_type: App
-        ) {
+        fn update_app(self: @ContractState, player_id: felt252, position: Position, new_type: App) {
             assert_has_write_access(self, player_id, position);
             let world = self.world_dispatcher.read();
 
@@ -440,10 +454,7 @@ mod actions {
         /// * `position` - Position of the Pixel being changed
         /// * `new_alert` - new_alert
         fn update_alert(
-            self: @ContractState,
-            player_id: felt252,
-            position: Position,
-            new_alert: Alert
+            self: @ContractState, player_id: felt252, position: Position, new_alert: Alert
         ) {
             assert_has_write_access(self, player_id, position);
 
@@ -466,10 +477,7 @@ mod actions {
                 )
             );
 
-            emit!(
-                world,
-                AlertUpdated { alert: new_alert, caller: player_id }
-            )
+            emit!(world, AlertUpdated { alert: new_alert, caller: player_id })
         }
     }
 }

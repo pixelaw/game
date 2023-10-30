@@ -17,22 +17,22 @@ build-external-contracts = []
 initializer_class_hash = "0xbeef"
 
 [scripts]
-post_deploy = "unset DOJO_WORLD_ADDRESS && ./scripts/init_auth.sh"
-deploy = "unset DOJO_WORLD_ADDRESS && sozo build && sozo migrate && ./scripts/init_auth.sh"
+post_deploy = "./scripts/update_scarb.sh && ./scripts/init_auth.sh"
+deploy = "sozo build &&  sozo migrate --name pixelaw && ./scripts/update_scarb.sh && ./scripts/init_auth.sh"
 spawn_pixel_1 = "./scripts/spawn_pixel_1.sh"
 put_color_1 = "./scripts/put_color_1.sh"
 spawn_rps_1 = "./scripts/spawn_rps_1.sh"
 put_rps_1 = "./scripts/put_rps_1.sh"
-get_1 = "./scripts/get_1.sh"
+simple_test = "./scripts/simple_test.sh"
 get_2 = "./scripts/get_2.sh"
 spawn_pixel_2 = "./scripts/spawn_pixel_2.sh"
 put_color_2 = "./scripts/put_color_2.sh"
 spawn_rps_2 = "./scripts/spawn_rps_2.sh"
-put_rps_2 = "./scripts/put_rps_2.sh"
+update_accounts = "./scripts/update_accounts.sh"
 
 [tool.dojo.env]
 rpc_url = "http://localhost:5050/"
-#world_address = "0x48f47b66cb8b6fbd4bc14add36f4476437f68ced98d0e43a2ac8f498ca9a821"
+world_address = "0x48f47b66cb8b6fbd4bc14add36f4476437f68ced98d0e43a2ac8f498ca9a821"
 
 # Default account for katana with seed = 0
 account_address = "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973"
