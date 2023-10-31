@@ -1,8 +1,8 @@
+use pixelaw::core::models::position::Position;
+
 #[derive(Model, Copy, Drop, Serde)]
 struct App {
     #[key]
-    x: u64,
-    #[key]
-    y: u64,
+    position: Position,
     name: felt252,
 }

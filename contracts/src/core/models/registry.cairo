@@ -32,7 +32,6 @@ const CORE_ACTIONS_KEY: felt252 = 'core_actions';
 
 #[generate_trait]
 impl RegistryImpl of Registry {
-
     /// Returns the PixeLAW Core actions as Dispatcher, ready to use
     fn core_actions(world: IWorldDispatcher) -> ICoreActionsDispatcher {
         let address = get!(world, CORE_ACTIONS_KEY, (CoreActionsAddress));
@@ -45,7 +44,7 @@ impl RegistryImpl of Registry {
     ///
     /// * `address` - The address of the contract
     fn set_core_actions_address(world: IWorldDispatcher, address: ContractAddress) {
-      // TODO check if address already set, and if sender is authorized
+        // TODO check if address already set, and if sender is authorized
 
         set!(world, (CoreActionsAddress { key: CORE_ACTIONS_KEY, value: address }))
     }
@@ -73,7 +72,6 @@ impl RegistryImpl of Registry {
                 && app_by_name.system == starknet::contract_address_const::<0x0>(),
             'app already set'
         );
-
 
         // Associate system with name
         app_by_system.name = name;

@@ -13,6 +13,7 @@ dojo = { git = "https://github.com/dojoengine/dojo", tag = "v0.3.2" }
 [[target.dojo]]
 build-external-contracts = []
 
+
 [tool.dojo]
 initializer_class_hash = "0xbeef"
 

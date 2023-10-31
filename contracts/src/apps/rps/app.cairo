@@ -21,9 +21,8 @@ const SCISSORS: u8 = 3;
 struct RPSType {
     commit_hash: felt252,
     play: u8,
-    other_position: Position
+    other_position: felt252
 }
-
 
 
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
@@ -73,9 +72,7 @@ mod rps_actions {
     use pixelaw::core::models::color::Color;
     use pixelaw::core::models::registry::Registry;
 
-    use pixelaw::core::actions::{
-        actions, IActionsDispatcher, IActionsDispatcherTrait
-    };
+    use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
     use super::IActions;
     use super::{APP_KEY, GAME_MAX_DURATION, ROCK, PAPER, SCISSORS};
@@ -122,19 +119,15 @@ mod rps_actions {
                 })
             );
 
-
             emit!(world, GameCreated { game_id: game_id, creator: player_id });
-
         }
-
-
 
 
         fn commit(self: @ContractState, position: Position, hashed_commit: felt252) {
             let world = self.world_dispatcher.read();
 
             // Retrieve Game and Player
-            let mut game = get!(world, (position.x, position.y).into(), (Game));
+            let mut game = get!(world, (position).into(), (Game));
             let player_id: felt252 = get_caller_address().into();
 
             // Handle game state
@@ -166,7 +159,7 @@ mod rps_actions {
             // Retrieve Game and Player
             let world = self.world_dispatcher.read();
 
-            let mut game = get!(world, (position.x, position.y).into(), (Game));
+            let mut game = get!(world, (position).into(), (Game));
             let player_id: felt252 = get_caller_address().into();
 
             // Make sure the gamestate is ready for revealing
@@ -210,7 +203,7 @@ mod rps_actions {
         fn reset(self: @ContractState, position: Position) {
             let world = self.world_dispatcher.read();
 
-            let mut game = get!(world, (position.x, position.y).into(), (Game));
+            let mut game = get!(world, (position).into(), (Game));
             let player_id: felt252 = get_caller_address().into();
 
             // check if the round expired

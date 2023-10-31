@@ -52,8 +52,7 @@ fn create_game(position: Position) -> (ContractAddress, u32, felt252) {
     'game_id'.print();
     game_id.print();
 
-    let mut res = world
-        .entity('Game'.into(), (position.x, position.y).into(), 0, dojo::SerdeLen::<Game>::len());
+    let mut res = world.entity('Game'.into(), (position).into(), 0, dojo::SerdeLen::<Game>::len());
 
     assert(res.len() > 0, 'game not found');
 

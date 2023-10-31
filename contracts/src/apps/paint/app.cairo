@@ -38,7 +38,6 @@ mod paint_actions {
     // impl: implement functions specified in trait
     #[external(v0)]
     impl ActionsImpl of IActions<ContractState> {
-
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(self: @ContractState) {
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
@@ -53,7 +52,7 @@ mod paint_actions {
         /// * `position` - Position of the pixel.
         /// * `new_color` - Color to set the pixel to.
         fn put_color(self: @ContractState, position: Position, new_color: Color) {
-'put_color'.print();
+            'put_color'.print();
 
             // Load important variables
             let world = self.world_dispatcher.read();
@@ -62,9 +61,7 @@ mod paint_actions {
 
             // Load the Pixel's data
             let (app, timestamp, owner, color, alert) = get!(
-                world,
-                (position.x, position.y).into(),
-                (App, Timestamp, Owner, Color, Alert)
+                world, (position).into(), (App, Timestamp, Owner, Color, Alert)
             );
 
             // If the Pixel is not owned
@@ -101,11 +98,7 @@ mod paint_actions {
 
             if alert.value {
                 core_actions
-                    .update_alert(
-                        player,
-                        position,
-                        Alert { x: position.x, y: position.y, value: false }
-                    )
+                    .update_alert(player, position, Alert { position, value: false })
             }
 
             // The paint app currently "expires" a pixel's color and owner in 10 seconds.
@@ -116,8 +109,7 @@ mod paint_actions {
             position.serialize(ref calldata);
             core_actions
                 .schedule_queue(unlock_time, APP_KEY, REMOVE_COLOR_SELECTOR, calldata.span());
-'put_color DONE'.print();
-
+            'put_color DONE'.print();
         }
 
         /// Remove color on a certain position
@@ -131,14 +123,14 @@ mod paint_actions {
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
             // Set the color to all 0's (black)
-            let new_color = Color { x: position.x, y: position.y, r: 0, g: 0, b: 0 };
+            let new_color = Color { position, r: 0, g: 0, b: 0 };
 
             // Call core_actions to update the color
             core_actions.update_color(player_id, position, new_color);
 
             // Set alert so the player knows something happened
             // TODO do we need this here??
-            let alert = Alert { x: position.x, y: position.y, value: true };
+            let alert = Alert { position, value: true };
             core_actions.update_alert(player_id, position, alert);
         }
     }

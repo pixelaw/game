@@ -2,37 +2,41 @@
 A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoort.work/)
 
 ## Concepts
-- World : A Cartesian plane (2d grid), where every coordinate represents a "Pixel"
+- World : A Cartesian plane (2d grid), where every position represents a "Pixel"
 - Pixel : One x/y Position, that has 6 primitive properties and one behavior template (App)
 - App : A Pixel can have only one App that defines its behavior
 - App2App : Interactions between Apps, where allowed
 - Action : A specific behavior in the context of an App
 - Queued Action : Action to be executed in the future, can be scheduled during an Action
 
-## Pixel Behavior
-- update(app,color,owner,text,alert)
+## App Core Behavior (for owner)
+- register : Register the App in the World
+- unregister : Remove the App from the World
+- allow_app
+- disallow_app
+
+## App Properties
+- name
+- permissions (bool hashmap of appname+property)
+
+
+## Core Pixel Behavior
+- **update_all**
 - update_app
 - update_color
 - update_owner
 - update_text
 - update_alert
+- update_timestamp
 
 ## Pixel Properties (every Pixel has these)
+- position (cannot be changed)
 - app
 - color
 - owner
 - text
 - alert
-
-## App Core Behavior (for owner)
-- register : Register the App in the World
-- unregister : Remove the App from the World
-- allow_app
-- disallow_disallow
-
-## App Properties
-- name
-- permissions (bool hashmap of appname+property)
+- timestamp
 
 
 ## Default App
