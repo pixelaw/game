@@ -1,12 +1,11 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-use pixelaw::core::models::position::Position;
-use pixelaw::core::models::color::Color;
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
 
 #[starknet::interface]
 trait IActions<TContractState> {
     fn init(self: @TContractState);
-    fn put_color(self: @TContractState, position: Position, new_color: Color);
-    fn remove_color(self: @TContractState, position: Position, player_id: felt252);
+    fn put_color(self: @TContractState, position: Position, color: Color);
+    fn remove_color(self: @TContractState, position: Position);
 }
 
 const APP_KEY: felt252 = 'paint';
@@ -16,12 +15,8 @@ mod paint_actions {
     use starknet::{get_caller_address, get_contract_address};
 
     use super::IActions;
-    use pixelaw::core::models::position::Position;
-    use pixelaw::core::models::color::Color;
-    use pixelaw::core::models::app::App;
-    use pixelaw::core::models::timestamp::Timestamp;
-    use pixelaw::core::models::owner::Owner;
-    use pixelaw::core::models::alert::Alert;
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
+
     use pixelaw::core::models::registry::Registry;
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
@@ -51,61 +46,49 @@ mod paint_actions {
         ///
         /// * `position` - Position of the pixel.
         /// * `new_color` - Color to set the pixel to.
-        fn put_color(self: @ContractState, position: Position, new_color: Color) {
+        fn put_color(self: @ContractState, position: Position, color: Color) {
             'put_color'.print();
 
             // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
-            let player: felt252 = get_caller_address().into();
+            let player = get_caller_address();
 
-            // Load the Pixel's data
-            let (app, timestamp, owner, color, alert) = get!(
-                world, (position).into(), (App, Timestamp, Owner, Color, Alert)
-            );
+            // Load the Pixel
+            let mut pixel = get!(world, (position).into(), (Pixel));
 
-            // If the Pixel is not owned
-            if owner.address == 0 {
-                // Instantiate a new AllowList
-                let mut allowlist: Array<felt252> = ArrayTrait::new();
 
-                // Get the current contract (Paint) address
-                let contract_address: felt252 = get_contract_address().into();
-
-                // Add the address to the allowlist. This will ... ???
-                allowlist.append(contract_address);
-
-                // Use the PixelawCore action to spawn a pixel with 'paint' pixel type and given allowlist
-                core_actions.spawn_pixel(player, position, APP_KEY, allowlist)
-            } // If the Pixel was already owned
-            else {
-                // only check pixel type if pixel has already been spawned
-                assert(app.name == APP_KEY, 'App is not paint!')
-            }
+            // TODO: Load Paint App Settings 
+            // For example for the Cooldown feature
+            let COOLDOWN_SECS = 5;
 
             // Check if 5 seconds have passed or if the sender is the owner
             // TODO error message confusing, have to split this
             assert(
-                owner.address == 0 || (owner.address) == player || starknet::get_block_timestamp()
-                    - timestamp.updated_at < 5,
+                pixel.owner.is_zero() || (pixel.owner) == player || starknet::get_block_timestamp()
+                    - pixel.timestamp < COOLDOWN_SECS,
                 'Cooldown not over'
             );
 
+
+
             // We can now update color of the pixel
-            core_actions.update_color(player, position, new_color);
+            core_actions.update_pixel(PixelUpdate {
+                position, 
+                color: Option::Some(color), 
+                alert: Option::None, 
+                timestamp: Option::None, 
+                text: Option::None, 
+                app: Option::None, 
+                owner: Option::None 
+            } );
 
-            // If alert was already set, update it
-
-            if alert.value {
-                core_actions
-                    .update_alert(player, position, Alert { position, value: false })
-            }
 
             // The paint app currently "expires" a pixel's color and owner in 10 seconds.
             // This is mainly to demonstrate the queueing system.
             let unlock_time = starknet::get_block_timestamp() + 10;
             let mut calldata: Array<felt252> = ArrayTrait::new();
-            calldata.append(player);
+            calldata.append(player.into());
             position.serialize(ref calldata);
             core_actions
                 .schedule_queue(unlock_time, APP_KEY, REMOVE_COLOR_SELECTOR, calldata.span());
@@ -118,20 +101,25 @@ mod paint_actions {
         ///
         /// * `position` - Position of the pixel.
         /// * `player_id` - Id of the player calling
-        fn remove_color(self: @ContractState, position: Position, player_id: felt252) {
-            // Get a handle to core_actions
+        fn remove_color(self: @ContractState, position: Position) {
+            // Load important variables
+            let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let player: felt252 = get_caller_address().into();
 
-            // Set the color to all 0's (black)
-            let new_color = Color { position, r: 0, g: 0, b: 0 };
 
             // Call core_actions to update the color
-            core_actions.update_color(player_id, position, new_color);
+            core_actions.update_pixel(PixelUpdate {
+                position, 
+                color: Option::Some(Color { r: 0, g: 0, b: 0 }) , 
+                alert: Option::None, 
+                timestamp: Option::None, 
+                text: Option::None, 
+                app: Option::None, 
+                owner: Option::None 
+                } );
 
-            // Set alert so the player knows something happened
-            // TODO do we need this here??
-            let alert = Alert { position, value: true };
-            core_actions.update_alert(player_id, position, alert);
+
         }
     }
 }
