@@ -14,14 +14,14 @@ trait IActions<TContractState> {
         timestamp: u64,
         called_system: ContractAddress,
         selector: felt252,
-        calldata: Span<felt252>
+        calldata: Array<felt252>
     );
     fn schedule_queue(
         self: @TContractState,
         timestamp: u64,
         called_system: ContractAddress,
         selector: felt252,
-        calldata: Span<felt252>
+        calldata: Array<felt252>
     );
     fn update_pixel(self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,  pixel_update: PixelUpdate);
 }
@@ -48,7 +48,6 @@ mod actions {
     struct QueueScheduled {
         timestamp: u64,
         id: felt252,
-        caller_system: ContractAddress,
         called_system: ContractAddress,
         selector: felt252,
         calldata: Span<felt252>
@@ -101,8 +100,9 @@ mod actions {
             timestamp: u64,
             called_system: ContractAddress,
             selector: felt252,
-            calldata: Span<felt252>
+            calldata: Array<felt252>
         ) {
+            'schedule_queue'.print();
             let world = self.world_dispatcher.read();
 
             // The originator of the transaction
@@ -113,20 +113,29 @@ mod actions {
 
             // Retrieve the caller system from the address.
             // This prevents non-system addresses to schedule queue
-            let caller_system = get!(world, caller_address, (AppBySystem)).system;
+            // let caller_system = get!(world, caller_address, (AppBySystem)).system;
 
+            let calldata_span = calldata.span();
 
             // hash the call and store the hash for verification
             let id = poseidon_hash_span(
-                array![timestamp.into(), caller_system.into(), called_system.into(), selector, poseidon_hash_span(calldata)]
+                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata_span)]
                     .span()
             );
+
+            'DUMPING'.print();
+            timestamp.print();
+            called_system.print();
+            selector.print();
+            calldata.print();
+            'DUMPING DONE'.print();
 
             // Store the hash with the caller address
             set!(world, QueueItem{id, valid: true});
 
             // Emit the event, so an external scheduler can pick it up
-            emit!(world, QueueScheduled { id, timestamp, caller_system, called_system, selector, calldata });
+            emit!(world, QueueScheduled { id, timestamp, called_system, selector, calldata: calldata_span });
+            'schedule_queue DONE'.print();
         }
 
 
@@ -135,15 +144,18 @@ mod actions {
             timestamp: u64,
             called_system: ContractAddress,
             selector: felt252,
-            calldata: Span<felt252>
+            calldata: Array<felt252>
         ) {
+            'process_queue'.print();
             let world = self.world_dispatcher.read();
             // A quick check on the timestamp so we know its not too early for this one
             assert(timestamp <= starknet::get_block_timestamp(), 'timestamp still in the future');
 
+            let calldata_span = calldata.span();
+
             // Recreate the id to check the integrity
             let id = poseidon_hash_span(
-                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata)]
+                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata_span)]
                     .span()
             );
 
@@ -156,7 +168,7 @@ mod actions {
 
 
             // Make the call itself
-            starknet::call_contract_syscall(called_system, selector, calldata);
+            starknet::call_contract_syscall(called_system, selector, calldata_span);
 
             // Remove the QueueItem (hoping this is how storage gets freed up?)
             // TODO this may be wrong..
@@ -164,6 +176,7 @@ mod actions {
 
             // Tell the offchain schedulers that this one is done
             emit!(world, QueueProcessed { id });
+            'process_queue DONE'.print();
         }
 
 
@@ -220,6 +233,7 @@ mod actions {
 
 
         fn update_pixel(self: @ContractState, for_player: ContractAddress, for_system: ContractAddress, pixel_update: PixelUpdate) {
+            'update_pixel'.print();
             let world = self.world_dispatcher.read();
             let mut pixel = get!(world, (pixel_update.position).into(), (Pixel));
 
@@ -251,6 +265,7 @@ mod actions {
 
             // Set Pixel
             set!(world, (pixel));
+            'update_pixel DONE'.print();
         }
     }
 }

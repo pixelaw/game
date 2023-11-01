@@ -162,17 +162,25 @@ mod paint_actions {
             // We implement fading by scheduling a new put_fading_color
             let fade_time = starknet::get_block_timestamp() + FADE_SECONDS;
             let mut calldata: Array<felt252> = ArrayTrait::new();
-            calldata.append(player.into());
-            position.serialize(ref calldata);
+
 
             let THIS_CONTRACT_ADDRESS = get_contract_address();
+
+            // Calldata[0]: Calling player
+            calldata.append(player.into());
+
+            // Calldata[1]: Calling system
+            calldata.append(THIS_CONTRACT_ADDRESS.into());
+
+            // Calldata[2,3] : Position[x,y]
+            position.serialize(ref calldata);
 
             core_actions
                 .schedule_queue(
                     fade_time, // When to fade next
                     THIS_CONTRACT_ADDRESS, // This contract address
                     get_execution_info().unbox().entry_point_selector, // This selector
-                    calldata.span() // The calldata prepared
+                    calldata // The calldata prepared
                 );
             'put_fading_color DONE'.print();
         }
