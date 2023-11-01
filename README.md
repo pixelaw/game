@@ -19,7 +19,7 @@ A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoor
 - name
 - permissions (bool hashmap of appname+property)
 
-
+  
 ## Core Pixel Behavior
 - **update_all**
 - update_app
@@ -45,7 +45,9 @@ A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoor
 ## Checking Permissions
 - Is calling Player the owner of the pixel -> they can do anything
 - Is calling App allowed to update the Property?
-
+- Problem
+  - If scheduled, the calling App is CoreActions
+  - How can we reliably check
 
 ## Scheduling Actions
 - Can schedule anything through the Core.ScheduleAction function (?)
@@ -53,6 +55,36 @@ A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoor
 - Core.ProcessScheduleAction takes the calldata and 
   - checks if the hash exists
   - checks if it's not too early 
+- Upside
+  - Onchain storage is minimized
+- Problem
+  - 
+
+
+## Snake
+- properties
+  - direction
+  - head_position
+  - length?
+- behavior
+  - spawn
+    - initialize direction, length
+    - update pixel to snake (head)
+  - move
+    - handle_next_pixel
+      - normal:
+        - head moves to next 
+        - rollback last
+      - die
+        - iterate all pixels and rollback
+      - longer
+        - head moves to next
+      - shorter
+        - head moves to next
+        - rollback last 2
+
+## What if..
+### Future actions are 1 per Pixel?
 
 ## Todo
 - handle unregistered apps

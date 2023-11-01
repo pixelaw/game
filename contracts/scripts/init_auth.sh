@@ -10,7 +10,7 @@ source scripts/update_contracts.sh
 
 
 # make sure all components/systems are deployed
-CORE_MODELS=("AppBySystem" "AppByName" "CoreActionsAddress" "Color" "Owner" "Text" "Timestamp" "ColorCount" "App" "Alert", "Position")
+CORE_MODELS=("AppBySystem" "AppByName" "CoreActionsAddress" "Pixel" "Permissions")
 
 APP_MODELS=("Game" "Player")
 

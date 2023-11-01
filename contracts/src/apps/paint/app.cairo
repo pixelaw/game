@@ -1,34 +1,45 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
+use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
+use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress};
+
 
 #[starknet::interface]
 trait IActions<TContractState> {
     fn init(self: @TContractState);
-    fn put_color(self: @TContractState, position: Position, color: Color);
-    fn remove_color(self: @TContractState, position: Position);
+    fn put_color(
+        self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,position: Position, color: Color
+    );
+    fn put_fading_color(
+        self: @TContractState, for_player: ContractAddress, for_system: ContractAddress, position: Position, color: Color
+    );
+    fn remove_color(self: @TContractState, for_player: ContractAddress, for_system: ContractAddress, position: Position);
 }
 
 const APP_KEY: felt252 = 'paint';
 
 #[dojo::contract]
 mod paint_actions {
-    use starknet::{get_caller_address, get_contract_address};
+    use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress};
 
     use super::IActions;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
-
     use pixelaw::core::models::registry::Registry;
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
     use super::APP_KEY;
+
     use debug::PrintTrait;
 
-    // Hardcoded selector of the "remove_color" function
-    // FIXME its wrong now.. (i moved Position to first arg)
-    const REMOVE_COLOR_SELECTOR: felt252 =
-        0x016af38c75fbaa0eb1f1b769bd94962da4e5d65456a470acc8f056e9c20a7d93;
+    fn subu8(nr: u8, sub: u8) -> u8 {
+        if nr >= sub {
+            return nr - sub;
+        } else {
+            return 0;
+        }
+    }
+
 
     // impl: implement functions specified in trait
     #[external(v0)]
@@ -46,19 +57,35 @@ mod paint_actions {
         ///
         /// * `position` - Position of the pixel.
         /// * `new_color` - Color to set the pixel to.
-        fn put_color(self: @ContractState, position: Position, color: Color) {
+        fn put_color(
+            self: @ContractState, 
+            for_player: ContractAddress, 
+            for_system: ContractAddress, 
+            position: Position, 
+            color: Color
+        ) {
             'put_color'.print();
 
             // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
-            let player = get_caller_address();
+
+            let player = Registry::get_player_address(world, for_player);
+
+            // Retrieve the current system. There are 2 main scenarios here:
+            // 1) This system was called by a player, and we use the current contract address
+            // 2) This system was called by CoreActions.process_queue, and we need to use the for_system argument
+            //
+            // As long as App developers implement this, permission checks should work normally.
+            // !!! App developers can cheat (send a different system with more permissions) here
+            // Is this an issue? They override the caller, so theoretically their own permissions.
+            // Right now I cannot think of any adversarial activity, just devs shooting themselves in the foot 
+            let for_system = Registry::get_system_address(world, for_system);
 
             // Load the Pixel
             let mut pixel = get!(world, (position).into(), (Pixel));
 
-
-            // TODO: Load Paint App Settings 
+            // TODO: Load Paint App Settings like the fade steptime
             // For example for the Cooldown feature
             let COOLDOWN_SECS = 5;
 
@@ -70,29 +97,84 @@ mod paint_actions {
                 'Cooldown not over'
             );
 
-
-
             // We can now update color of the pixel
-            core_actions.update_pixel(PixelUpdate {
-                position, 
-                color: Option::Some(color), 
-                alert: Option::None, 
-                timestamp: Option::None, 
-                text: Option::None, 
-                app: Option::None, 
-                owner: Option::None 
-            } );
+            core_actions
+                .update_pixel(
+                    player,
+                    for_system,
+                    PixelUpdate {
+                        position,
+                        color: Option::Some(color),
+                        alert: Option::None,
+                        timestamp: Option::None,
+                        text: Option::None,
+                        app: Option::None,
+                        owner: Option::None
+                    }
+                );
+
+            'put_color DONE'.print();
+        }
 
 
-            // The paint app currently "expires" a pixel's color and owner in 10 seconds.
-            // This is mainly to demonstrate the queueing system.
-            let unlock_time = starknet::get_block_timestamp() + 10;
+        /// Put color on a certain position
+        ///
+        /// # Arguments
+        ///
+        /// * `position` - Position of the pixel.
+        /// * `new_color` - Color to set the pixel to.
+        fn put_fading_color(
+            self: @ContractState,
+            for_player: ContractAddress,
+            for_system: ContractAddress,
+            position: Position,
+            color: Color
+        ) {
+            'put_fading_color'.print();
+
+            self.put_color(for_player, for_system, position, color);
+
+            // If the color is 0,0,0 , let's stop the process, fading is done.
+            if color.r == 0 && color.g == 0 && color.b == 0 {
+                return;
+            }
+
+            // Load important variables
+            let world = self.world_dispatcher.read();
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let player = Registry::get_player_address(world, for_player);
+            let system = Registry::get_system_address(world, for_system);
+
+            // Fade the color
+            let FADE_STEP = 5;
+            let new_color = Color {
+                r: subu8(color.r, FADE_STEP),
+                g: subu8(color.g, FADE_STEP),
+                b: subu8(color.b, FADE_STEP)
+            };
+
+            let FADE_SECONDS = 5;
+
+            // TODO this is probably expensive and may not even work.. check!
+            // let selector = starknet_keccak('put_fading_color');
+            // let selector = get_execution_info().unbox().entry_point_selector;
+
+            // We implement fading by scheduling a new put_fading_color
+            let fade_time = starknet::get_block_timestamp() + FADE_SECONDS;
             let mut calldata: Array<felt252> = ArrayTrait::new();
             calldata.append(player.into());
             position.serialize(ref calldata);
+
+            let THIS_CONTRACT_ADDRESS = get_contract_address();
+
             core_actions
-                .schedule_queue(unlock_time, APP_KEY, REMOVE_COLOR_SELECTOR, calldata.span());
-            'put_color DONE'.print();
+                .schedule_queue(
+                    fade_time, // When to fade next
+                    THIS_CONTRACT_ADDRESS, // This contract address
+                    get_execution_info().unbox().entry_point_selector, // This selector
+                    calldata.span() // The calldata prepared
+                );
+            'put_fading_color DONE'.print();
         }
 
         /// Remove color on a certain position
@@ -101,25 +183,34 @@ mod paint_actions {
         ///
         /// * `position` - Position of the pixel.
         /// * `player_id` - Id of the player calling
-        fn remove_color(self: @ContractState, position: Position) {
+        fn remove_color(
+            self: @ContractState, 
+            for_player: ContractAddress, 
+            for_system: ContractAddress,
+            position: Position
+            ) {
             // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
-            let player: felt252 = get_caller_address().into();
 
+            let player = Registry::get_player_address(world, for_player);
+            let system = Registry::get_system_address(world, for_system);
 
             // Call core_actions to update the color
-            core_actions.update_pixel(PixelUpdate {
-                position, 
-                color: Option::Some(Color { r: 0, g: 0, b: 0 }) , 
-                alert: Option::None, 
-                timestamp: Option::None, 
-                text: Option::None, 
-                app: Option::None, 
-                owner: Option::None 
-                } );
-
-
+            core_actions
+                .update_pixel(
+                    player,
+                    system,
+                    PixelUpdate {
+                        position,
+                        color: Option::Some(Color { r: 0, g: 0, b: 0 }),
+                        alert: Option::None,
+                        timestamp: Option::None,
+                        text: Option::None,
+                        app: Option::None,
+                        owner: Option::None
+                    }
+                );
         }
     }
 }

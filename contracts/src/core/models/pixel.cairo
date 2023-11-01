@@ -27,13 +27,17 @@ struct PixelUpdate {
 
 #[derive(Model, Copy, Drop, Serde)]
 struct Pixel {
+    // System properties
     #[key]
     position: Position,
+    created_at: u64,
+    updated_at: u64,
+    // User-changeable properties
+    alert: felt252,
+    app: ContractAddress,
     color: Color,
     owner: ContractAddress,
-    app: ContractAddress,
     text: felt252,
     timestamp: u64,
-    alert: felt252
 }
 

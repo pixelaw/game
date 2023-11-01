@@ -17,8 +17,8 @@ pushd $(dirname "$0")/..
 sleep 0.1
 
 # Player 1 put_color pixel 1,1
-sozo execute $PAINT_ACTIONS put_color \
+sozo execute $PAINT_ACTIONS put_fading_color \
   --private-key $ACCOUNT_2_PRIVATE_KEY \
   --account-address $ACCOUNT_2_ADDRESS \
-  -c 1,1,1,1,0,0,0
+  -c 1,1,255,255,255
 

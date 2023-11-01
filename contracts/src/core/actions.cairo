@@ -4,28 +4,26 @@ use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
 use starknet::{ContractAddress, ClassHash};
 
 
-// trait: specify functions to implement
 #[starknet::interface]
 trait IActions<TContractState> {
     fn init(self: @TContractState);
     fn update_app_name(self: @TContractState, name: felt252);
-    fn has_write_access(self: @TContractState, pixel: Pixel, pixel_update: PixelUpdate,) -> bool;
+    fn has_write_access(self: @TContractState, for_player: ContractAddress,for_system: ContractAddress,  pixel: Pixel, pixel_update: PixelUpdate,) -> bool;
     fn process_queue(
         self: @TContractState,
-        id: u64,
-        system: ContractAddress,
+        timestamp: u64,
+        called_system: ContractAddress,
         selector: felt252,
         calldata: Span<felt252>
     );
     fn schedule_queue(
         self: @TContractState,
-        unlock: u64,
-        system: felt252,
+        timestamp: u64,
+        called_system: ContractAddress,
         selector: felt252,
         calldata: Span<felt252>
     );
-    fn update_pixel(self: @TContractState, pixel_update: PixelUpdate);
-
+    fn update_pixel(self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,  pixel_update: PixelUpdate);
 }
 
 
@@ -41,18 +39,24 @@ mod actions {
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
     use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
     use debug::PrintTrait;
+    use poseidon::poseidon_hash_span;
+    use pixelaw::core::models::queue::{QueueItem};
+
+
 
     #[derive(Drop, starknet::Event)]
-    struct QueueStarted {
-        id: u64,
-        system: ContractAddress,
+    struct QueueScheduled {
+        timestamp: u64,
+        id: felt252,
+        caller_system: ContractAddress,
+        called_system: ContractAddress,
         selector: felt252,
         calldata: Span<felt252>
     }
 
     #[derive(Drop, starknet::Event)]
-    struct QueueFinished {
-        id: u64
+    struct QueueProcessed {
+        id: felt252
     }
 
     #[derive(Drop, starknet::Event)]
@@ -64,8 +68,8 @@ mod actions {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        QueueStarted: QueueStarted,
-        QueueFinished: QueueFinished,
+        QueueScheduled: QueueScheduled,
+        QueueProcessed: QueueProcessed,
         AppNameUpdated: AppNameUpdated
     }
 
@@ -79,7 +83,6 @@ mod actions {
         }
 
 
-        
         /// Updates the name of an app in the registry
         ///
         /// # Arguments
@@ -92,57 +95,79 @@ mod actions {
             emit!(world, AppNameUpdated { app, caller: system.into() });
         }
 
-        
-        /// Schedules an item on the queue
-        ///
-        /// # Arguments
-        ///
-        /// * `unlock` - Number of seconds in the future to enable execution (delay) this queue item
-        /// * `system` - The Contract to be executed on
-        /// * `selector` - The selector of the function to be executed
-        /// * `calldata` - Optional calldata for the function call
+
         fn schedule_queue(
             self: @ContractState,
-            unlock: u64,
-            system: felt252,
+            timestamp: u64,
+            called_system: ContractAddress,
             selector: felt252,
             calldata: Span<felt252>
         ) {
             let world = self.world_dispatcher.read();
-            let random_number = starknet::get_block_timestamp() % 1_000;
-            let id = unlock * 1_000 + random_number;
-            let app_name = get!(world, system, (AppByName));
-        
-            // TODO check permissions
-        
-            // TODO hash the call and store the hash for verification
-        
-            emit!(world, QueueStarted { id, system: app_name.system, selector, calldata });
-        }
-        
-        
-        /// Executes an item from the queue
-        ///
-        /// # Arguments
-        ///
-        /// * `id` - Queue id (TODO: explain how it relates to a timestamp)
-        /// * `system` - The Contract to be executed on
-        /// * `selector` - The selector of the function to be executed
-        /// * `calldata` - Optional calldata for the function call
-        fn process_queue(
-            self: @ContractState,
-            id: u64,
-            system: ContractAddress,
-            selector: felt252,
-            calldata: Span<felt252>
-        ) {
-            assert(id <= starknet::get_block_timestamp() * 1_000, 'unlock time not passed');
-            starknet::call_contract_syscall(system, selector, calldata);
-            let world = self.world_dispatcher.read();
-            emit!(world, QueueFinished { id });
+
+            // The originator of the transaction
+            let caller_account = get_tx_info().unbox().account_contract_address;
+
+            // The address making this call. Has to be a registered App (?)
+            let caller_address = get_caller_address();
+
+            // Retrieve the caller system from the address.
+            // This prevents non-system addresses to schedule queue
+            let caller_system = get!(world, caller_address, (AppBySystem)).system;
+
+
+            // hash the call and store the hash for verification
+            let id = poseidon_hash_span(
+                array![timestamp.into(), caller_system.into(), called_system.into(), selector, poseidon_hash_span(calldata)]
+                    .span()
+            );
+
+            // Store the hash with the caller address
+            set!(world, QueueItem{id, valid: true});
+
+            // Emit the event, so an external scheduler can pick it up
+            emit!(world, QueueScheduled { id, timestamp, caller_system, called_system, selector, calldata });
         }
 
-        fn has_write_access(self: @ContractState, pixel: Pixel, pixel_update: PixelUpdate) -> bool {
+
+        fn process_queue(
+            self: @ContractState,
+            timestamp: u64,
+            called_system: ContractAddress,
+            selector: felt252,
+            calldata: Span<felt252>
+        ) {
+            let world = self.world_dispatcher.read();
+            // A quick check on the timestamp so we know its not too early for this one
+            assert(timestamp <= starknet::get_block_timestamp(), 'timestamp still in the future');
+
+            // Recreate the id to check the integrity
+            let id = poseidon_hash_span(
+                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata)]
+                    .span()
+            );
+
+            // Try to retrieve the queue_item based on its id
+            let queue_item = get!(world, id, (QueueItem));
+
+            // Only valid when the queue item was found by the hash
+            assert(queue_item.valid, 'Invalid QueueItem');
+
+
+
+            // Make the call itself
+            starknet::call_contract_syscall(called_system, selector, calldata);
+
+            // Remove the QueueItem (hoping this is how storage gets freed up?)
+            // TODO this may be wrong..
+            set!(world, QueueItem{id, valid: false});
+
+            // Tell the offchain schedulers that this one is done
+            emit!(world, QueueProcessed { id });
+        }
+
+
+        fn has_write_access(self: @ContractState, for_player: ContractAddress,for_system: ContractAddress,  pixel: Pixel, pixel_update: PixelUpdate) -> bool {
             let world = self.world_dispatcher.read();
 
             // The originator of the transaction
@@ -159,6 +184,8 @@ mod actions {
                 // The caller is not a System, and not owner, so no reason to keep looking.
                 return false;
             }
+
+            // Deal with Scheduler calling
 
             // The caller_address is a System, let's see if it has access
 
@@ -192,11 +219,11 @@ mod actions {
         }
 
 
-        fn update_pixel(self: @ContractState, pixel_update: PixelUpdate) {
+        fn update_pixel(self: @ContractState, for_player: ContractAddress, for_system: ContractAddress, pixel_update: PixelUpdate) {
             let world = self.world_dispatcher.read();
             let mut pixel = get!(world, (pixel_update.position).into(), (Pixel));
 
-            assert(self.has_write_access(pixel, pixel_update), 'No access!');
+            assert(self.has_write_access(for_player,for_system,pixel, pixel_update), 'No access!');
 
             if pixel_update.alert.is_some() {
                 pixel.alert = pixel_update.alert.unwrap();
