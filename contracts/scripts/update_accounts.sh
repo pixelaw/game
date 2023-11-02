@@ -10,6 +10,9 @@ ACCOUNTS_JSON=$(curl --silent -X POST http://localhost:5050 -H "Content-Type: ap
                 "id": 0
               }')
 
+# Write the file
+echo $(echo $ACCOUNTS_JSON | jq '.result') > target/dev/accounts.json
+
 # Parse the JSON response with jq and get the number of elements
 NUM_ELEMENTS=$(echo $ACCOUNTS_JSON | jq '.result | length')
 

@@ -1,5 +1,5 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
+use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
 
 use starknet::{ContractAddress, ClassHash};
 
@@ -36,7 +36,7 @@ mod actions {
     use super::IActions;
     use pixelaw::core::models::registry::{AppBySystem, AppByName, Registry};
     use pixelaw::core::models::permissions::{Permission, Permissions};
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
     use debug::PrintTrait;
     use poseidon::poseidon_hash_span;
@@ -235,7 +235,7 @@ mod actions {
         fn update_pixel(self: @ContractState, for_player: ContractAddress, for_system: ContractAddress, pixel_update: PixelUpdate) {
             'update_pixel'.print();
             let world = self.world_dispatcher.read();
-            let mut pixel = get!(world, (pixel_update.position).into(), (Pixel));
+            let mut pixel = get!(world, (pixel_update.x, pixel_update.y), (Pixel));
 
             assert(self.has_write_access(for_player,for_system,pixel, pixel_update), 'No access!');
 

@@ -1,23 +1,24 @@
 use starknet::{ContractAddress, ClassHash};
 
-#[derive(Copy, Drop, Serde, Introspect)]
-struct Position {
-    x: u64,
-    y: u64
-}
+// #[derive(Copy, Drop, Serde, Introspect)]
+// struct Position {
+//     x: u64,
+//     y: u64
+// }
 
 
-#[derive(Copy, Drop, Serde, Introspect)]
-struct Color {
-    r: u8,
-    g: u8,
-    b: u8
-}
+// #[derive(Copy, Drop, Serde, Introspect)]
+// struct Color {
+//     r: u8,
+//     g: u8,
+//     b: u8
+// }
 
 #[derive(Copy, Drop, Serde)]
 struct PixelUpdate {
-    position: Position,
-    color: Option<Color>,
+    x: u64,
+    y: u64,
+    color: Option<u32>,
     owner: Option<ContractAddress>,
     app: Option<ContractAddress>,
     text: Option<felt252>,
@@ -29,13 +30,15 @@ struct PixelUpdate {
 struct Pixel {
     // System properties
     #[key]
-    position: Position,
+    x: u64,
+    #[key]
+    y: u64,
     created_at: u64,
     updated_at: u64,
     // User-changeable properties
     alert: felt252,
     app: ContractAddress,
-    color: Color,
+    color: u32,
     owner: ContractAddress,
     text: felt252,
     timestamp: u64,

@@ -11,4 +11,5 @@ if [ "$WORLD_ADDRESS" != "null" ]; then
   sed -i "s/world_address = ".*"/world_address = "$WORLD_ADDRESS"/" Scarb.toml
 fi
 
+
 echo "Scarb.toml has been updated with address(es)"

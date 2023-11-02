@@ -1,5 +1,5 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
+use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
 use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress};
 
 
@@ -7,12 +7,12 @@ use starknet::{get_caller_address, get_contract_address, get_execution_info, Con
 trait IActions<TContractState> {
     fn init(self: @TContractState);
     fn put_color(
-        self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,position: Position, color: Color
+        self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,x:u64, y:u64, color: u32
     );
     fn put_fading_color(
-        self: @TContractState, for_player: ContractAddress, for_system: ContractAddress, position: Position, color: Color
+        self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,x:u64, y:u64, color: u32
     );
-    fn remove_color(self: @TContractState, for_player: ContractAddress, for_system: ContractAddress, position: Position);
+    fn remove_color(self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,x:u64, y:u64);
 }
 
 const APP_KEY: felt252 = 'paint';
@@ -22,7 +22,7 @@ mod paint_actions {
     use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress};
 
     use super::IActions;
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate, Color, Position};
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::registry::Registry;
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
@@ -61,8 +61,9 @@ mod paint_actions {
             self: @ContractState, 
             for_player: ContractAddress, 
             for_system: ContractAddress, 
-            position: Position, 
-            color: Color
+            x: u64, 
+            y: u64, 
+            color: u32
         ) {
             'put_color'.print();
 
@@ -83,7 +84,7 @@ mod paint_actions {
             let for_system = Registry::get_system_address(world, for_system);
 
             // Load the Pixel
-            let mut pixel = get!(world, (position).into(), (Pixel));
+            let mut pixel = get!(world, (x,y), (Pixel));
 
             // TODO: Load Paint App Settings like the fade steptime
             // For example for the Cooldown feature
@@ -103,7 +104,7 @@ mod paint_actions {
                     player,
                     for_system,
                     PixelUpdate {
-                        position,
+                        x,y,
                         color: Option::Some(color),
                         alert: Option::None,
                         timestamp: Option::None,
@@ -127,17 +128,19 @@ mod paint_actions {
             self: @ContractState,
             for_player: ContractAddress,
             for_system: ContractAddress,
-            position: Position,
-            color: Color
+            x: u64,
+            y: u64,
+            color: u32
         ) {
             'put_fading_color'.print();
 
-            self.put_color(for_player, for_system, position, color);
+            self.put_color(for_player, for_system, x,y, color);
 
+// FIXME
             // If the color is 0,0,0 , let's stop the process, fading is done.
-            if color.r == 0 && color.g == 0 && color.b == 0 {
-                return;
-            }
+            // if color.r == 0 && color.g == 0 && color.b == 0 {
+            //     return;
+            // }
 
             // Load important variables
             let world = self.world_dispatcher.read();
@@ -147,11 +150,13 @@ mod paint_actions {
 
             // Fade the color
             let FADE_STEP = 5;
-            let new_color = Color {
-                r: subu8(color.r, FADE_STEP),
-                g: subu8(color.g, FADE_STEP),
-                b: subu8(color.b, FADE_STEP)
-            };
+            // let new_color = Color {
+            //     r: subu8(color.r, FADE_STEP),
+            //     g: subu8(color.g, FADE_STEP),
+            //     b: subu8(color.b, FADE_STEP)
+            // };
+            // FIXME
+            let new_color = 0;
 
             let FADE_SECONDS = 5;
 
@@ -173,7 +178,9 @@ mod paint_actions {
             calldata.append(THIS_CONTRACT_ADDRESS.into());
 
             // Calldata[2,3] : Position[x,y]
-            position.serialize(ref calldata);
+            calldata.append(x.into());
+            calldata.append(y.into());
+            
 
             core_actions
                 .schedule_queue(
@@ -185,17 +192,13 @@ mod paint_actions {
             'put_fading_color DONE'.print();
         }
 
-        /// Remove color on a certain position
-        ///
-        /// # Arguments
-        ///
-        /// * `position` - Position of the pixel.
-        /// * `player_id` - Id of the player calling
+
         fn remove_color(
             self: @ContractState, 
             for_player: ContractAddress, 
             for_system: ContractAddress,
-            position: Position
+            x: u64,
+            y: u64
             ) {
             // Load important variables
             let world = self.world_dispatcher.read();
@@ -210,8 +213,8 @@ mod paint_actions {
                     player,
                     system,
                     PixelUpdate {
-                        position,
-                        color: Option::Some(Color { r: 0, g: 0, b: 0 }),
+                        x,y,
+                        color: Option::Some(0),
                         alert: Option::None,
                         timestamp: Option::None,
                         text: Option::None,
