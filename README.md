@@ -60,6 +60,18 @@ A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoor
 - Problem
   - 
 
+- segment index is always a number 0 <> length
+- if we know last_index and length, we know the first too
+- 
+
+- Grow
+  - firstSegmentId is a new segment with nextSegmentId set to current first
+  - don't revert the last segment
+- Shrink
+  - Remove the last 2 segments from the tail
+- Same
+  - add new segment to beginning, and 
+  - revert last
 
 ## Snake
 - properties

@@ -5,7 +5,7 @@ use pixelaw::core::actions::{
     IActionsDispatcher as ICoreActionsDispatcher,
     IActionsDispatcherTrait as ICoreActionsDispatcherTrait
 };
-
+    use debug::PrintTrait;
 #[derive(Model, Copy, Drop, Serde)]
 struct AppBySystem {
     #[key]
@@ -68,9 +68,11 @@ impl RegistryImpl of Registry {
             // Return the for_player
             return for_player;
         }else{
-
+            'aaaaa'.print();
+let result = get_tx_info().unbox().account_contract_address;
+result.print();
             // Return the caller account from the transaction (the end user)
-            return get_tx_info().unbox().account_contract_address;
+            return result;
         }
 
     }

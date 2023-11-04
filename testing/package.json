@@ -1,0 +1,28 @@
+{
+  "name": "testing",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "run": "tsx index.ts",
+    "codegen": "graphql-codegen",
+    "create-components": "npx @dojoengine/core ../contracts/target/dev/manifest.json generated/contractComponents.ts http://localhost:5050 0x48f47b66cb8b6fbd4bc14add36f4476437f68ced98d0e43a2ac8f498ca9a821"
+  },
+  "dependencies": {
+    "@dojoengine/core": "^0.1.32",
+    "@dojoengine/utils": "^0.1.32",
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/typescript-graphql-request": "^6.0.1",
+    "@graphql-codegen/typescript-operations": "^4.0.1",
+    "@latticexyz/recs": "^1.43.0",
+    "@types/node": "^20.8.10",
+    "dotenv": "^16.3.1",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
+    "starknet": "^5.19.5",
+    "ts-node": "^10.9.1",
+    "tsx": "^3.14.0",
+    "typescript": "^5.2.2"
+  }
+}

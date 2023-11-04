@@ -40,6 +40,18 @@ mod paint_actions {
         }
     }
 
+fn encode_color(r: u8, g: u8, b: u8) -> u32 {
+    (r.into() * 0x10000) + (g.into() * 0x100) + b.into()
+}
+
+fn decode_color(color: u32) -> (u8, u8, u8) {
+        let r = (color / 0x10000);
+        let g = (color / 0x100) & 0xff;
+        let b = color & 0xff;
+
+
+    (r.try_into().unwrap(), g.try_into().unwrap(), b.try_into().unwrap())
+}
 
     // impl: implement functions specified in trait
     #[external(v0)]
@@ -58,15 +70,15 @@ mod paint_actions {
         /// * `position` - Position of the pixel.
         /// * `new_color` - Color to set the pixel to.
         fn put_color(
-            self: @ContractState, 
-            for_player: ContractAddress, 
-            for_system: ContractAddress, 
-            x: u64, 
-            y: u64, 
+            self: @ContractState,
+            for_player: ContractAddress,
+            for_system: ContractAddress,
+            x: u64,
+            y: u64,
             color: u32
         ) {
             'put_color'.print();
-
+color.print();
             // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
@@ -80,7 +92,7 @@ mod paint_actions {
             // As long as App developers implement this, permission checks should work normally.
             // !!! App developers can cheat (send a different system with more permissions) here
             // Is this an issue? They override the caller, so theoretically their own permissions.
-            // Right now I cannot think of any adversarial activity, just devs shooting themselves in the foot 
+            // Right now I cannot think of any adversarial activity, just devs shooting themselves in the foot
             let for_system = Registry::get_system_address(world, for_system);
 
             // Load the Pixel
@@ -134,13 +146,9 @@ mod paint_actions {
         ) {
             'put_fading_color'.print();
 
-            self.put_color(for_player, for_system, x,y, color);
 
-// FIXME
-            // If the color is 0,0,0 , let's stop the process, fading is done.
-            // if color.r == 0 && color.g == 0 && color.b == 0 {
-            //     return;
-            // }
+            // for_player needs to be zero if it came in like that
+            self.put_color(for_player, for_system, x,y, color);
 
             // Load important variables
             let world = self.world_dispatcher.read();
@@ -148,24 +156,33 @@ mod paint_actions {
             let player = Registry::get_player_address(world, for_player);
             let system = Registry::get_system_address(world, for_system);
 
+
+
+            let (r,g,b) = decode_color(color);
+r.print();
+g.print();
+b.print();
+            // If the color is 0,0,0 , let's stop the process, fading is done.
+            if r == 0 && g == 0 && b == 0 {
+                'fading is done'.print();
+                return;
+            }
+
+
+
             // Fade the color
             let FADE_STEP = 5;
-            // let new_color = Color {
-            //     r: subu8(color.r, FADE_STEP),
-            //     g: subu8(color.g, FADE_STEP),
-            //     b: subu8(color.b, FADE_STEP)
-            // };
-            // FIXME
-            let new_color = 0;
+            let new_color = encode_color (
+                subu8(r, FADE_STEP),
+                subu8(g, FADE_STEP),
+                subu8(b, FADE_STEP)
+            );
 
-            let FADE_SECONDS = 5;
+            let FADE_SECONDS = 0;
 
-            // TODO this is probably expensive and may not even work.. check!
-            // let selector = starknet_keccak('put_fading_color');
-            // let selector = get_execution_info().unbox().entry_point_selector;
 
             // We implement fading by scheduling a new put_fading_color
-            let fade_time = starknet::get_block_timestamp() + FADE_SECONDS;
+            let queue_timestamp = starknet::get_block_timestamp() + FADE_SECONDS;
             let mut calldata: Array<felt252> = ArrayTrait::new();
 
 
@@ -180,22 +197,24 @@ mod paint_actions {
             // Calldata[2,3] : Position[x,y]
             calldata.append(x.into());
             calldata.append(y.into());
-            
+
+            // Calldata[4]
+            calldata.append(new_color.into());
 
             core_actions
                 .schedule_queue(
-                    fade_time, // When to fade next
+                    queue_timestamp, // When to fade next
                     THIS_CONTRACT_ADDRESS, // This contract address
                     get_execution_info().unbox().entry_point_selector, // This selector
-                    calldata // The calldata prepared
+                    calldata.span() // The calldata prepared
                 );
             'put_fading_color DONE'.print();
         }
 
 
         fn remove_color(
-            self: @ContractState, 
-            for_player: ContractAddress, 
+            self: @ContractState,
+            for_player: ContractAddress,
             for_system: ContractAddress,
             x: u64,
             y: u64

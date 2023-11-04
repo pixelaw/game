@@ -1,0 +1,594 @@
+type AppByName {
+  name: felt252
+  system: ContractAddress
+  entity: Entity
+}
+
+type AppByNameConnection {
+  edges: [AppByNameEdge]
+  total_count: Int!
+}
+
+type AppByNameEdge {
+  node: AppByName
+  cursor: Cursor
+}
+
+input AppByNameOrder {
+  direction: OrderDirection!
+  field: AppByNameOrderField!
+}
+
+enum AppByNameOrderField {
+  NAME
+  SYSTEM
+}
+
+input AppByNameWhereInput {
+  nameGT: felt252
+  nameGTE: felt252
+  nameLT: felt252
+  nameLTE: felt252
+  nameNEQ: felt252
+  nameEQ: felt252
+  name: felt252
+  systemGT: ContractAddress
+  systemGTE: ContractAddress
+  systemLT: ContractAddress
+  systemLTE: ContractAddress
+  systemNEQ: ContractAddress
+  systemEQ: ContractAddress
+  system: ContractAddress
+}
+
+type AppBySystem {
+  system: ContractAddress
+  name: felt252
+  entity: Entity
+}
+
+type AppBySystemConnection {
+  edges: [AppBySystemEdge]
+  total_count: Int!
+}
+
+type AppBySystemEdge {
+  node: AppBySystem
+  cursor: Cursor
+}
+
+input AppBySystemOrder {
+  direction: OrderDirection!
+  field: AppBySystemOrderField!
+}
+
+enum AppBySystemOrderField {
+  SYSTEM
+  NAME
+}
+
+input AppBySystemWhereInput {
+  systemGT: ContractAddress
+  systemGTE: ContractAddress
+  systemLT: ContractAddress
+  systemLTE: ContractAddress
+  systemNEQ: ContractAddress
+  systemEQ: ContractAddress
+  system: ContractAddress
+  nameGT: felt252
+  nameGTE: felt252
+  nameLT: felt252
+  nameLTE: felt252
+  nameNEQ: felt252
+  nameEQ: felt252
+  name: felt252
+}
+
+scalar ContractAddress
+
+type CoreActionsAddress {
+  key: felt252
+  value: ContractAddress
+  entity: Entity
+}
+
+type CoreActionsAddressConnection {
+  edges: [CoreActionsAddressEdge]
+  total_count: Int!
+}
+
+type CoreActionsAddressEdge {
+  node: CoreActionsAddress
+  cursor: Cursor
+}
+
+input CoreActionsAddressOrder {
+  direction: OrderDirection!
+  field: CoreActionsAddressOrderField!
+}
+
+enum CoreActionsAddressOrderField {
+  KEY
+  VALUE
+}
+
+input CoreActionsAddressWhereInput {
+  keyGT: felt252
+  keyGTE: felt252
+  keyLT: felt252
+  keyLTE: felt252
+  keyNEQ: felt252
+  keyEQ: felt252
+  key: felt252
+  valueGT: ContractAddress
+  valueGTE: ContractAddress
+  valueLT: ContractAddress
+  valueLTE: ContractAddress
+  valueNEQ: ContractAddress
+  valueEQ: ContractAddress
+  value: ContractAddress
+}
+
+scalar Cursor
+
+scalar DateTime
+
+type Entity {
+  id: ID
+  keys: [String]
+  model_names: String
+  event_id: String
+  created_at: DateTime
+  updated_at: DateTime
+  models: [ModelUnion]
+}
+
+type EntityConnection {
+  edges: [EntityEdge]
+  total_count: Int!
+}
+
+type EntityEdge {
+  node: Entity
+  cursor: Cursor
+}
+
+type Event {
+  id: ID
+  keys: [String]
+  data: [String]
+  created_at: DateTime
+  transaction_hash: String
+}
+
+type EventConnection {
+  edges: [EventEdge]
+  total_count: Int!
+}
+
+type EventEdge {
+  node: Event
+  cursor: Cursor
+}
+
+type Metadata {
+  id: ID
+  uri: String
+}
+
+type MetadataConnection {
+  edges: [MetadataEdge]
+  total_count: Int!
+}
+
+type MetadataEdge {
+  node: Metadata
+  cursor: Cursor
+}
+
+type Model {
+  id: ID
+  name: String
+  class_hash: felt252
+  transaction_hash: felt252
+  created_at: DateTime
+}
+
+type ModelConnection {
+  edges: [ModelEdge]
+  total_count: Int!
+}
+
+type ModelEdge {
+  node: Model
+  cursor: Cursor
+}
+
+union ModelUnion =
+  AppByName
+  | AppBySystem
+  | CoreActionsAddress
+  | Permissions
+  | Pixel
+  | QueueItem
+
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+type Permission {
+  alert: bool
+  app: bool
+  color: bool
+  owner: bool
+  text: bool
+  timestamp: bool
+}
+
+type Permissions {
+  allowing_app: ContractAddress
+  allowed_app: ContractAddress
+  permission: Permission
+  entity: Entity
+}
+
+type PermissionsConnection {
+  edges: [PermissionsEdge]
+  total_count: Int!
+}
+
+type PermissionsEdge {
+  node: Permissions
+  cursor: Cursor
+}
+
+input PermissionsOrder {
+  direction: OrderDirection!
+  field: PermissionsOrderField!
+}
+
+enum PermissionsOrderField {
+  ALLOWING_APP
+  ALLOWED_APP
+  PERMISSION
+}
+
+input PermissionsWhereInput {
+  allowing_appGT: ContractAddress
+  allowing_appGTE: ContractAddress
+  allowing_appLT: ContractAddress
+  allowing_appLTE: ContractAddress
+  allowing_appNEQ: ContractAddress
+  allowing_appEQ: ContractAddress
+  allowing_app: ContractAddress
+  allowed_appGT: ContractAddress
+  allowed_appGTE: ContractAddress
+  allowed_appLT: ContractAddress
+  allowed_appLTE: ContractAddress
+  allowed_appNEQ: ContractAddress
+  allowed_appEQ: ContractAddress
+  allowed_app: ContractAddress
+}
+
+type Pixel {
+  x: u64
+  y: u64
+  created_at: u64
+  updated_at: u64
+  alert: felt252
+  app: ContractAddress
+  color: u32
+  owner: ContractAddress
+  text: felt252
+  timestamp: u64
+  entity: Entity
+}
+
+type PixelConnection {
+  edges: [PixelEdge]
+  total_count: Int!
+}
+
+type PixelEdge {
+  node: Pixel
+  cursor: Cursor
+}
+
+input PixelOrder {
+  direction: OrderDirection!
+  field: PixelOrderField!
+}
+
+enum PixelOrderField {
+  X
+  Y
+  CREATED_AT
+  UPDATED_AT
+  ALERT
+  APP
+  COLOR
+  OWNER
+  TEXT
+  TIMESTAMP
+}
+
+input PixelWhereInput {
+  xGT: u64
+  xGTE: u64
+  xLT: u64
+  xLTE: u64
+  xNEQ: u64
+  xEQ: u64
+  x: u64
+  yGT: u64
+  yGTE: u64
+  yLT: u64
+  yLTE: u64
+  yNEQ: u64
+  yEQ: u64
+  y: u64
+  created_atGT: u64
+  created_atGTE: u64
+  created_atLT: u64
+  created_atLTE: u64
+  created_atNEQ: u64
+  created_atEQ: u64
+  created_at: u64
+  updated_atGT: u64
+  updated_atGTE: u64
+  updated_atLT: u64
+  updated_atLTE: u64
+  updated_atNEQ: u64
+  updated_atEQ: u64
+  updated_at: u64
+  alertGT: felt252
+  alertGTE: felt252
+  alertLT: felt252
+  alertLTE: felt252
+  alertNEQ: felt252
+  alertEQ: felt252
+  alert: felt252
+  appGT: ContractAddress
+  appGTE: ContractAddress
+  appLT: ContractAddress
+  appLTE: ContractAddress
+  appNEQ: ContractAddress
+  appEQ: ContractAddress
+  app: ContractAddress
+  colorGT: u32
+  colorGTE: u32
+  colorLT: u32
+  colorLTE: u32
+  colorNEQ: u32
+  colorEQ: u32
+  color: u32
+  ownerGT: ContractAddress
+  ownerGTE: ContractAddress
+  ownerLT: ContractAddress
+  ownerLTE: ContractAddress
+  ownerNEQ: ContractAddress
+  ownerEQ: ContractAddress
+  owner: ContractAddress
+  textGT: felt252
+  textGTE: felt252
+  textLT: felt252
+  textLTE: felt252
+  textNEQ: felt252
+  textEQ: felt252
+  text: felt252
+  timestampGT: u64
+  timestampGTE: u64
+  timestampLT: u64
+  timestampLTE: u64
+  timestampNEQ: u64
+  timestampEQ: u64
+  timestamp: u64
+}
+
+type Query {
+  entity(id: ID!): Entity!
+  entities(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+    keys: [String]
+  ): EntityConnection
+  events(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+    keys: [String]
+  ): EventConnection
+  metadata(id: ID!): Metadata!
+  metadatas(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+  ): MetadataConnection
+  model(id: ID!): Model!
+  models(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+  ): ModelConnection
+  transaction(id: ID!): Transaction!
+  transactions(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+  ): TransactionConnection
+  appbynameModels(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+    where: AppByNameWhereInput
+    order: AppByNameOrder
+  ): AppByNameConnection
+  appbysystemModels(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+    where: AppBySystemWhereInput
+    order: AppBySystemOrder
+  ): AppBySystemConnection
+  coreactionsaddressModels(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+    where: CoreActionsAddressWhereInput
+    order: CoreActionsAddressOrder
+  ): CoreActionsAddressConnection
+  permissionsModels(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+    where: PermissionsWhereInput
+    order: PermissionsOrder
+  ): PermissionsConnection
+  pixelModels(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+    where: PixelWhereInput
+    order: PixelOrder
+  ): PixelConnection
+  queueitemModels(
+    first: Int
+    last: Int
+    before: Cursor
+    after: Cursor
+    offset: Int
+    limit: Int
+    where: QueueItemWhereInput
+    order: QueueItemOrder
+  ): QueueItemConnection
+}
+
+type QueueItem {
+  id: felt252
+  valid: bool
+  entity: Entity
+}
+
+type QueueItemConnection {
+  edges: [QueueItemEdge]
+  total_count: Int!
+}
+
+type QueueItemEdge {
+  node: QueueItem
+  cursor: Cursor
+}
+
+input QueueItemOrder {
+  direction: OrderDirection!
+  field: QueueItemOrderField!
+}
+
+enum QueueItemOrderField {
+  ID
+  VALID
+}
+
+input QueueItemWhereInput {
+  idGT: felt252
+  idGTE: felt252
+  idLT: felt252
+  idLTE: felt252
+  idNEQ: felt252
+  idEQ: felt252
+  id: felt252
+  validGT: bool
+  validGTE: bool
+  validLT: bool
+  validLTE: bool
+  validNEQ: bool
+  validEQ: bool
+  valid: bool
+}
+
+type Subscription {
+  entityUpdated(id: ID): Entity!
+  modelRegistered(id: ID): Model!
+}
+
+type Transaction {
+  id: ID
+  transaction_hash: felt252
+  sender_address: felt252
+  calldata: [felt252]
+  max_fee: felt252
+  signature: [felt252]
+  nonce: felt252
+  created_at: DateTime
+}
+
+type TransactionConnection {
+  edges: [TransactionEdge]
+  total_count: Int!
+}
+
+type TransactionEdge {
+  node: Transaction
+  cursor: Cursor
+}
+
+scalar bool
+
+scalar felt252
+
+scalar u32
+
+scalar u64
+
+
+query getEntities {
+  entities(keys: ["*"] first: 4096) {
+    edges {
+      node {
+        keys
+        models {
+
+          ... on Pixel {
+            x
+            y
+            app
+            __typename
+          }
+
+        }
+      }
+    }
+  }
+}

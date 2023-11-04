@@ -1,3 +1,3 @@
 mod paint;
 // mod rps;
-// mod snake;
+mod snake;

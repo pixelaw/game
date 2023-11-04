@@ -1,0 +1,9 @@
+POST http://localhost:5050
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "katana_predeployedAccounts",
+  "params": [],
+  "id": 0
+}

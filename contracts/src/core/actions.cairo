@@ -11,17 +11,18 @@ trait IActions<TContractState> {
     fn has_write_access(self: @TContractState, for_player: ContractAddress,for_system: ContractAddress,  pixel: Pixel, pixel_update: PixelUpdate,) -> bool;
     fn process_queue(
         self: @TContractState,
+        id:felt252,
         timestamp: u64,
         called_system: ContractAddress,
         selector: felt252,
-        calldata: Array<felt252>
+        calldata: Span<felt252>
     );
     fn schedule_queue(
         self: @TContractState,
         timestamp: u64,
         called_system: ContractAddress,
         selector: felt252,
-        calldata: Array<felt252>
+        calldata: Span<felt252>
     );
     fn update_pixel(self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,  pixel_update: PixelUpdate);
 }
@@ -43,11 +44,10 @@ mod actions {
     use pixelaw::core::models::queue::{QueueItem};
 
 
-
     #[derive(Drop, starknet::Event)]
     struct QueueScheduled {
-        timestamp: u64,
         id: felt252,
+        timestamp: u64,
         called_system: ContractAddress,
         selector: felt252,
         calldata: Span<felt252>
@@ -100,7 +100,7 @@ mod actions {
             timestamp: u64,
             called_system: ContractAddress,
             selector: felt252,
-            calldata: Array<felt252>
+            calldata: Span<felt252>
         ) {
             'schedule_queue'.print();
             let world = self.world_dispatcher.read();
@@ -115,64 +115,58 @@ mod actions {
             // This prevents non-system addresses to schedule queue
             // let caller_system = get!(world, caller_address, (AppBySystem)).system;
 
-            let calldata_span = calldata.span();
+            // let calldata_span = calldata.span();
 
             // hash the call and store the hash for verification
             let id = poseidon_hash_span(
-                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata_span)]
+                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata)]
                     .span()
             );
 
-            'DUMPING'.print();
-            timestamp.print();
-            called_system.print();
-            selector.print();
-            calldata.print();
-            'DUMPING DONE'.print();
-
-            // Store the hash with the caller address
-            set!(world, QueueItem{id, valid: true});
+            // 'DUMPING'.print();
+            // timestamp.print();
+            // called_system.print();
+            // selector.print();
+            // calldata.print();
+            // 'DUMPING DONE'.print();
 
             // Emit the event, so an external scheduler can pick it up
-            emit!(world, QueueScheduled { id, timestamp, called_system, selector, calldata: calldata_span });
+            emit!(world, QueueScheduled { id, timestamp, called_system, selector, calldata: calldata });
             'schedule_queue DONE'.print();
         }
 
 
         fn process_queue(
             self: @ContractState,
+            id: felt252,
             timestamp: u64,
             called_system: ContractAddress,
             selector: felt252,
-            calldata: Array<felt252>
+            calldata: Span<felt252>
         ) {
             'process_queue'.print();
             let world = self.world_dispatcher.read();
             // A quick check on the timestamp so we know its not too early for this one
             assert(timestamp <= starknet::get_block_timestamp(), 'timestamp still in the future');
 
-            let calldata_span = calldata.span();
+            // TODO Do we need a mechanism to ensure that Queued items are really coming from a schedule? 
+            // In theory someone can just call this action directly with whatever, as long as the ID is correct it will be executed.
+            // It is only possible to call Apps though, so as long as the security of the Apps is okay, it should be fine?
+            // And we could add some rate limiting to prevent griefing?
+            // 
+            // The only way i can think of doing "authentication" of a QueueItem would be to store the ID (hash) onchain, but that gets expensive soon?
 
             // Recreate the id to check the integrity
-            let id = poseidon_hash_span(
-                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata_span)]
+            let calculated_id = poseidon_hash_span(
+                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata)]
                     .span()
             );
 
-            // Try to retrieve the queue_item based on its id
-            let queue_item = get!(world, id, (QueueItem));
-
             // Only valid when the queue item was found by the hash
-            assert(queue_item.valid, 'Invalid QueueItem');
-
-
+            assert(calculated_id == id, 'Invalid Id');
 
             // Make the call itself
-            starknet::call_contract_syscall(called_system, selector, calldata_span);
-
-            // Remove the QueueItem (hoping this is how storage gets freed up?)
-            // TODO this may be wrong..
-            set!(world, QueueItem{id, valid: false});
+            starknet::call_contract_syscall(called_system, selector, calldata);
 
             // Tell the offchain schedulers that this one is done
             emit!(world, QueueProcessed { id });
@@ -180,7 +174,13 @@ mod actions {
         }
 
 
-        fn has_write_access(self: @ContractState, for_player: ContractAddress,for_system: ContractAddress,  pixel: Pixel, pixel_update: PixelUpdate) -> bool {
+        fn has_write_access(
+            self: @ContractState, 
+            for_player: ContractAddress,
+            for_system: ContractAddress,  
+            pixel: Pixel, 
+            pixel_update: PixelUpdate
+            ) -> bool {
             let world = self.world_dispatcher.read();
 
             // The originator of the transaction
@@ -238,6 +238,20 @@ mod actions {
             let mut pixel = get!(world, (pixel_update.x, pixel_update.y), (Pixel));
 
             assert(self.has_write_access(for_player,for_system,pixel, pixel_update), 'No access!');
+
+            // If the pixel has no owner set yet, do that now.
+            if pixel.owner.is_zero() {
+                let now = starknet::get_block_timestamp();
+
+            'for_player'.print();
+            for_player.print();
+
+
+                pixel.owner = for_player;
+                pixel.app = for_system;
+                pixel.created_at = now;
+                pixel.updated_at = now;
+            }
 
             if pixel_update.alert.is_some() {
                 pixel.alert = pixel_update.alert.unwrap();
