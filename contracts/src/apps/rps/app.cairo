@@ -1,28 +1,18 @@
 use starknet::{ContractAddress, ClassHash};
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-use pixelaw::core::models::position::Position;
-use pixelaw::core::models::color::Color;
 
-
-const STATE_IDLE: u8 = 1;
-const STATE_COMMIT_1: u8 = 2;
-const STATE_COMMIT_2: u8 = 3;
-const STATE_REVEAL_1: u8 = 4;
-const STATE_DECIDED: u8 = 5;
+    use pixelaw::core::utils::{Direction, Position};
+const STATE_NONE: u8 = 0;
+const STATE_CREATED: u8 = 1;
+const STATE_JOINED: u8 = 2;
+const STATE_FINISHED: u8 = 3;
 
 const APP_KEY: felt252 = 'rps';
 const GAME_MAX_DURATION: u64 = 20000;
+
 const ROCK: u8 = 1;
 const PAPER: u8 = 2;
 const SCISSORS: u8 = 3;
-
-
-#[derive(Copy, Drop, Serde, SerdeLen, Introspect)]
-struct RPSType {
-    commit_hash: felt252,
-    play: u8,
-    other_position: felt252
-}
 
 
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
@@ -31,16 +21,14 @@ struct Game {
     x: u64,
     #[key]
     y: u64,
-    game_id: u32,
+    id: u32,
     state: u8,
-    player1: felt252,
-    player2: felt252,
-    player1_hash: felt252,
-    player2_hash: felt252,
-    player1_commit: u8,
-    player2_commit: u8,
-    started_timestamp: u64,
-    winner: u8
+    player1: ContractAddress,
+    player2: ContractAddress,
+    player1_commit: felt252,
+    player1_move: u8,
+    player2_move: u8,
+    started_timestamp: u64
 }
 
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
@@ -53,11 +41,11 @@ struct Player {
 
 #[starknet::interface]
 trait IActions<TContractState> {
-    fn create(self: @TContractState, position: Position, hashed_commit: felt252);
-    fn commit(self: @TContractState, position: Position, hashed_commit: felt252);
+    fn create(self: @TContractState, position: Position, commit: felt252);
+    fn join(self: @TContractState, position: Position, player2_move: u8);
     fn finish(
-        self: @TContractState, position: Position, hashed_commit: felt252, commit: u8, salt: felt252
-    );
+            self: @TContractState, position: Position, player1_move: u8, player1_salt: felt252
+        );
     fn reset(self: @TContractState, position: Position);
 }
 
@@ -68,22 +56,23 @@ mod rps_actions {
     use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
     use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
 
-    use pixelaw::core::models::position::Position;
-    use pixelaw::core::models::color::Color;
     use pixelaw::core::models::registry::Registry;
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
+    use pixelaw::core::utils::{Direction, Position};
 
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
     use super::IActions;
     use super::{APP_KEY, GAME_MAX_DURATION, ROCK, PAPER, SCISSORS};
-    use super::{Game, RPSType, Player};
-    use super::{STATE_COMMIT_1, STATE_COMMIT_2, STATE_DECIDED, STATE_IDLE, STATE_REVEAL_1};
+    use super::{Game,  Player};
+    use super::{STATE_NONE, STATE_CREATED, STATE_JOINED, STATE_FINISHED};
 
+use zeroable::Zeroable;
 
     #[derive(Drop, starknet::Event)]
     struct GameCreated {
         game_id: u32,
-        creator: felt252
+        creator: ContractAddress
     }
 
     #[event]
@@ -92,145 +81,228 @@ mod rps_actions {
         GameCreated: GameCreated
     }
 
+
+
+
     #[external(v0)]
     impl ActionsImpl of IActions<ContractState> {
-        fn create(self: @ContractState, position: Position, hashed_commit: felt252) {
+        fn create(self: @ContractState, position: Position, commit: felt252) {
             let world = self.world_dispatcher.read();
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
-            let game_id = world.uuid();
-            let player_id: felt252 = get_caller_address().into();
+            let player = get_caller_address();
+            let pixel = get!(world, (position.x, position.y), Pixel);
+
+            // Bail if the caller is not allowed here
+            assert(pixel.owner.is_zero() || pixel.owner == player, 'Pixel is not players');
+
+            // Load the game
+            let mut game = get!(world, (position.x, position.y), Game);
+
+            if game.id == 0 {
+                // Bail if we're waiting for other player
+                assert(game.state == STATE_CREATED, 'cannot reset rps game');
+
+                // Player1 changing their commit
+                game.player1_commit = commit;
+            } else {
+                game =
+                    Game {
+                        x: position.x,
+                        y: position.y,
+                        id: world.uuid(),
+                        state: STATE_CREATED,
+                        player1: player,
+                        player2: Zeroable::zero(),
+                        player1_commit: commit,
+                        player1_move: 0,
+                        player2_move: 0,
+                        started_timestamp: starknet::get_block_timestamp()
+                    };
+                // Emit event
+                emit!(world, GameCreated { game_id: game.id, creator: player });
+            }
 
             // game entity
-            set!(
-                world,
-                (Game {
-                    x: position.x,
-                    y: position.y,
-                    game_id,
-                    state: STATE_IDLE,
-                    player1: 0,
-                    player2: 0,
-                    player1_hash: 0,
-                    player2_hash: 0,
-                    player1_commit: 0,
-                    player2_commit: 0,
-                    started_timestamp: 0,
-                    winner: 0
-                })
-            );
-
-            emit!(world, GameCreated { game_id: game_id, creator: player_id });
-        }
-
-
-        fn commit(self: @ContractState, position: Position, hashed_commit: felt252) {
-            let world = self.world_dispatcher.read();
-
-            // Retrieve Game and Player
-            let mut game = get!(world, (position).into(), (Game));
-            let player_id: felt252 = get_caller_address().into();
-
-            // Handle game state
-            if game.state == STATE_IDLE {
-                game.player1 = player_id;
-                game.player1_hash = hashed_commit;
-                game.state = STATE_COMMIT_1;
-                game.started_timestamp = starknet::get_block_timestamp();
-            } else if game.state == STATE_COMMIT_1 {
-                // Ensure the second player is different
-                assert(game.player1 != player_id, 'Player cannot commit twice');
-
-                // Commitment for player 2
-                game.player2 = player_id;
-                game.player2_hash = hashed_commit;
-                game.state = STATE_COMMIT_2;
-            }
-            // Store the Game
             set!(world, (game));
+
+            core_actions
+                .update_pixel(
+                    player,
+                    get_contract_address(),
+                    PixelUpdate {
+                        x: position.x,
+                        y: position.y,
+                        color: Option::None,
+                        alert: Option::None, // TODO figure out how we use alert
+                        timestamp: Option::None,
+                        text: Option::Some(
+                            'U+2753'
+                        ), // TODO better approach, for now copying unicode codepoint
+                        app: Option::Some(get_contract_address().into()),
+                        owner: Option::Some(player.into())
+                    }
+                );
         }
+
+
+        fn join(self: @ContractState, position: Position, player2_move: u8) {
+            let world = self.world_dispatcher.read();
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+
+            let player = get_caller_address();
+            let pixel = get!(world, (position.x, position.y), Pixel);
+
+            // Load the game
+            let mut game = get!(world, (position.x, position.y), Game);
+
+            // Bail if theres no game at all
+            assert(game.id != 0, 'No game to join');
+
+            // Bail if wrong gamestate
+            assert(game.state == STATE_CREATED, 'Wrong gamestate');
+
+            // Bail if the player is joining their own game
+            assert(game.player1 != player, 'Cant join own game');
+
+            // Update the game
+            game.player2 = player;
+            game.player2_move = player2_move;
+            game.state = STATE_JOINED;
+
+            // game entity
+            set!(world, (game));
+
+            core_actions
+                .update_pixel(
+                    player,
+                    get_contract_address(),
+                    PixelUpdate {
+                        x: position.x,
+                        y: position.y,
+                        color: Option::None,
+                        alert: Option::Some('!'), // TODO figure out how we use alert
+                        timestamp: Option::None,
+                        text: Option::Some(
+                            'U+2757'
+                        ), // TODO better approach, for now copying unicode codepoint
+                        app: Option::None,
+                        owner: Option::None
+                    }
+                );
+        }
+
 
         fn finish(
-            self: @ContractState,
-            position: Position,
-            hashed_commit: felt252,
-            commit: u8,
-            salt: felt252
+            self: @ContractState, position: Position, player1_move: u8, player1_salt: felt252
         ) {
-            // Retrieve Game and Player
             let world = self.world_dispatcher.read();
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
-            let mut game = get!(world, (position).into(), (Game));
-            let player_id: felt252 = get_caller_address().into();
+            let player = get_caller_address();
+            let pixel = get!(world, (position.x, position.y), Pixel);
 
-            // Make sure the gamestate is ready for revealing
+            // Load the game
+            let mut game = get!(world, (position.x, position.y), Game);
+
+            // Bail if theres no game at all
+            assert(game.id != 0, 'No game to finish');
+
+            // Bail if wrong gamestate
+            assert(game.state == STATE_JOINED, 'Wrong gamestate');
+
+            // Bail if the player is joining their own game
+            assert(game.player1 == player, 'Cant finish others game');
+
+            // Check player1's move
             assert(
-                game.state != STATE_COMMIT_2 || game.state != STATE_REVEAL_1, 'Cannot reveal now'
+                validate_commit(game.player1_commit, player1_move, player1_salt), 'player1 cheating'
             );
 
-            // Make sure the player is valid
-            assert(player_id == game.player1 || player_id == game.player2, 'Invalid player');
+            // Decide the winner
+            let winner = decide(player1_move, game.player2_move);
 
-            // Its either player1 or player2 revealing now
-            if game.player1 == player_id {
-                assert(validate_commit(game.player1_hash, commit, salt), 'Wrong hash for player1');
-                game.player1_commit = commit;
-            } else if game.player2 == player_id {
-                assert(validate_commit(game.player2_hash, commit, salt), 'Wrong hash for player2');
-                game.player2_commit = commit;
-            }
-
-            // We can now decide the winner
-            if game.state == STATE_REVEAL_1 {
-                let winner = decide(game.player1_commit, game.player2_commit);
-                winner.print();
-                game.winner = winner;
-                if winner == 0 { // TODO emit event for "Draw"
-                } else if winner == 1 { // TODO emit event for Player1 wins
-                } else if winner == 2 { // TODO emit event for Player2 wins
-                }
-
-                // switch the state to decided
-                game.state = STATE_DECIDED;
+            if winner == 0 { // No winner: Wipe the pixel
+                core_actions
+                    .update_pixel(
+                        player,
+                        get_contract_address(),
+                        PixelUpdate {
+                            x: position.x,
+                            y: position.y,
+                            color: Option::None,
+                            alert: Option::Some(0),
+                            timestamp: Option::None,
+                            text: Option::Some(0),
+                            app: Option::Some(Zeroable::zero()),
+                            owner: Option::Some(Zeroable::zero())
+                        }
+                    );
+            // TODO emit event
             } else {
-                game.state = STATE_REVEAL_1
+                // Update the game
+                game.player1_move = player1_move;
+                game.state = STATE_FINISHED;
+
+                if winner == 2 {
+                    // Change ownership of Pixel to player2
+                    // TODO refactor, this could be cleaner
+                    core_actions
+                        .update_pixel(
+                            player,
+                            get_contract_address(),
+                            PixelUpdate {
+                                x: position.x,
+                                y: position.y,
+                                color: Option::None,
+                                alert: Option::Some(0),
+                                timestamp: Option::None,
+                                text: Option::Some(get_unicode_for_rps(game.player2_move)),
+                                app: Option::None,
+                                owner: Option::Some(game.player2)
+                            }
+                        );
+                } else {
+                    core_actions
+                        .update_pixel(
+                            player,
+                            get_contract_address(),
+                            PixelUpdate {
+                                x: position.x,
+                                y: position.y,
+                                color: Option::None,
+                                alert: Option::Some(0),
+                                timestamp: Option::None,
+                                text: Option::Some(get_unicode_for_rps(game.player1_move)),
+                                app: Option::None,
+                                owner: Option::None
+                            }
+                        );
+                }
             }
 
-            // Store the Game
-            // TODO this may be wrong
+            // game entity
             set!(world, (game));
         }
 
+
+        // TODO implement
         fn reset(self: @ContractState, position: Position) {
             let world = self.world_dispatcher.read();
 
             let mut game = get!(world, (position).into(), (Game));
-            let player_id: felt252 = get_caller_address().into();
-
-            // check if the round expired
-            let time_now = starknet::get_block_timestamp();
-
-            // Error if the game is not expired
-            assert(
-                (time_now - game.started_timestamp) > GAME_MAX_DURATION
-                    || game.state == STATE_DECIDED,
-                'Game not expired'
-            );
-
-            // Reset the game
-            game.state = STATE_IDLE;
-            game.player1 = 0;
-            game.player2 = 0;
-            game.player1_hash = 0;
-            game.player2_hash = 0;
-            game.player1_commit = 0;
-            game.player2_commit = 0;
-            game.started_timestamp = 0;
-            game.winner = 0;
-
-            // Store the Game
-            set!(world, (game));
         }
     }
+
+    fn get_unicode_for_rps(rps: u8) -> felt252 {
+        let mut result = 'U+1FAA8';
+        if rps == ROCK {result = 'U+1FAA8';}
+        else if rps == PAPER {result = 'U+1F9FB';}
+        else if rps == SCISSORS {result = 'U+2702';}
+        else {panic_with_felt252('incorrect rps');}
+        result
+    }
+
     fn validate_commit(committed_hash: felt252, commit: u8, salt: felt252) -> bool {
         let mut hash_span = ArrayTrait::<felt252>::new();
         hash_span.append(commit.into());

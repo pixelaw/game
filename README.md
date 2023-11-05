@@ -60,18 +60,7 @@ A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoor
 - Problem
   - 
 
-- segment index is always a number 0 <> length
-- if we know last_index and length, we know the first too
-- 
 
-- Grow
-  - firstSegmentId is a new segment with nextSegmentId set to current first
-  - don't revert the last segment
-- Shrink
-  - Remove the last 2 segments from the tail
-- Same
-  - add new segment to beginning, and 
-  - revert last
 
 ## Snake
 - properties
@@ -80,21 +69,25 @@ A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoor
   - length?
 - behavior
   - spawn
-    - initialize direction, length
-    - update pixel to snake (head)
+     - position
+     - color
+     - text
+     - direction
+     - 
   - move
-    - handle_next_pixel
-      - normal:
-        - head moves to next 
-        - rollback last
-      - die
-        - iterate all pixels and rollback
-      - longer
-        - head moves to next
-      - shorter
-        - head moves to next
-        - rollback last 2
-
+    - 
+       - handle_next_pixel
+         - normal:
+           - head moves to next 
+           - rollback last
+         - die
+           - iterate all pixels and rollback
+         - longer
+           - head moves to next
+         - shorter
+           - head moves to next
+           - rollback last 2
+      - change_direction
 ## What if..
 ### Future actions are 1 per Pixel?
 
