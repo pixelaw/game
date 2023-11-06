@@ -6,6 +6,7 @@ use starknet::{get_caller_address, get_contract_address, get_execution_info, Con
 #[starknet::interface]
 trait IActions<TContractState> {
     fn init(self: @TContractState);
+    fn interact(self: @TContractState, x:u64, y:u64, color: u32);
     fn put_color(
         self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,x:u64, y:u64, color: u32
     );
@@ -19,7 +20,7 @@ const APP_KEY: felt252 = 'paint';
 
 #[dojo::contract]
 mod paint_actions {
-    use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress};
+    use starknet::{get_tx_info,get_caller_address, get_contract_address, get_execution_info, ContractAddress};
 
     use super::IActions;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
@@ -39,6 +40,12 @@ mod paint_actions {
             return 0;
         }
     }
+
+
+// ARGB
+// 0xFF FF FF FF
+// empty: 0x 00 00 00 00
+// normal color: 0x 00 FF FF FF
 
 fn encode_color(r: u8, g: u8, b: u8) -> u32 {
     (r.into() * 0x10000) + (g.into() * 0x100) + b.into()
@@ -62,6 +69,26 @@ fn decode_color(color: u32) -> (u8, u8, u8) {
 
             core_actions.update_app_name(APP_KEY);
         }
+
+
+        fn interact(
+            self: @ContractState,
+            x: u64,
+            y: u64,
+            color: u32
+        ) {
+            // assert pixel is empty OR pixel is ( owned AND has app permissions)
+            let player = get_tx_info().unbox().account_contract_address;
+
+            // if existing color is same as given, start fading
+
+            // normal: 
+            // put_color
+            // self.put_color()
+
+
+        }
+
 
         /// Put color on a certain position
         ///

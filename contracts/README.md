@@ -66,14 +66,14 @@ The App is also tracking score for each Player.
 
 rps (ui calls these if rps app selected and rps pixel clicked)
 - empty(param_rpsEnumHash)
-- notOwned(rpsEnum)
+- unowned(rpsEnum)
 - owned(rpsEnumHash)
 - param_rpsEnumHash(rpsEnum)
 
 paint
-- empty(color)
-- owned(color)
-- SCHEDULER: fade(x,y)
+- empty(position, color)
+- owned(position, color)
+- SCHEDULER: fade(position)
 
 snake
 - empty(color)

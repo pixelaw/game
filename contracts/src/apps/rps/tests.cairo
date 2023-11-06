@@ -110,8 +110,8 @@ mod tests {
         // Deploy everything
         let (world, core_actions, rps_actions) = deploy_world();
 
-core_actions.init();
-rps_actions.init();
+        core_actions.init();
+        rps_actions.init();
 
         // Impersonate player1
         let player1 = starknet::contract_address_const::<0x1337>();
