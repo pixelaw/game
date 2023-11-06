@@ -1,55 +1,3 @@
-// use starknet::{ContractAddressIntoFelt252, contract_address_const};
-
-// use starknet::{ContractAddress, syscalls::deploy_syscall};
-// use starknet::class_hash::{ClassHash, Felt252TryIntoClassHash};
-// use dojo::database::query::{IntoPartitioned, IntoPartitionedQuery};
-// use dojo::interfaces::{
-//     IComponentLibraryDispatcher, IComponentDispatcherTrait, ISystemLibraryDispatcher,
-//     ISystemDispatcherTrait
-// };
-// use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-
-// use dojo::test_utils::spawn_test_world;
-
-// use pixelaw::components::position::Position;
-// use pixelaw::rps::components::game::{game, Game};
-// use pixelaw::rps::systems::create::create;
-// use pixelaw::rps::systems::commit::commit;
-
-// use pixelaw::rps::utils::hash_commit;
-
-// use pixelaw::rps::tests::create::create_game;
-
-// fn player_commit(world: IWorldDispatcher, game_id: u32, hash: felt252, position: Position) {
-//     let mut player_commit_calldata = array::ArrayTrait::<felt252>::new();
-//     player_commit_calldata.append(game_id.into());
-//     player_commit_calldata.append(hash);
-
-//     // serialize position
-//     position.serialize(ref player_commit_calldata);
-
-//     world.execute('commit'.into(), player_commit_calldata.span());
-// }
-
-// fn player_reveal(
-//     world: IWorldDispatcher,
-//     game_id: u32,
-//     hash: felt252,
-//     commit: u8,
-//     salt: felt252,
-//     position: Position
-// ) {
-//     let mut player_commit_calldata = array::ArrayTrait::<felt252>::new();
-//     player_commit_calldata.append(game_id.into());
-//     player_commit_calldata.append(hash);
-//     player_commit_calldata.append(commit.into());
-//     player_commit_calldata.append(salt);
-
-//     // serialize position
-//     position.serialize(ref player_commit_calldata);
-
-//     world.execute('reveal'.into(), player_commit_calldata.span());
-// }
 
 #[cfg(test)]
 mod tests {
@@ -79,6 +27,8 @@ mod tests {
 
     use zeroable::Zeroable;
 
+
+    // Helper function: deploys world and actions
     fn deploy_world() -> (IWorldDispatcher, IActionsDispatcher, IRpsActionsDispatcher) {
         // Deploy World and models
         let world = spawn_test_world(

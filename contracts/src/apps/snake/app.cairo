@@ -42,7 +42,7 @@ struct SnakeSegment {
 
 
 #[starknet::interface]
-trait IActions<TContractState> {
+trait ISnakeActions<TContractState> {
     fn init(self: @TContractState);
     fn interact(self: @TContractState, default_params: DefaultParameters, direction: Direction);
     fn move(self: @TContractState, snake_id: u32);
@@ -57,7 +57,7 @@ mod snake_actions {
     use super::{Snake, SnakeSegment};
     use pixelaw::core::utils::{Direction, Position, DefaultParameters};
     use super::next_position;
-    use super::IActions;
+    use super::ISnakeActions;
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
@@ -87,21 +87,12 @@ mod snake_actions {
         direction: Direction
     }
 
-    const SNAKE_COLOR: u32 = 0xFFFFFF;
-    const SNAKE_TEXT: felt252 = 'U+1F40D';
     const SNAKE_MAX_LENGTH: u8 = 255;
     const APP_KEY: felt252 = 'snake';
 
-    #[derive(Drop)]
-    enum SnakeLengthChange {
-        Grow,
-        Same,
-        Shrink
-    }
-
 
     #[external(v0)]
-    impl ActionsImpl of IActions<ContractState> {
+    impl ActionsImpl of ISnakeActions<ContractState> {
         fn init(self: @ContractState) {
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
