@@ -208,6 +208,14 @@ mod actions {
             let caller_app = get!(world, get_caller_address(), (AppBySystem));
 
             // TODO decide whether an App by default has write on a pixel with same App?
+
+            // If its the same app, always allow.
+            // It's the responsibility of the App developer to ensure separation of ownership
+            if pixel.app == caller_app.system {
+                return true;
+            }
+
+
             let permissions = get!(world, (pixel.app, caller_app.system).into(), (Permissions));
 
             if pixel_update.alert.is_some() {
@@ -227,6 +235,9 @@ mod actions {
             };
             if pixel_update.timestamp.is_some() {
                 assert(permissions.permission.timestamp, 'Cannot update timestamp')
+            };
+            if pixel_update.action.is_some() {
+                assert(permissions.permission.action, 'Cannot update action')
             };
 
             // Since we checked all the permissions and no assert fired, we can return true
