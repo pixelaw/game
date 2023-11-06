@@ -231,6 +231,8 @@ mod snake_actions {
                 snake
                     .first_segment_id =
                         create_new_segment(world, core_actions, next_pixel, snake, first_segment);
+
+                    // TODO remove last segment
             } else if next_pixel.owner == snake.owner {
                 // Next pixel is owned by snake owner: GROW
 

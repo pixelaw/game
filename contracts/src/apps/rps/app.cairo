@@ -40,7 +40,7 @@ struct Player {
 
 
 #[starknet::interface]
-trait IActions<TContractState> {
+trait IRpsActions<TContractState> {
     fn init(self: @TContractState);
     fn interact(self: @TContractState, default_params: DefaultParameters, commit: felt252);
     fn join(self: @TContractState, default_params: DefaultParameters, player2_move: u8);
@@ -60,7 +60,7 @@ mod rps_actions {
 
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
-    use super::IActions;
+    use super::IRpsActions;
     use super::{APP_KEY, GAME_MAX_DURATION, ROCK, PAPER, SCISSORS};
     use super::{Game, Player};
     use super::{STATE_NONE, STATE_CREATED, STATE_JOINED, STATE_FINISHED};
@@ -81,7 +81,7 @@ mod rps_actions {
 
 
     #[external(v0)]
-    impl ActionsImpl of IActions<ContractState> {
+    impl ActionsImpl of IRpsActions<ContractState> {
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(self: @ContractState) {
             let core_actions = Registry::core_actions(self.world_dispatcher.read());

@@ -8,7 +8,8 @@ struct Permission {
     color: bool,
     owner: bool,
     text: bool,
-    timestamp: bool
+    timestamp: bool,
+    action: bool
 }
 
 #[derive(Model, Copy, Drop, Serde)]
