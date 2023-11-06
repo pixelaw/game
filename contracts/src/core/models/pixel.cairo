@@ -23,7 +23,8 @@ struct PixelUpdate {
     app: Option<ContractAddress>,
     text: Option<felt252>,
     timestamp: Option<u64>,
-    alert: Option<felt252>
+    alert: Option<felt252>,
+    action: Option<felt252> 
 }
 
 #[derive(Model, Copy, Drop, Serde)]
@@ -42,5 +43,6 @@ struct Pixel {
     owner: ContractAddress,
     text: felt252,
     timestamp: u64,
+    action: felt252 
 }
 

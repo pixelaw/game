@@ -1,7 +1,6 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use starknet::{ContractAddress, ClassHash};
-use pixelaw::core::utils::{Direction, Position};
-
+use pixelaw::core::utils::{Direction, Position, DefaultParameters};
 
 
 fn next_position(x: u64, y: u64, direction: Direction) -> (u64, u64) {
@@ -45,18 +44,8 @@ struct SnakeSegment {
 #[starknet::interface]
 trait IActions<TContractState> {
     fn init(self: @TContractState);
-    fn spawn(
-        self: @TContractState,
-        for_player: ContractAddress,
-        for_system: ContractAddress,
-        x: u64,
-        y: u64,
-        color: u32,
-        text: felt252,
-        direction: Direction
-    );
+    fn interact(self: @TContractState, default_params: DefaultParameters, direction: Direction);
     fn move(self: @TContractState, snake_id: u32);
-    fn change_direction(self: @TContractState, new_direction: Direction);
 }
 
 
@@ -65,7 +54,8 @@ mod snake_actions {
     use starknet::{ContractAddress, get_caller_address, get_contract_address, get_execution_info};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::registry::Registry;
-    use super::{Direction, Snake, SnakeSegment};
+    use super::{Snake, SnakeSegment};
+    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
     use super::next_position;
     use super::IActions;
     use pixelaw::core::actions::{
@@ -78,8 +68,8 @@ mod snake_actions {
     #[derive(Drop, starknet::Event)]
     enum Event {
         Moved: Moved,
-    // Longer: Longer,
-    // Shorter: Shorter,
+        // Longer: Longer,
+        // Shorter: Shorter,
         Died: Died
     }
 
@@ -100,93 +90,13 @@ mod snake_actions {
     const SNAKE_COLOR: u32 = 0xFFFFFF;
     const SNAKE_TEXT: felt252 = 'U+1F40D';
     const SNAKE_MAX_LENGTH: u8 = 255;
-const APP_KEY: felt252 = 'snake';
+    const APP_KEY: felt252 = 'snake';
 
     #[derive(Drop)]
     enum SnakeLengthChange {
-        Grow, Same, Shrink
-    }
-
-
-    // Removes the last segment of the snake and reverts the pixel
-    fn remove_last_segment(
-        world: IWorldDispatcher, 
-        core_actions: ICoreActionsDispatcher, 
-        snake: Snake
-    ) -> u32 {
-
-        let last_segment = get!(world, (snake.last_segment_id), SnakeSegment);
-        let pixel = get!(world, (last_segment.x, last_segment.y), Pixel);
-
-        // Write the changes to the pixel
-        core_actions
-            .update_pixel(
-                snake.owner,
-                get_contract_address(),
-                PixelUpdate {
-                    x: pixel.x,
-                    y: pixel.y,
-                    color: Option::Some(last_segment.pixel_original_color),
-                    alert: Option::None,
-                    timestamp: Option::None,
-                    text: Option::Some(last_segment.pixel_original_text),
-                    app: Option::None,
-                    owner: Option::None
-                }
-            );
-
-        let result = last_segment.previous_id;
-        // TODO properly delete the last segment, if possible (??)
-        // Right now we just orphan the object.. (!!)
-
-        // Return the new last_segment_id for the snake
-        result
-    }
-
-    // Creates a new Segment on the given pixel
-    fn create_new_segment(
-        world: IWorldDispatcher, 
-        core_actions: ICoreActionsDispatcher, 
-        pixel: Pixel,
-        snake: Snake,
-        mut existing_segment: SnakeSegment
-    ) -> u32 {
-        let id  = world.uuid();
-
-        // Update the existing Segment
-        // It is no longer the first, so now its previous_id will point to the new
-        existing_segment.previous_id = id;
-        set!(world, (existing_segment));
-
-        // Save the new Segment
-        set!(world, SnakeSegment{
-            id,
-            previous_id: id,    // The first segment has no previous, so its itself
-            next_id: existing_segment.id,
-            x: pixel.x,
-            y: pixel.y,
-            pixel_original_color: pixel.color,
-            pixel_original_text: pixel.text
-        });
-
-
-        // Write the changes to the pixel
-        core_actions
-            .update_pixel(
-                snake.owner,
-                get_contract_address(),
-                PixelUpdate {
-                    x: pixel.x,
-                    y: pixel.y,
-                    color: Option::Some(snake.color),
-                    alert: Option::None,
-                    timestamp: Option::None,
-                    text: Option::Some(snake.text),
-                    app: Option::None,
-                    owner: Option::None
-                }
-            );
-        id
+        Grow,
+        Same,
+        Shrink
     }
 
 
@@ -198,26 +108,15 @@ const APP_KEY: felt252 = 'snake';
             core_actions.update_app_name(APP_KEY);
         }
 
-        fn change_direction(self: @ContractState, new_direction: Direction){
-            'change_direction'.print();
-        }
 
         // A new snake starts 
-        fn spawn(
-            self: @ContractState,
-            for_player: ContractAddress,
-            for_system: ContractAddress,
-            x: u64,
-            y: u64,
-            color: u32,
-            text: felt252,
-            direction: Direction
-        ) {
-            'spawn'.print();
+        fn interact(self: @ContractState, default_params: DefaultParameters, direction: Direction) {
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
-            let player = Registry::get_player_address(world, for_player);
-            let system = Registry::get_system_address(world, for_system);
+            let core_actions = Registry::core_actions(world);
+            let position = default_params.position;
+
+            let player = Registry::get_player_address(world, default_params.for_player);
+            let system = Registry::get_system_address(world, default_params.for_system);
 
             // Check if there is already a Snake or SnakeSegment here
             // TODO: load the current Pixel
@@ -227,13 +126,15 @@ const APP_KEY: felt252 = 'snake';
 
             let DEFAULT_DIRECTION = Direction::Left;
 
+            let color = default_params.color;
+            let text = ''; //TODO
             // Initialize the Snake model
             let snake = Snake {
-                id, 
-                length: 1, 
+                id,
+                length: 1,
                 first_segment_id: id,
                 last_segment_id: id,
-                direction: DEFAULT_DIRECTION, 
+                direction: DEFAULT_DIRECTION,
                 owner: player,
                 color,
                 text,
@@ -242,15 +143,14 @@ const APP_KEY: felt252 = 'snake';
 
             // Initialize the first SnakeSegment model (the head)
             let segment = SnakeSegment {
-                id, 
+                id,
                 previous_id: id,
                 next_id: id,
-                x,
-                y,
-                pixel_original_color: 0,    // FIXME get the original color of the pixel clicked
-                pixel_original_text: 0  
+                x: position.x,
+                y: position.y,
+                pixel_original_color: 0, // FIXME get the original color of the pixel clicked
+                pixel_original_text: 0
             };
-
 
             // Store the dojo model for the Snake
             set!(world, (snake, segment));
@@ -261,14 +161,15 @@ const APP_KEY: felt252 = 'snake';
                     player,
                     system,
                     PixelUpdate {
-                        x,
-                        y,
+                        x: position.x,
+                        y: position.y,
                         color: Option::Some(color),
                         alert: Option::None,
                         timestamp: Option::None,
                         text: Option::Some(text),
                         app: Option::None,
-                        owner: Option::None
+                        owner: Option::None,
+                        action: Option::None  // Not using this feature for snake
                     }
                 );
 
@@ -302,7 +203,7 @@ const APP_KEY: felt252 = 'snake';
             // If the snake is dying, handle that
             if snake.is_dying {
                 if snake.length == 1 {
-                    emit!(world, Died { id: snake.id, x:first_segment.x, y:first_segment.y });
+                    emit!(world, Died { id: snake.id, x: first_segment.x, y: first_segment.y });
                     set!(world, (snake));
                     // Since we return immediately, the next Queue for move will never be set
                     // This will stop the movement loop
@@ -312,9 +213,7 @@ const APP_KEY: felt252 = 'snake';
                 }
                 snake.last_segment_id = remove_last_segment(world, core_actions, snake);
                 snake.length -= 1;
-
-            }// FIXME else block
-
+            } // FIXME else block
 
             // Load the current pixel
             let mut current_pixel = get!(world, (first_segment.x, first_segment.y), Pixel);
@@ -327,19 +226,11 @@ const APP_KEY: felt252 = 'snake';
 
             // Determine what happens to the snake
             // MOVE, GROW, SHRINK, DIE
-            if next_pixel.owner.is_zero() {// Snake just moves
-                
+            if next_pixel.owner.is_zero() { // Snake just moves
                 // Add a new segment on the next pixel and update the snake
-                snake.first_segment_id = create_new_segment(
-                    world, 
-                    core_actions, 
-                    next_pixel, 
-                    snake,
-                    first_segment
-                    ); 
-            
-
-
+                snake
+                    .first_segment_id =
+                        create_new_segment(world, core_actions, next_pixel, snake, first_segment);
             } else if next_pixel.owner == snake.owner {
                 // Next pixel is owned by snake owner: GROW
 
@@ -350,11 +241,10 @@ const APP_KEY: felt252 = 'snake';
                 if snake.length >= SNAKE_MAX_LENGTH {
                     // Revert last segment pixel
                     snake.last_segment_id = remove_last_segment(world, core_actions, snake);
-                }else{
+                } else {
                     snake.length = snake.length + 1;
                 }
-
-                // We leave the tail as is
+            // We leave the tail as is
 
             } else if next_pixel.owner != snake.owner
                 && core_actions
@@ -370,14 +260,15 @@ const APP_KEY: felt252 = 'snake';
                             timestamp: Option::None,
                             text: Option::Some(snake.text),
                             app: Option::None,
-                            owner: Option::None
+                            owner: Option::None,
+                            action: Option::None  // Not using this feature for snake
                         }
                     ) {
                 // Next pixel is not owned but can be used temporarily
                 // SHRINK, though
-                if snake.length == 1 { 
+                if snake.length == 1 {
                     snake.is_dying = true;
-                }else{
+                } else {
                     // Add a new segment
                     create_new_segment(world, core_actions, next_pixel, snake, first_segment);
 
@@ -387,8 +278,7 @@ const APP_KEY: felt252 = 'snake';
                     // Remove another last segment (for shrinking)
                     snake.last_segment_id = remove_last_segment(world, core_actions, snake);
                 }
-
-            } else { 
+            } else {
                 // Snake hit a pixel that is not allowing anyting: DIE
                 snake.is_dying = true;
             }
@@ -413,5 +303,88 @@ const APP_KEY: felt252 = 'snake';
                     calldata.span() // The calldata prepared
                 );
         }
+    }
+
+
+    // Removes the last segment of the snake and reverts the pixel
+    fn remove_last_segment(
+        world: IWorldDispatcher, core_actions: ICoreActionsDispatcher, snake: Snake
+    ) -> u32 {
+        let last_segment = get!(world, (snake.last_segment_id), SnakeSegment);
+        let pixel = get!(world, (last_segment.x, last_segment.y), Pixel);
+
+        // Write the changes to the pixel
+        core_actions
+            .update_pixel(
+                snake.owner,
+                get_contract_address(),
+                PixelUpdate {
+                    x: pixel.x,
+                    y: pixel.y,
+                    color: Option::Some(last_segment.pixel_original_color),
+                    alert: Option::None,
+                    timestamp: Option::None,
+                    text: Option::Some(last_segment.pixel_original_text),
+                    app: Option::None,
+                    owner: Option::None,
+                    action: Option::None  // Not using this feature for snake
+                }
+            );
+
+        let result = last_segment.previous_id;
+        // TODO properly delete the last segment, if possible (??)
+        // Right now we just orphan the object.. (!!)
+
+        // Return the new last_segment_id for the snake
+        result
+    }
+
+    // Creates a new Segment on the given pixel
+    fn create_new_segment(
+        world: IWorldDispatcher,
+        core_actions: ICoreActionsDispatcher,
+        pixel: Pixel,
+        snake: Snake,
+        mut existing_segment: SnakeSegment
+    ) -> u32 {
+        let id = world.uuid();
+
+        // Update the existing Segment
+        // It is no longer the first, so now its previous_id will point to the new
+        existing_segment.previous_id = id;
+        set!(world, (existing_segment));
+
+        // Save the new Segment
+        set!(
+            world,
+            SnakeSegment {
+                id,
+                previous_id: id, // The first segment has no previous, so its itself
+                next_id: existing_segment.id,
+                x: pixel.x,
+                y: pixel.y,
+                pixel_original_color: pixel.color,
+                pixel_original_text: pixel.text
+            }
+        );
+
+        // Write the changes to the pixel
+        core_actions
+            .update_pixel(
+                snake.owner,
+                get_contract_address(),
+                PixelUpdate {
+                    x: pixel.x,
+                    y: pixel.y,
+                    color: Option::Some(snake.color),
+                    alert: Option::None,
+                    timestamp: Option::None,
+                    text: Option::Some(snake.text),
+                    app: Option::None,
+                    owner: Option::None,
+                    action: Option::None  // Not using this feature for snake
+                }
+            );
+        id
     }
 }

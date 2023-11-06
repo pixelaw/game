@@ -1,7 +1,7 @@
 use starknet::{ContractAddress, ClassHash};
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 
-use pixelaw::core::utils::{Direction, Position};
+use pixelaw::core::utils::{Direction, Position, DefaultParameters};
 const STATE_NONE: u8 = 0;
 const STATE_CREATED: u8 = 1;
 const STATE_JOINED: u8 = 2;
@@ -42,10 +42,9 @@ struct Player {
 #[starknet::interface]
 trait IActions<TContractState> {
     fn init(self: @TContractState);
-    fn create(self: @TContractState, position: Position, commit: felt252);
-    fn join(self: @TContractState, position: Position, player2_move: u8);
-    fn finish(self: @TContractState, position: Position, player1_move: u8, player1_salt: felt252);
-    fn reset(self: @TContractState, position: Position);
+    fn interact(self: @TContractState, default_params: DefaultParameters, commit: felt252);
+    fn join(self: @TContractState, default_params: DefaultParameters, player2_move: u8);
+    fn finish(self: @TContractState, default_params: DefaultParameters, player1_move: u8, player1_salt: felt252);
 }
 
 #[dojo::contract]
@@ -57,7 +56,7 @@ mod rps_actions {
 
     use pixelaw::core::models::registry::Registry;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::utils::{Direction, Position};
+    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
 
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
@@ -89,10 +88,27 @@ mod rps_actions {
 
             core_actions.update_app_name(APP_KEY);
         }
-        fn create(self: @ContractState, position: Position, commit: felt252) {
-            let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
+        // fn paramhint(
+        //     self: @ContractState,
+        //     function_name: felt252,
+        //     param_index: u8
+        //     ) -> Span<felt252>
+        //     {
+        //         if function_name == 'interact' && param_index == 0 {
+        //             return 'hash(RpsEnum)';
+        //         }else if function_name == 'join' && param_index == 0 {
+        //             return 'RpsEnum';
+        //         }else if function_name == 'finish' && param_index == 0 {
+        //             return 'RpsEnum, salt';
+        //         }
+        // }
+
+
+        fn interact(self: @ContractState, default_params: DefaultParameters, commit: felt252) {
+            let world = self.world_dispatcher.read();
+            let core_actions = Registry::core_actions(world);
+            let position = default_params.position;
             let player = get_caller_address();
             let pixel = get!(world, (position.x, position.y), Pixel);
 
@@ -143,15 +159,17 @@ mod rps_actions {
                             'U+2753'
                         ), // TODO better approach, for now copying unicode codepoint
                         app: Option::Some(get_contract_address().into()),
-                        owner: Option::Some(player.into())
+                        owner: Option::Some(player.into()),
+                        action: Option::Some('join')
                     }
                 );
         }
 
 
-        fn join(self: @ContractState, position: Position, player2_move: u8) {
+        fn join(self: @ContractState, default_params: DefaultParameters, player2_move: u8) {
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let core_actions = Registry::core_actions(world);
+            let position = default_params.position;
 
             let player = get_caller_address();
             let pixel = get!(world, (position.x, position.y), Pixel);
@@ -190,17 +208,19 @@ mod rps_actions {
                             'U+2757'
                         ), // TODO better approach, for now copying unicode codepoint
                         app: Option::None,
-                        owner: Option::None
+                        owner: Option::None,
+                        action: Option::Some('finish')
                     }
                 );
         }
 
 
         fn finish(
-            self: @ContractState, position: Position, player1_move: u8, player1_salt: felt252
+            self: @ContractState, default_params: DefaultParameters, player1_move: u8, player1_salt: felt252
         ) {
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let core_actions = Registry::core_actions(world);
+            let position = default_params.position;
 
             let player = get_caller_address();
             let pixel = get!(world, (position.x, position.y), Pixel);
@@ -238,7 +258,8 @@ mod rps_actions {
                             timestamp: Option::None,
                             text: Option::Some(0),
                             app: Option::Some(Zeroable::zero()),
-                            owner: Option::Some(Zeroable::zero())
+                            owner: Option::Some(Zeroable::zero()),
+                            action: Option::Some(Zeroable::zero())
                         }
                     );
             // TODO emit event
@@ -262,7 +283,8 @@ mod rps_actions {
                                 timestamp: Option::None,
                                 text: Option::Some(get_unicode_for_rps(game.player2_move)),
                                 app: Option::None,
-                                owner: Option::Some(game.player2)
+                                owner: Option::Some(game.player2),
+                                action: Option::Some('finish')  // TODO, probably want to change color still
                             }
                         );
                 } else {
@@ -278,7 +300,8 @@ mod rps_actions {
                                 timestamp: Option::None,
                                 text: Option::Some(get_unicode_for_rps(game.player1_move)),
                                 app: Option::None,
-                                owner: Option::None
+                                owner: Option::None,
+                                action: Option::Some('finish')  // TODO, probably want to change color still
                             }
                         );
                 }
@@ -289,12 +312,7 @@ mod rps_actions {
         }
 
 
-        // TODO implement
-        fn reset(self: @ContractState, position: Position) {
-            let world = self.world_dispatcher.read();
 
-            let mut game = get!(world, (position).into(), (Game));
-        }
     }
 
     fn get_unicode_for_rps(rps: u8) -> felt252 {

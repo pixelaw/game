@@ -20,6 +20,15 @@ struct Position {
 }
 
 
+#[derive(Copy, Drop, Serde, SerdeLen)]
+struct DefaultParameters {
+    for_player: ContractAddress,
+    for_system: ContractAddress,
+    position: Position,
+    color: u32
+}
+
+
 impl DirectionIntoFelt252 of Into<Direction, felt252> {
     fn into(self: Direction) -> felt252 {
         match self {
