@@ -15,8 +15,7 @@ import {useEntityQuery} from '@dojoengine/react'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {getComponentValue, getComponentValueStrict, Has, HasValue} from '@latticexyz/recs'
-import {felt252ToString, hexToRgb, rgbToHex} from '@/global/utils.ts'
-import {PositionWithAddressAndType} from '@/global/types.ts'
+import {felt252ToString, hexToRgb} from '@/global/utils.ts'
 
 type DrawPanelType = {
   gameMode: 'none' | 'paint' | 'rps' | 'snake',
@@ -46,10 +45,8 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     },
     setup: {
       components: {
-        Color,
-        Owner,
-        PixelType,
-        NeedsAttention,
+        Pixel,
+        Alert
       },
     },
   } = useDojo()
@@ -88,39 +85,27 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   const pixelData: Record<`[${number},${number}]`, string> = {}
   const needAttentionData: Record<`[${number},${number}]`, boolean | undefined> = {}
 
-  const entityIds = useEntityQuery([ Has(Color) ])
+  const entityIds = useEntityQuery([ Has(Pixel) ])
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const notifEntitiyIds = useEntityQuery([ HasValue(NeedsAttention, { value: true }), HasValue(Owner, { address: account.address }) ])
+  const notifEntitiyIds = useEntityQuery([ HasValue(Alert, { alert: true }), HasValue(Pixel, { owner: account.address }) ])
 
-  const entityColors: [ number, number, string ][] = entityIds
-    .map(entityId => {
-      const componentValue = getComponentValue(Color, entityId)
-      const hexColor = rgbToHex(componentValue?.r ?? 0, componentValue?.g ?? 0, componentValue?.b ?? 0)
-      return [ componentValue?.x ?? 0, componentValue?.y ?? 0, hexColor ]
-    })
 
-  entityColors.forEach(entityColor => {
-    pixelData[`[${entityColor[0]},${entityColor[1]}]`] = entityColor[2]
+  const pixels = entityIds
+    .map(entityId => getComponentValue(Pixel, entityId))
+    .filter(entity => !!entity)
+
+
+    pixels.forEach(pixel => {
+      pixelData[`[${pixel!.x},${pixel!.y}]`] = String(pixel!.color)
   })
-
-  const entityOwners = entityIds
-    .map(entityId => {
-      return getComponentValue(Owner, entityId)
-    })
-
-  const entityPixelsType = entityIds
-    .map(entityId => {
-      return getComponentValue(PixelType, entityId)
-    })
-
   const entityNeedsAttentions = notifEntitiyIds
     .map(entityId => {
-      return getComponentValueStrict(NeedsAttention, entityId)
+      return getComponentValueStrict(Alert, entityId)
     })
 
   entityNeedsAttentions.forEach(entityNeedsAttention => {
-    needAttentionData[`[${entityNeedsAttention.x},${entityNeedsAttention.y}]`] = entityNeedsAttention.value
+    needAttentionData[`[${entityNeedsAttention.x},${entityNeedsAttention.y}]`] = !!entityNeedsAttention.alert
   })
 
   const handleData = () => {
@@ -202,29 +187,15 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   }
 
   const handleHover = (coordinate: Coordinate) => {
-    let hasOwner = false
-    const newState: PositionWithAddressAndType = { x: coordinate[0], y: coordinate[1] }
-
-    entityPixelsType.forEach((entityPixelType) => {
-      if (entityPixelType && coordinate[0] === entityPixelType.x && coordinate[1] === entityPixelType.y) {
-        newState.pixel = felt252ToString(entityPixelType.name)
-        hasOwner = true
+    setPositionWithAddressAndType(() => {
+      const pixel = pixels.find(pixel => pixel!.x === coordinate[0] && pixel!.y == coordinate[1])
+      return {
+        x: coordinate[0],
+        y: coordinate[1],
+        address: pixel ? pixel.owner : 'N/A',
+        pixel: pixel ? felt252ToString(pixel.app) : 'N/A'
       }
     })
-
-    entityOwners.forEach((entityOwner) => {
-      if (entityOwner && coordinate[0] === entityOwner.x && coordinate[1] === entityOwner.y) {
-        newState.address = entityOwner.address
-        hasOwner = true
-      }
-    })
-
-    if (!hasOwner) {
-      newState.address = 'N/A'
-      newState.pixel = 'N/A'
-    }
-
-    setPositionWithAddressAndType(newState)
   }
 
   React.useEffect(() => {

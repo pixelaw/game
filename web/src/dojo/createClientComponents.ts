@@ -11,13 +11,6 @@ export type ClientComponents = ReturnType<typeof createClientComponents>;
 export function createClientComponents({ contractComponents }: SetupNetworkResult) {
     return {
         ...contractComponents,
-      _Color: contractComponents.Color,
-      _Owner: contractComponents.Owner,
-      _PixelType: contractComponents.PixelType,
-      _NeedsAttention: contractComponents.NeedsAttention,
-      Color: overridableComponent(contractComponents.Color),
-      Owner: overridableComponent(contractComponents.Owner),
-      PixelType: overridableComponent(contractComponents.PixelType),
-      NeedsAttention: overridableComponent(contractComponents.NeedsAttention)
+      Pixel: overridableComponent(contractComponents.Pixel)
     };
 }

@@ -1,24 +1,14 @@
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import { SetupResult } from "./dojo/setup";
 import { Account, RpcProvider } from "starknet";
-import { useBurner } from "@dojoengine/create-burner";
+import { BurnerProvider, useBurner } from '@dojoengine/create-burner'
 import { PUBLIC_NODE_URL } from '@/global/constants'
 
-type EternumContext = {
-  setup: SetupResult;
-  account: {
-    create: () => void;
-    list: () => any[];
-    get: (id: string) => any;
-    select: (id: string) => void;
-    account: Account;
-    masterAccount: Account;
-    isDeploying: boolean;
-    clear: () => void;
-  };
+interface DojoContextType extends SetupResult {
+  masterAccount: Account
 }
 
-const DojoContext = createContext<EternumContext | null>(null);
+const DojoContext = createContext<DojoContextType | null>(null);
 
 type Props = {
   children: ReactNode;
@@ -35,7 +25,7 @@ export const DojoProvider = ({ children, value, master }: Props) => {
   const currentValue = useContext(DojoContext);
   if (currentValue) throw new Error("DojoProvider can only be used once");
 
-  const provider = useMemo(
+  const rpcProvider = useMemo(
     () =>
       new RpcProvider({
         nodeUrl: PUBLIC_NODE_URL,
@@ -46,39 +36,48 @@ export const DojoProvider = ({ children, value, master }: Props) => {
   const masterAddress = master.address;
   const privateKey = master.privateKey;
   const masterAccount = useMemo(
-    () => new Account(provider, masterAddress, privateKey),
-    [provider, masterAddress, privateKey],
+    () => new Account(rpcProvider, masterAddress, privateKey),
+    [rpcProvider, masterAddress, privateKey],
   );
 
-  const { create, list, get, account, select, isDeploying, clear } = useBurner({
-    masterAccount: masterAccount,
-    accountClassHash: master.classHash,
-    nodeUrl: PUBLIC_NODE_URL
-  });
-
-  const selectedAccount = useMemo(() => {
-    return account || masterAccount;
-  }, [account])
-
-  const contextValue: EternumContext = {
-    setup: value,    // the provided setup
-    account: {
-      create,        // create a new account
-      list,          // list all accounts
-      get,           // get an account by id
-      select,        // select an account by id
-      account: selectedAccount,       // the selected account
-      masterAccount, // the master account
-      isDeploying,   // is the account being deployed
-      clear
-    }
-  }
-
-  return <DojoContext.Provider value={contextValue}>{children}</DojoContext.Provider>;
+  return (
+    <BurnerProvider initOptions={{ masterAccount, accountClassHash: master.classHash, rpcProvider }}>
+      <DojoContext.Provider value={{ ...value, masterAccount }}>
+        {children}
+      </DojoContext.Provider>
+    </BurnerProvider>
+  )
 };
 
 export const useDojo = () => {
-  const value = useContext(DojoContext);
-  if (!value) throw new Error("Must be used within a DojoProvider");
-  return value;
+  const contextValue = useContext(DojoContext);
+  if (!contextValue)
+    throw new Error("The `useDojo` hook must be used within a `DojoProvider`");
+
+  const {
+    create,
+    list,
+    get,
+    account,
+    select,
+    isDeploying,
+    clear,
+    copyToClipboard,
+    applyFromClipboard,
+  } = useBurner();
+
+  return {
+    setup: contextValue,
+    account: {
+      create,
+      list,
+      get,
+      select,
+      clear,
+      account: account ?? contextValue.masterAccount,
+      isDeploying,
+      copyToClipboard,
+      applyFromClipboard,
+    },
+  };
 };
