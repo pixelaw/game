@@ -1,7 +1,7 @@
 use starknet::{ContractAddress, ClassHash};
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 
-    use pixelaw::core::utils::{Direction, Position};
+use pixelaw::core::utils::{Direction, Position};
 const STATE_NONE: u8 = 0;
 const STATE_CREATED: u8 = 1;
 const STATE_JOINED: u8 = 2;
@@ -41,11 +41,10 @@ struct Player {
 
 #[starknet::interface]
 trait IActions<TContractState> {
+    fn init(self: @TContractState);
     fn create(self: @TContractState, position: Position, commit: felt252);
     fn join(self: @TContractState, position: Position, player2_move: u8);
-    fn finish(
-            self: @TContractState, position: Position, player1_move: u8, player1_salt: felt252
-        );
+    fn finish(self: @TContractState, position: Position, player1_move: u8, player1_salt: felt252);
     fn reset(self: @TContractState, position: Position);
 }
 
@@ -64,10 +63,10 @@ mod rps_actions {
 
     use super::IActions;
     use super::{APP_KEY, GAME_MAX_DURATION, ROCK, PAPER, SCISSORS};
-    use super::{Game,  Player};
+    use super::{Game, Player};
     use super::{STATE_NONE, STATE_CREATED, STATE_JOINED, STATE_FINISHED};
 
-use zeroable::Zeroable;
+    use zeroable::Zeroable;
 
     #[derive(Drop, starknet::Event)]
     struct GameCreated {
@@ -82,10 +81,14 @@ use zeroable::Zeroable;
     }
 
 
-
-
     #[external(v0)]
     impl ActionsImpl of IActions<ContractState> {
+        /// Initialize the Paint App (TODO I think, do we need this??)
+        fn init(self: @ContractState) {
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+
+            core_actions.update_app_name(APP_KEY);
+        }
         fn create(self: @ContractState, position: Position, commit: felt252) {
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
@@ -99,7 +102,7 @@ use zeroable::Zeroable;
             // Load the game
             let mut game = get!(world, (position.x, position.y), Game);
 
-            if game.id == 0 {
+            if game.id != 0 {
                 // Bail if we're waiting for other player
                 assert(game.state == STATE_CREATED, 'cannot reset rps game');
 
@@ -211,7 +214,7 @@ use zeroable::Zeroable;
             // Bail if wrong gamestate
             assert(game.state == STATE_JOINED, 'Wrong gamestate');
 
-            // Bail if the player is joining their own game
+            // Bail if another player is finishing (has to be player1)
             assert(game.player1 == player, 'Cant finish others game');
 
             // Check player1's move
@@ -296,10 +299,15 @@ use zeroable::Zeroable;
 
     fn get_unicode_for_rps(rps: u8) -> felt252 {
         let mut result = 'U+1FAA8';
-        if rps == ROCK {result = 'U+1FAA8';}
-        else if rps == PAPER {result = 'U+1F9FB';}
-        else if rps == SCISSORS {result = 'U+2702';}
-        else {panic_with_felt252('incorrect rps');}
+        if rps == ROCK {
+            result = 'U+1FAA8';
+        } else if rps == PAPER {
+            result = 'U+1F9FB';
+        } else if rps == SCISSORS {
+            result = 'U+2702';
+        } else {
+            panic_with_felt252('incorrect rps');
+        }
         result
     }
 

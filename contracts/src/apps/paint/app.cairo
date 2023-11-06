@@ -159,9 +159,7 @@ color.print();
 
 
             let (r,g,b) = decode_color(color);
-r.print();
-g.print();
-b.print();
+
             // If the color is 0,0,0 , let's stop the process, fading is done.
             if r == 0 && g == 0 && b == 0 {
                 'fading is done'.print();
@@ -198,7 +196,7 @@ b.print();
             calldata.append(x.into());
             calldata.append(y.into());
 
-            // Calldata[4]
+            // Calldata[4] : Color
             calldata.append(new_color.into());
 
             core_actions

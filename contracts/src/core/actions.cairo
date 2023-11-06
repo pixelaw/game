@@ -162,6 +162,8 @@ mod actions {
                     .span()
             );
 
+            // TODO check if id exists onchain
+
             // Only valid when the queue item was found by the hash
             assert(calculated_id == id, 'Invalid Id');
 

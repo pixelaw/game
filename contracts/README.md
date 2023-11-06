@@ -1,80 +1,91 @@
-# PixeLAW Contracts
+# Paint
 
-## Interacting With Your Local World
+## Overview
+The Paint App is a collection of functions that allow players to manipulate the color of a Pixel.
 
-Explore and interact with your locally deployed world! This guide will help you fetch schemas, inspect entities, and execute actions using `sozo`.
+## Properties
+None, Paint is just behavior.
 
-If you have followed the example exactly and deployed on Katana, you can use the world address generated to either:
-
-- use as an argument to `--world` when calling `sozo` commands
-- add it to [Scarb.toml](Scarb.toml) under `[tool.dojo.env]` table like so
-
-    ```toml
-    [tool.dojo.env]
-    world_address = "<world_address>"
-    ```
-
-- set it as an environment variable
-
-    ```bash
-    export DOJO_WORLD_ADDRESS="<world_address>"
-    ```
-
-### Fetching Component Schemas
-
-Let's start by fetching the schema for the `Moves` component. Use the following command
-```bash
-sozo component schema Moves
-```
-
-You should get this in return:
-
-```rust
-struct Moves {
-   remaining: u8
-}
-```
-This structure indicates that the `Moves` component keeps track of the remaining moves as an 8-bit unsigned integer.
-
-### Inspecting an Entity's Component
-
-Let's check the remaining moves for an entity. In our examples, the entity is based on the caller address, so we'll use the address of the **first** Katana account as an example.
-
-```bash
-sozo component entity Moves 0x03ee9e18edc71a6df30ac3aca2e0b02a198fbce19b7480a63a0d71cbd76652e0
-```
-
-If you haven't made an entity yet, it will return `0`.
-
-### Adding an Entity
-
-No entity? No problem! You can add an entity to the world by executing the `spawn` system. Remember, there's no need to pass any call data as the system uses the caller's address for the database.
-
-```bash
-sozo execute spawn
-```
-
-### Refetching an Entity's Component
-
-After adding an entity, let's refetch the remaining moves with the same command we used earlier:
-
-```bash
-sozo component entity Moves 0x03ee9e18edc71a6df30ac3aca2e0b02a198fbce19b7480a63a0d71cbd76652e0
-```
-
-#### Passing the world address as an argument
-
-We can get the same results by executing this command
-
-```bash
-sozo component entity Moves --world <WORLD_ADDRESS> 0x03ee9e18edc71a6df30ac3aca2e0b02a198fbce19b7480a63a0d71cbd76652e0
-```
-
-Congratulations! You now have `10` remaining moves! You've made it this far, keep up the momentum and keep exploring your world!
+## Behavior
+- public put_color (color)
+  - context: position
+- both put_fading_color (color)
+  - context: position
+- public remove_color ()
+  - context: position
 
 
-#### Next steps:
+# Snake
 
-Make sure to read the [Offical Dojo Book](https://book.dojoengine.org/index.html) for detailed instructions including theory and best practices.
+## Overview
+It it basically the game "snake", but with Pixels not necessarily available to move on/over. It is a player-initialized instance that coordinates pixel's color and text being overriden and reverted (if allowed).
+If hitting an unowned Pixel, the snake will move, if Pixel is owned by player, Snake grows, and if Pixel is not owned but it's App allows Snake, it shrinks. In all other cases, Snake dies.
 
----
+## Properties
+- position
+- color
+- text
+- direction
+
+## Behavior
+
+- public spawn ( color, text, direction )
+  - context: position
+- public turn ( snake_id, direction )
+  - context: player
+- private move ( snake_id )
+
+
+
+# Rock Paper Scissors
+
+## Overview
+Each Pixel can contain an instance of the RPS App, where it holds a commitment (rock, paper or scissors) from player1. Any other player can now "join" and submit their move. Player1 can then reveal, the winner is decided then. Winner gains ownership of the losing RPS pixel. In case of a draw, the pixel is reset.
+The App is also tracking score for each Player.
+
+## Global Properties
+- player+wins
+
+## Game-based Properties
+- player1
+- player2
+
+## Behavior
+- create (position, player1, commit1)
+- join (position, player2, move2)
+- finish (position, move1, salt1)
+- reset (position)
+
+
+## General UI considerations
+- Selected App
+- Click on a pixel
+  - Empty -> DEFAULT
+  - OwnedByMe -> UPDATE
+  - OwnedByOther -> GUEST
+
+rps (ui calls these if rps app selected and rps pixel clicked)
+- empty(param_rpsEnumHash)
+- notOwned(rpsEnum)
+- owned(rpsEnumHash)
+- param_rpsEnumHash(rpsEnum)
+
+paint
+- empty(color)
+- owned(color)
+- SCHEDULER: fade(x,y)
+
+snake
+- empty(color)
+- notOwned()
+- owned()
+- SCHEDULER: move(id)
+
+# Default
+- empty()
+- owned()
+- 
+
+
+
+

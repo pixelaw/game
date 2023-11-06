@@ -1,27 +1,8 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use starknet::{ContractAddress, ClassHash};
+use pixelaw::core::utils::{Direction, Position};
 
 
-#[derive(Serde, Copy, Drop, Introspect)]
-enum Direction {
-    None: (),
-    Left: (),
-    Right: (),
-    Up: (),
-    Down: (),
-}
-
-impl DirectionIntoFelt252 of Into<Direction, felt252> {
-    fn into(self: Direction) -> felt252 {
-        match self {
-            Direction::None(()) => 0,
-            Direction::Left(()) => 1,
-            Direction::Right(()) => 2,
-            Direction::Up(()) => 3,
-            Direction::Down(()) => 4,
-        }
-    }
-}
 
 fn next_position(x: u64, y: u64, direction: Direction) -> (u64, u64) {
     match direction {
@@ -63,6 +44,7 @@ struct SnakeSegment {
 
 #[starknet::interface]
 trait IActions<TContractState> {
+    fn init(self: @TContractState);
     fn spawn(
         self: @TContractState,
         for_player: ContractAddress,
@@ -70,7 +52,8 @@ trait IActions<TContractState> {
         x: u64,
         y: u64,
         color: u32,
-        text: felt252
+        text: felt252,
+        direction: Direction
     );
     fn move(self: @TContractState, snake_id: u32);
     fn change_direction(self: @TContractState, new_direction: Direction);
@@ -117,6 +100,7 @@ mod snake_actions {
     const SNAKE_COLOR: u32 = 0xFFFFFF;
     const SNAKE_TEXT: felt252 = 'U+1F40D';
     const SNAKE_MAX_LENGTH: u8 = 255;
+const APP_KEY: felt252 = 'snake';
 
     #[derive(Drop)]
     enum SnakeLengthChange {
@@ -208,10 +192,16 @@ mod snake_actions {
 
     #[external(v0)]
     impl ActionsImpl of IActions<ContractState> {
+        fn init(self: @ContractState) {
+            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+
+            core_actions.update_app_name(APP_KEY);
+        }
 
         fn change_direction(self: @ContractState, new_direction: Direction){
             'change_direction'.print();
         }
+
         // A new snake starts 
         fn spawn(
             self: @ContractState,
@@ -220,7 +210,8 @@ mod snake_actions {
             x: u64,
             y: u64,
             color: u32,
-            text: felt252
+            text: felt252,
+            direction: Direction
         ) {
             'spawn'.print();
             let world = self.world_dispatcher.read();
@@ -230,6 +221,7 @@ mod snake_actions {
 
             // Check if there is already a Snake or SnakeSegment here
             // TODO: load the current Pixel
+            // TODO check if the pixel is unowned or player owned
 
             let id = world.uuid();
 
@@ -255,7 +247,7 @@ mod snake_actions {
                 next_id: id,
                 x,
                 y,
-                pixel_original_color: 0,
+                pixel_original_color: 0,    // FIXME get the original color of the pixel clicked
                 pixel_original_text: 0  
             };
 
@@ -271,10 +263,10 @@ mod snake_actions {
                     PixelUpdate {
                         x,
                         y,
-                        color: Option::Some(SNAKE_COLOR),
+                        color: Option::Some(color),
                         alert: Option::None,
                         timestamp: Option::None,
-                        text: Option::Some(SNAKE_TEXT),
+                        text: Option::Some(text),
                         app: Option::None,
                         owner: Option::None
                     }
@@ -297,8 +289,6 @@ mod snake_actions {
                     calldata.span() // The calldata prepared
                 );
         }
-
-
 
         fn move(self: @ContractState, snake_id: u32) {
             'move'.print();
@@ -323,7 +313,7 @@ mod snake_actions {
                 snake.last_segment_id = remove_last_segment(world, core_actions, snake);
                 snake.length -= 1;
 
-            }
+            }// FIXME else block
 
 
             // Load the current pixel
