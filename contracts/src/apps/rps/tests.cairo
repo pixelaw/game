@@ -18,10 +18,6 @@
 
 // use pixelaw::rps::utils::hash_commit;
 
-// use pixelaw::rps::constants::{
-//     STATE_IDLE, STATE_COMMIT_1, STATE_COMMIT_2, STATE_REVEAL_1, ROCK, PAPER, SCISSORS
-// };
-
 // use pixelaw::rps::tests::create::create_game;
 
 // fn player_commit(world: IWorldDispatcher, game_id: u32, hash: felt252, position: Position) {
@@ -60,8 +56,10 @@ mod tests {
     use starknet::class_hash::Felt252TryIntoClassHash;
 
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-    use pixelaw::core::models::registry::{Registry, app_by_system, app_by_name, core_actions_address};
-    
+    use pixelaw::core::models::registry::{
+        Registry, app_by_system, app_by_name, core_actions_address
+    };
+
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::pixel::{pixel};
     use pixelaw::core::models::permissions::{permissions};
@@ -70,23 +68,27 @@ mod tests {
 
     use dojo::test_utils::{spawn_test_world, deploy_contract};
 
-    use pixelaw::apps::rps::app::{rps_actions, game, player};
+    use pixelaw::apps::rps::app::{rps_actions, game, player, IRpsActionsDispatcher, IRpsActionsDispatcherTrait};
     use pixelaw::apps::rps::app::{Game, Player};
+    use pixelaw::apps::rps::app::{
+        STATE_CREATED, STATE_JOINED, STATE_FINISHED, ROCK, PAPER, SCISSORS
+    };
 
 
+    use zeroable::Zeroable;
 
-    fn deploy_world() -> (IWorldDispatcher, IActionsDispatcher, IActionsDispatcher) {
+    fn deploy_world() -> (IWorldDispatcher, IActionsDispatcher, IRpsActionsDispatcher) {
         // Deploy World and models
         let world = spawn_test_world(
             array![
-                pixel::TEST_CLASS_HASH, 
-                game::TEST_CLASS_HASH, 
+                pixel::TEST_CLASS_HASH,
+                game::TEST_CLASS_HASH,
                 player::TEST_CLASS_HASH,
                 app_by_system::TEST_CLASS_HASH,
                 app_by_name::TEST_CLASS_HASH,
                 core_actions_address::TEST_CLASS_HASH,
                 permissions::TEST_CLASS_HASH,
-                ]
+            ]
         );
 
         // Deploy Core actions
@@ -96,7 +98,7 @@ mod tests {
         };
 
         // Deploy RPS actions
-        let rps_actions = IActionsDispatcher {
+        let rps_actions = IRpsActionsDispatcher {
             contract_address: world
                 .deploy_contract('salt', rps_actions::TEST_CLASS_HASH.try_into().unwrap())
         };
@@ -106,7 +108,6 @@ mod tests {
     #[test]
     #[available_gas(30000000)]
     fn test_playthrough() {
-
         // Deploy everything
         let (world, core_actions, rps_actions) = deploy_world();
 
@@ -117,9 +118,25 @@ mod tests {
         let player1 = starknet::contract_address_const::<0x1337>();
         starknet::testing::set_contract_address(player1);
 
-        
+        // Set the players commitments
+        let player_1_commit: u8 = SCISSORS;
+        let player_2_commit: u8 = PAPER;
 
+        // Set the player's secret salt. For the test its just different, client will send truly random
+        let player_1_hash: felt252 = hash_commit(player_1_commit, '1'.into());
 
+        rps_actions
+            .interact(
+                DefaultParameters {
+                    for_player: Zeroable::zero(),
+                    for_system: Zeroable::zero(),
+                    position: Position { x: 1, y: 1 },
+                    color: 0
+                },
+                player_1_hash
+            );
+
+            
     // let bar_contract = IbarDispatcher {
     //     contract_address: deploy_with_world_address(bar::TEST_CLASS_HASH, world)
     // };
