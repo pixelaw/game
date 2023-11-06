@@ -669,17 +669,17 @@
     "@babel/helper-validator-identifier" "^7.22.5"
     to-fast-properties "^2.0.0"
 
-"@dojoengine/core@^0.1.27":
-  version "0.1.27"
-  resolved "https://registry.yarnpkg.com/@dojoengine/core/-/core-0.1.27.tgz#dc1e992f47924a94ab75bd2e02f1a0bacadb57e6"
-  integrity sha512-GeuBD+wjdfuq52Rs9fld79SIXuMP+4t07HuJjr9Wy/OOhCmQ6WB4gGyojfGGSpPr0qr2AzQigqXgzcuJr+xs1Q==
+"@dojoengine/core@^0.1.30":
+  version "0.1.35"
+  resolved "https://registry.yarnpkg.com/@dojoengine/core/-/core-0.1.35.tgz#749fd21fbb315f2331c8c3f34ed023e89a146977"
+  integrity sha512-HsO8iM1U96hD28E3VGLdJ9+/un20Et2kvJoF7sdhoZ2V/I/4AXXUDyEWK9K+zVo/sA1sa5yeHJm6+JfkXaqWAA==
   dependencies:
     starknet "^5.19.5"
 
-"@dojoengine/create-burner@^0.1.27":
-  version "0.1.27"
-  resolved "https://registry.yarnpkg.com/@dojoengine/create-burner/-/create-burner-0.1.27.tgz#08b9b5ff022d4ca82be486d89c0ad9fdb142b925"
-  integrity sha512-4QSbQj9H/uju477+Hk4PSplU267l8R2E/0qTp546y+Hn0UN2h4zTa1prSgzpDtjI/I0PTMYw4tVexh7PtMVA5A==
+"@dojoengine/create-burner@^0.1.30":
+  version "0.1.35"
+  resolved "https://registry.yarnpkg.com/@dojoengine/create-burner/-/create-burner-0.1.35.tgz#d9e06cb9d5a476e7c32634db9c9da22e84124004"
+  integrity sha512-BhrJt0CDrHBh69rghwq2v8D0i0tSxPSDc65Ltxi/5Sk6aM4gWP3oR7442qcUjbcRx1JLg+XP34Xdm/UbTrxZlA==
   dependencies:
     "@starknet-react/core" "^1.0.3"
     encoding "^0.1.13"

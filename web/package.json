@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "codegen": "graphql-codegen",
     "fix-codegen": "node src/fixGeneratedGraphql.cjs",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "create-components": "npx @dojoengine/core ../contracts/target/dev/manifest.json src/dojo/contractComponents.ts http://localhost:5050 0x72025860d14238aa9fe95c5657e130155518d9d1e8eaef1e174ef4b40972720"
   },
   "dependencies": {
     "@dojoengine/core": "^0.1.30",

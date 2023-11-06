@@ -14,38 +14,26 @@ const PIXEL_TYPES = {
 }
 export function createSystemCalls(
     { execute, contractComponents }: SetupNetworkResult,
-    { Color, Owner, PixelType, NeedsAttention }: ClientComponents
+    { Pixel }: ClientComponents
 ) {
     const put_color = async (
         signer: Account,
         position: number[],
-        color: number[]
+        color: string
 
     ) => {
       const entityId = getEntityIdFromKeys(position.map(p => BigInt(p))) as EntityIndex
 
-      const colorId = uuid()
-      Color.addOverride(colorId, {
+      const pixelId = uuid()
+      Pixel.addOverride(pixelId, {
         entity: entityId,
-        value: { x: position[0], y: position[1], r: color[0], g: color[1], b: color[2]}
-      })
-
-      const ownerId  = uuid()
-      Owner.addOverride(ownerId, {
-        entity: entityId,
-        value: { x: position[0], y: position[1], address: signer.address }
-      })
-
-      const pixelTypeId = uuid()
-      PixelType.addOverride(pixelTypeId, {
-        entity: entityId,
-        value: { x: position[0], y: position[1], name: PIXEL_TYPES.paint}
-      })
-
-      const needsAttentionId = uuid()
-      NeedsAttention.addOverride(needsAttentionId, {
-        entity: entityId,
-        value: { x: position[0], y: position[1], value: false }
+        value: {
+          x: position[0],
+          y: position[1],
+          app: PIXEL_TYPES['paint'],
+          color: Number(color),
+          owner: signer.address,
+        }
       })
 
       try {
@@ -63,15 +51,9 @@ export function createSystemCalls(
         setComponentsFromEvents(contractComponents, getEvents(receipt))
       } catch (e) {
         console.error(e)
-        Color.removeOverride(colorId)
-        Owner.removeOverride(ownerId)
-        PixelType.removeOverride(pixelTypeId)
-        NeedsAttention.removeOverride(needsAttentionId)
+        Pixel.removeOverride(pixelId)
       } finally {
-        Color.removeOverride(colorId)
-        Owner.removeOverride(ownerId)
-        PixelType.removeOverride(pixelTypeId)
-        NeedsAttention.removeOverride(needsAttentionId)
+        Pixel.removeOverride(pixelId)
       }
     };
 

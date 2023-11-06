@@ -8,14 +8,7 @@ import { streamToString } from '@/global/utils'
 
 export type SetupNetworkResult = Awaited<ReturnType<typeof setupNetwork>>;
 
-const getWorldAddress = async () => {
-  const result = await fetch("/api/world-address")
-  const stream = result.body
-  if (!stream) return ''
-  return streamToString(stream)
-}
-
-const getManifest: () => Promise<{ contracts: { name: string, address: string }[]}> = async () => {
+const getManifest: () => Promise<{ address?: string, contracts: { name: string, address: string }[]}> = async () => {
   const result = await  fetch("/world/manifest.json")
   const stream = result.body
   if (!stream) return {}
@@ -26,15 +19,9 @@ export async function setupNetwork() {
   // Extract environment variables for better readability.
   const { VITE_PUBLIC_NODE_URL, VITE_PUBLIC_TORII } = import.meta.env;
 
-  const worldAddress = await getWorldAddress()
-
   const manifest = await getManifest()
 
-  const getContractByName = (name: string) => {
-    return manifest.contracts.find((contract) => contract.name === name);
-  }
-
-
+  const worldAddress = manifest?.address ?? ''
 
   // Create a new RPCProvider instance.
   const provider = new RPCProvider(worldAddress, manifest,VITE_PUBLIC_NODE_URL);
@@ -68,11 +55,6 @@ export async function setupNetwork() {
     // Entities query function.
     entities: async (component: string, partition: number) => {
       return provider.entities(component, partition);
-    },
-
-    // Call function.
-    call: async (selector: string, call_data: num.BigNumberish[]) => {
-      return provider.call(selector, call_data);
     },
   };
 }

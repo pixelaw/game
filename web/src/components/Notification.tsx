@@ -9,18 +9,18 @@ import { useDojo } from '@/DojoContext'
 // @ts-ignore
 import { HasValue, EntityIndex } from '@latticexyz/recs'
 import { felt252ToString } from '@/global/utils'
-import { hasNotificationAtom, notificationDataAtom } from '@/global/states.ts'
-import { useAtom, useSetAtom } from 'jotai'
+import { notificationDataAtom } from '@/global/states.ts'
+import { useSetAtom } from 'jotai'
 
 const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
   const {
     setup: {
-      components: { PixelType },
+      components: { Pixel },
     },
   } = useDojo()
 
-  const pixelType = useComponentValue(PixelType, entityIndex)
-  const name = felt252ToString(pixelType?.name ?? 'Unknown')
+  const pixelType = useComponentValue(Pixel, entityIndex)
+  const name = felt252ToString(pixelType?.app ?? 'Unknown')
 
   const setNotificationData = useSetAtom(notificationDataAtom)
 
@@ -29,7 +29,7 @@ const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
     setNotificationData({
       x: pixelType.x,
       y: pixelType.y,
-      pixelType: felt252ToString(pixelType.name),
+      pixelType: felt252ToString(pixelType.app),
     })
   }
 
@@ -60,24 +60,19 @@ const Notif: React.FC<{ entityIndex: EntityIndex }> = ({ entityIndex }) => {
 
 export default function Notification() {
   const [ isOpen, setIsOpen ] = React.useState<boolean>(false)
-  const [ hasNotification, setHasNotification ] = useAtom(hasNotificationAtom)
 
   const {
     setup: {
-      components: { NeedsAttention, Owner },
+      components: { Alert, Pixel },
     },
     account: { account }
   } = useDojo()
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const notifs = useEntityQuery([HasValue(NeedsAttention, { value: true }), HasValue(Owner, { address: account.address })])
+  const notifs = useEntityQuery([HasValue(Alert, { value: true }), HasValue(Pixel, { owner: account.address })])
 
-  React.useEffect(() => {
-    if (notifs && notifs.length > 0) {
-      setHasNotification(true)
-    }
-  }, [ notifs ])
+  const hasNotification = notifs && notifs.length > 0
 
     return (
         <>
