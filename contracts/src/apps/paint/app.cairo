@@ -82,9 +82,15 @@ fn decode_color(color: u32) -> (u8, u8, u8) {
 
             // if existing color is same as given, start fading
 
-            // normal: 
+            // normal:
             // put_color
-            // self.put_color()
+            self.put_color(
+              player,
+              get_contract_address(),
+              x,
+              y,
+              color
+            );
 
 
         }
