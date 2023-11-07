@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
     use starknet::class_hash::Felt252TryIntoClassHash;
@@ -44,16 +43,26 @@ mod tests {
         );
 
         // Deploy Core actions
-        let core_actions = IActionsDispatcher {
-            contract_address: world
-                .deploy_contract('salt', actions::TEST_CLASS_HASH.try_into().unwrap())
-        };
+        let core_actions_address = world
+            .deploy_contract('salt1', actions::TEST_CLASS_HASH.try_into().unwrap());
+        let core_actions = IActionsDispatcher { contract_address: core_actions_address };
 
         // Deploy RPS actions
-        let rps_actions = IRpsActionsDispatcher {
-            contract_address: world
-                .deploy_contract('salt', rps_actions::TEST_CLASS_HASH.try_into().unwrap())
-        };
+        let rps_actions_address = world
+            .deploy_contract('salt', rps_actions::TEST_CLASS_HASH.try_into().unwrap());
+        let rps_actions = IRpsActionsDispatcher { contract_address: rps_actions_address };
+
+        // Setup dojo auth
+        world.grant_writer('Pixel',core_actions_address);
+        world.grant_writer('AppBySystem',core_actions_address);
+        world.grant_writer('AppByName',core_actions_address);
+        world.grant_writer('CoreActionsAddress',core_actions_address);
+        world.grant_writer('Permissions',core_actions_address);
+
+        world.grant_writer('Game',rps_actions_address);
+        world.grant_writer('Player',rps_actions_address);
+
+
         (world, core_actions, rps_actions)
     }
 
@@ -69,7 +78,9 @@ mod tests {
         // Impersonate player1
         let player1 = starknet::contract_address_const::<0x1337>();
         let player2 = starknet::contract_address_const::<0x42>();
-        starknet::testing::set_contract_address(player1);
+
+
+        starknet::testing::set_account_contract_address(player1);
 
         // Set the players commitments
         let player1_commit: u8 = SCISSORS;
@@ -104,8 +115,8 @@ mod tests {
             );
 
         // TODO assert state
+        starknet::testing::set_account_contract_address(player2);
 
-        starknet::testing::set_contract_address(player2);
         // Player2 joins
         rps_actions
             .join(
@@ -118,7 +129,7 @@ mod tests {
                 player2_commit
             );
 
-        starknet::testing::set_contract_address(player1);
+        starknet::testing::set_account_contract_address(player1);
         // Player2 joins
         rps_actions
             .finish(

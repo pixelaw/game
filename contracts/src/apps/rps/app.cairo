@@ -106,10 +106,14 @@ mod rps_actions {
 
 
         fn interact(self: @ContractState, default_params: DefaultParameters, commit: felt252) {
+
+            // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(world);
             let position = default_params.position;
-            let player = get_caller_address();
+            let player = Registry::get_player_address(world, default_params.for_player);
+            let system = Registry::get_system_address(world, default_params.for_system);
+
             let pixel = get!(world, (position.x, position.y), Pixel);
 
             // Bail if the caller is not allowed here
@@ -167,11 +171,14 @@ mod rps_actions {
 
 
         fn join(self: @ContractState, default_params: DefaultParameters, player2_move: u8) {
+
+            // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(world);
             let position = default_params.position;
+            let player = Registry::get_player_address(world, default_params.for_player);
+            let system = Registry::get_system_address(world, default_params.for_system);
 
-            let player = get_caller_address();
             let pixel = get!(world, (position.x, position.y), Pixel);
 
             // Load the game
@@ -183,8 +190,13 @@ mod rps_actions {
             // Bail if wrong gamestate
             assert(game.state == STATE_CREATED, 'Wrong gamestate');
 
+'aa'.print();
+game.player1.print();
+player.print();
+
             // Bail if the player is joining their own game
             assert(game.player1 != player, 'Cant join own game');
+
 
             // Update the game
             game.player2 = player;
@@ -218,11 +230,14 @@ mod rps_actions {
         fn finish(
             self: @ContractState, default_params: DefaultParameters, player1_move: u8, player1_salt: felt252
         ) {
+
+            // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(world);
             let position = default_params.position;
+            let player = Registry::get_player_address(world, default_params.for_player);
+            let system = Registry::get_system_address(world, default_params.for_system);
 
-            let player = get_caller_address();
             let pixel = get!(world, (position.x, position.y), Pixel);
 
             // Load the game

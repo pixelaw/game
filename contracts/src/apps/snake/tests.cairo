@@ -151,10 +151,13 @@ mod tests {
         'owner'.print();
         get!(world, (4, 1), Pixel).owner.print();
 
-        // Move right (head at 4,1 now) -> on top of the painted. Snake should grow
+        // Grow right (head at 4,1 now) -> on top of the painted. Snake should grow
         snake_actions.move(snake_id);
 
         // Check that 3,1 is still snake color
         assert(get!(world, (3, 1), Pixel).color == SNAKE_COLOR, 'wrong pixel color 6');
+
+        // Move right (head at 5,1 now) 
+        snake_actions.move(snake_id);
     }
 }
