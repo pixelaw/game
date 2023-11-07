@@ -67,19 +67,14 @@ mod tests {
         };
 
         // Setup dojo auth
-        world.grant_writer(pixel::TEST_CLASS_HASH,core_actions_address);
-        world.grant_writer(app_by_system::TEST_CLASS_HASH,core_actions_address);
-        world.grant_writer(app_by_name::TEST_CLASS_HASH,core_actions_address);
-        world.grant_writer(core_actions_address::TEST_CLASS_HASH,core_actions_address);
-        world.grant_writer(permissions::TEST_CLASS_HASH,core_actions_address);
-        world.grant_writer(snake::TEST_CLASS_HASH,core_actions_address);
-        world.grant_writer(snake_segment::TEST_CLASS_HASH,core_actions_address);
+        world.grant_writer('Pixel',core_actions_address);
+        world.grant_writer('AppBySystem',core_actions_address);
+        world.grant_writer('AppByName',core_actions_address);
+        world.grant_writer('CoreActionsAddress',core_actions_address);
+        world.grant_writer('Permissions',core_actions_address);
 
-        world.grant_writer(snake::TEST_CLASS_HASH,snake_actions_address);
-        world.grant_writer(snake_segment::TEST_CLASS_HASH,snake_actions_address);
-
-        world.grant_writer(snake::TEST_CLASS_HASH,player1);
-        world.grant_writer(snake_segment::TEST_CLASS_HASH,player1);
+        world.grant_writer('Snake',snake_actions_address);
+        world.grant_writer('SnakeSegment',snake_actions_address);
 
         (world, core_actions, snake_actions, paint_actions)
     }
@@ -153,6 +148,7 @@ mod tests {
                     color: 0xF0F0F0
                 }
             );
+        'owner'.print();
         get!(world, (4, 1), Pixel).owner.print();
 
         // Move right (head at 4,1 now) -> on top of the painted. Snake should grow
