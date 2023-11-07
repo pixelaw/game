@@ -57,6 +57,32 @@ The App is also tracking score for each Player.
 - reset (position)
 
 
+# CommitReveal inputs
+## Param of the action
+- (Hashed Commit)
+  - parametername of action has structure: "PREFIX_TYPE_NAME"
+  - PREFIX is "cm_"
+  - TYPE for now is the name of an int, felt or Enum declared in the manifest
+  - NAME is a chosen name to refer to the param.
+- (Value+Salt reveal)
+  - parametername of action has structure: "PREFIX_NAME"
+  - PREFIX shall always be "rv_"
+  - NAME is the same name user during sending the commit
+## Clientside functioning
+- If client finds a param starting with "cr_"
+- It will prompt user for a param with TYPE
+  - example:
+    - The game RPS needs player1 to choose one option, but only send the hashedcommit
+    - Then, during a next stage of the game, the plaintext move and the salt will be sent
+    - The challenge is that the UI needsto be capable of doing this without knowing about the specific application. Reveal/Commit is a feature of the platform.
+    - Commit
+      - RpsMove is an enum with 3 fields, so ui presents user with 3 choices
+      - UI stores this clientside related to the pixel/app
+      - UI then hashes this with a salt, and also stores the salt with the choice
+      - UI then calls the functions with only the hash value
+    - Reveal
+      - 
+
 ## General UI considerations
 - Selected App
 - Click on a pixel

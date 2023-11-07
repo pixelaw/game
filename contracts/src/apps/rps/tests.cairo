@@ -19,9 +19,8 @@ mod tests {
         rps_actions, game, player, IRpsActionsDispatcher, IRpsActionsDispatcherTrait
     };
     use pixelaw::apps::rps::app::{Game, Player};
-    use pixelaw::apps::rps::app::{
-        STATE_CREATED, STATE_JOINED, STATE_FINISHED, ROCK, PAPER, SCISSORS
-    };
+    use pixelaw::apps::rps::app::{State, Move};
+    
 
 
     use zeroable::Zeroable;
@@ -83,8 +82,8 @@ mod tests {
         starknet::testing::set_account_contract_address(player1);
 
         // Set the players commitments
-        let player1_commit: u8 = SCISSORS;
-        let player2_commit: u8 = PAPER;
+        let player1_commit: Move = Move::Scissors;
+        let player2_commit: Move = Move::Paper;
 
         // Set the player's secret salt. For the test its just different, client will send truly random
         let player1_salt = '1';
@@ -155,7 +154,7 @@ mod tests {
         (seed.low % range) + min
     }
 
-    fn hash_commit(commit: u8, salt: felt252) -> felt252 {
+    fn hash_commit(commit: Move, salt: felt252) -> felt252 {
         let mut hash_span = ArrayTrait::<felt252>::new();
         hash_span.append(commit.into());
         hash_span.append(salt.into());
