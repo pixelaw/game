@@ -65,11 +65,9 @@ export function defineContractComponents(world: World) {
 	    );
 	  })(),
 	  Permissions: (() => {
-      return defineComponent(
+	    return defineComponent(
 	      world,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-	      { allowing_app: RecsType.String, allowed_app: RecsType.String, permission: { alert: RecsType.Boolean, app: RecsType.Boolean, color: RecsType.Boolean, owner: RecsType.Boolean, text: RecsType.Boolean, timestamp: RecsType.Boolean } },
+	      { allowing_app: RecsType.String, allowed_app: RecsType.String, permission: { alert: RecsType.Boolean, app: RecsType.Boolean, color: RecsType.Boolean, owner: RecsType.Boolean, text: RecsType.Boolean, timestamp: RecsType.Boolean, action: RecsType.Boolean } },
 	      {
 	        metadata: {
 	          name: "Permissions",
@@ -81,7 +79,7 @@ export function defineContractComponents(world: World) {
 	  Pixel: (() => {
 	    return defineComponent(
 	      world,
-	      { x: RecsType.Number, y: RecsType.Number, created_at: RecsType.Number, updated_at: RecsType.Number, alert: RecsType.Number, app: RecsType.String, color: RecsType.Number, owner: RecsType.String, text: RecsType.Number, timestamp: RecsType.Number },
+	      { x: RecsType.Number, y: RecsType.Number, created_at: RecsType.Number, updated_at: RecsType.Number, alert: RecsType.Number, app: RecsType.String, color: RecsType.Number, owner: RecsType.String, text: RecsType.Number, timestamp: RecsType.Number, action: RecsType.Number },
 	      {
 	        metadata: {
 	          name: "Pixel",

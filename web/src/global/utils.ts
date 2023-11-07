@@ -78,7 +78,7 @@ export async function streamToString(readableStream: ReadableStream) {
 export const felt252ToString = (felt252: string | number) => {
   switch (felt252) {
     case  '0x7061696e74': return 'Paint'
-    default: return felt252
+    default: return felt252 as string
   }
 }
 
@@ -88,4 +88,9 @@ export const formatAddress = (address: string) => {
   }
 
   return address
+}
+
+export const argbToHex = (argb: number) => {
+  const hexCode = convertToHexadecimalAndLeadWithOx(argb)
+  return hexCode.replace("0xff", "#")
 }

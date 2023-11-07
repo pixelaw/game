@@ -1,7 +1,7 @@
 import React, {SetStateAction} from 'react'
 import {CellDatum, Coordinate, NeedsAttentionDatum} from '@/components/shared/DrawPanel.tsx'
 import {useDojo} from '@/DojoContext.tsx'
-import {useAtom, useAtomValue, useSetAtom} from 'jotai'
+import {useAtom, useAtomValue} from 'jotai'
 import {
   colorAtom,
   gameModeAtom,
@@ -10,12 +10,12 @@ import {
   zoomLevelAtom,
 } from '@/global/states.ts'
 import {CANVAS_HEIGHT, CANVAS_WIDTH, MAX_CELL_SIZE, MAX_ROWS_COLS} from '@/global/constants.ts'
-import {usePaintCanvas} from '@/hooks/systems/usePaintCanvas.ts'
 import {useEntityQuery} from '@dojoengine/react'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {getComponentValue, getComponentValueStrict, Has, HasValue} from '@latticexyz/recs'
-import {felt252ToString, hexToRgb} from '@/global/utils.ts'
+import { argbToHex, felt252ToString } from '@/global/utils.ts'
+import useInteract from '@/hooks/systems/useInteract'
 
 type DrawPanelType = {
   gameMode: 'none' | 'paint' | 'rps' | 'snake',
@@ -51,7 +51,6 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     },
   } = useDojo()
 
-  const paintCanvas = usePaintCanvas()
 
   //mode of the game
   const gameMode = useAtomValue(gameModeAtom)
@@ -74,7 +73,16 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   const [ visibleAreaEnd, setVisibleAreaEnd ] = React.useState<[ number, number ]>([ 28, 8 ])
 
   //setting the coordinates and passing it to plugin when hover in the cell
-  const setPositionWithAddressAndType = useSetAtom(positionWithAddressAndTypeAtom)
+  const [position, setPositionWithAddressAndType] = useAtom(positionWithAddressAndTypeAtom)
+
+  const { interact } = useInteract(
+    `${gameMode}_actions`,
+    selectedHexColor,
+    {
+      x: position?.x ?? 0,
+      y: position?.y ?? 0
+    }
+  )
 
   //For instant coloring the pixel
   const [ tempData, setTempData ] = React.useState<Record<`[${number},${number}]`, string>>({})
@@ -96,9 +104,10 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     .filter(entity => !!entity)
 
 
-    pixels.forEach(pixel => {
-      pixelData[`[${pixel!.x},${pixel!.y}]`] = String(pixel!.color)
+  pixels.forEach(pixel => {
+      pixelData[`[${pixel!.x},${pixel!.y}]`] = argbToHex(pixel!.color)
   })
+
   const entityNeedsAttentions = notifEntitiyIds
     .map(entityId => {
       return getComponentValueStrict(Alert, entityId)
@@ -148,12 +157,7 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
 
     updatePixelData(position, selectedHexColor)
 
-    const color = hexToRgb(selectedHexColor)
-    const rgb: [number, number, number] = [color?.r ?? 0, color?.g ?? 0, color?.b ?? 0]
-
-    paintCanvas.mutateAsync({
-      position,
-      rgbColor: rgb,
+    interact.mutateAsync({
     })
       .then(() => {
         setCoordinates(undefined)
