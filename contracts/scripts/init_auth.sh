@@ -14,6 +14,8 @@ CORE_MODELS=("AppBySystem" "AppByName" "CoreActionsAddress" "Pixel" "Permissions
 
 APP_MODELS=("Game" "Player")
 
+SNAKE_MODELS=("Snake" "SnakeSegment")
+
 echo "Write permissions for CORE_ACTIONS"
 for model in ${CORE_MODELS[@]}; do
     sleep 0.1
@@ -28,6 +30,13 @@ for model in ${APP_MODELS[@]}; do
 done
 echo "Write permissions for PAINT_ACTIONS: Done"
 
+echo "Write permissions for SNAKE_ACTIONS"
+for model in ${SNAKE_MODELS[@]}; do
+    sleep 0.1
+    sozo auth writer $model $SNAKE_ACTIONS
+done
+echo "Write permissions for SNAKE_ACTIONS: Done"
+
 
 echo "Initialize CORE_ACTIONS"
 sleep 0.1
@@ -38,5 +47,10 @@ echo "Initialize PAINT_ACTIONS: Done"
 sleep 0.1
 sozo execute $PAINT_ACTIONS init
 echo "Initialize PAINT_ACTIONS: Done"
+
+echo "Initialize SNAKE_ACTIONS: Done"
+sleep 0.1
+sozo execute $SNAKE_ACTIONS init
+echo "Initialize SNAKE_ACTIONS: Done"
 
 

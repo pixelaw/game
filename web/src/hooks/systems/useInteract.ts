@@ -53,8 +53,18 @@ const useInteract = (
   const paramsDef = parameters.map(param => {
     const isPrimitiveType = param.type.includes("core::integer") || param.type.includes("core::felt252")
     let type: 'number' | 'string' | 'enum' | 'struct' = 'number'
+    let variants: {name: string, value: number}[] = []
     if (!isPrimitiveType) {
-      // look up definition
+      const typeDefinition = contract.abi.find(x => x.name === param.type)
+      if (typeDefinition?.type === "enum") {
+        variants = (typeDefinition?.variants ?? []).map((variant, index) => {
+          return {
+            name: variant.name,
+            value: index
+          }
+        })
+        type = 'enum'
+      }
     } else if (param.type.includes("core::felt252")) {
       type = 'string'
     }
@@ -62,7 +72,7 @@ const useInteract = (
       name: param.name,
       type,
       // if is not primitive type fill these out
-      variants: [],
+      variants,
       structDefinition: {}
     }
   })

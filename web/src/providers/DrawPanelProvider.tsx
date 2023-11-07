@@ -16,6 +16,7 @@ import {useEntityQuery} from '@dojoengine/react'
 import {getComponentValue, getComponentValueStrict, Has, HasValue} from '@latticexyz/recs'
 import { argbToHex, felt252ToString } from '@/global/utils.ts'
 import useInteract from '@/hooks/systems/useInteract'
+import ParamPicker from '@/components/ParamPicker'
 
 type DrawPanelType = {
   gameMode: 'none' | 'paint' | 'rps' | 'snake',
@@ -75,7 +76,7 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   //setting the coordinates and passing it to plugin when hover in the cell
   const [position, setPositionWithAddressAndType] = useAtom(positionWithAddressAndTypeAtom)
 
-  const { interact } = useInteract(
+  const { interact, params } = useInteract(
     `${gameMode}_actions`,
     selectedHexColor,
     {
@@ -83,6 +84,15 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       y: position?.y ?? 0
     }
   )
+
+  const hasParams = !!params.length
+
+  const [additionalParams, setAdditionalParams] = React.useState<Record<string,any>>({})
+
+  React.useEffect(() => {
+    setAdditionalParams({})
+  }, [gameMode])
+
 
   //For instant coloring the pixel
   const [ tempData, setTempData ] = React.useState<Record<`[${number},${number}]`, string>>({})
@@ -157,8 +167,11 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
 
     updatePixelData(position, selectedHexColor)
 
-    interact.mutateAsync({
-    })
+    const variables = hasParams ? {
+      otherParams: additionalParams
+    } : {}
+
+    interact.mutateAsync(variables)
       .then(() => {
         setCoordinates(undefined)
       })
@@ -237,6 +250,7 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       onHover: handleHover,
     }}>
       {children}
+      {hasParams && <ParamPicker value={additionalParams} onChange={(newValue) => setAdditionalParams(newValue)} params={params} />}
     </DrawPanelContext.Provider>
   )
 }
