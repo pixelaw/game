@@ -73,7 +73,7 @@ The App is also tracking score for each Player.
 - It will prompt user for a param with TYPE
   - example:
     - The game RPS needs player1 to choose one option, but only send the hashedcommit
-    - Then, during a next stage of the game, the plaintext move and the salt will be sent
+    - Then, during a next stage of the game, the plaintext move and the salt will be requested
     - The challenge is that the UI needsto be capable of doing this without knowing about the specific application. Reveal/Commit is a feature of the platform.
     - Commit
       - RpsMove is an enum with 3 fields, so ui presents user with 3 choices
@@ -81,36 +81,7 @@ The App is also tracking score for each Player.
       - UI then hashes this with a salt, and also stores the salt with the choice
       - UI then calls the functions with only the hash value
     - Reveal
-      - 
-
-## General UI considerations
-- Selected App
-- Click on a pixel
-  - Empty -> DEFAULT
-  - OwnedByMe -> UPDATE
-  - OwnedByOther -> GUEST
-
-rps (ui calls these if rps app selected and rps pixel clicked)
-- empty(param_rpsEnumHash)
-- unowned(rpsEnum)
-- owned(rpsEnumHash)
-- param_rpsEnumHash(rpsEnum)
-
-paint
-- empty(position, color)
-- owned(position, color)
-- SCHEDULER: fade(position)
-
-snake
-- empty(color)
-- notOwned()
-- owned()
-- SCHEDULER: move(id)
-
-# Default
-- empty()
-- owned()
-- 
+      - there will be 2 params: "rv_NAME" (the actual param) and "rs_NAME" (the used salt)
 
 
 
