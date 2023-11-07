@@ -5,7 +5,7 @@ use starknet::{get_caller_address, get_contract_address, get_execution_info, Con
 
 
 #[starknet::interface]
-trait IActions<TContractState> {
+trait IPaintActions<TContractState> {
     fn init(self: @TContractState);
     fn interact(self: @TContractState, default_params: DefaultParameters);
     fn fade(self: @TContractState, default_params: DefaultParameters);
@@ -19,7 +19,7 @@ mod paint_actions {
         get_tx_info, get_caller_address, get_contract_address, get_execution_info, ContractAddress
     };
 
-    use super::IActions;
+    use super::IPaintActions;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::registry::Registry;
     use pixelaw::core::actions::{
@@ -59,7 +59,7 @@ mod paint_actions {
 
     // impl: implement functions specified in trait
     #[external(v0)]
-    impl ActionsImpl of IActions<ContractState> {
+    impl ActionsImpl of IPaintActions<ContractState> {
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(self: @ContractState) {
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
@@ -115,8 +115,8 @@ mod paint_actions {
                         alert: Option::None,
                         timestamp: Option::None,
                         text: Option::None,
-                        app: Option::None,
-                        owner: Option::None,
+                        app: Option::Some(system),
+                        owner: Option::Some(player),
                         action: Option::None  // Not using this feature for paint
                     }
                 );

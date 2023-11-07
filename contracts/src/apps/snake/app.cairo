@@ -44,7 +44,7 @@ struct SnakeSegment {
 #[starknet::interface]
 trait ISnakeActions<TContractState> {
     fn init(self: @TContractState);
-    fn interact(self: @TContractState, default_params: DefaultParameters, direction: Direction);
+    fn interact(self: @TContractState, default_params: DefaultParameters, direction: Direction) -> u32;
     fn move(self: @TContractState, snake_id: u32);
 }
 
@@ -101,7 +101,8 @@ mod snake_actions {
 
 
         // A new snake starts 
-        fn interact(self: @ContractState, default_params: DefaultParameters, direction: Direction) {
+        fn interact(self: @ContractState, default_params: DefaultParameters, direction: Direction) -> u32 {
+            'snake: interact'.print();
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(world);
             let position = default_params.position;
@@ -110,12 +111,11 @@ mod snake_actions {
             let system = Registry::get_system_address(world, default_params.for_system);
 
             // Check if there is already a Snake or SnakeSegment here
-            // TODO: load the current Pixel
+            let pixel = get!(world, (position.x, position.y), Pixel);
+
             // TODO check if the pixel is unowned or player owned
 
             let id = world.uuid();
-
-            let DEFAULT_DIRECTION = Direction::Left;
 
             let color = default_params.color;
             let text = ''; //TODO
@@ -125,7 +125,7 @@ mod snake_actions {
                 length: 1,
                 first_segment_id: id,
                 last_segment_id: id,
-                direction: DEFAULT_DIRECTION,
+                direction: direction,
                 owner: player,
                 color,
                 text,
@@ -139,13 +139,13 @@ mod snake_actions {
                 next_id: id,
                 x: position.x,
                 y: position.y,
-                pixel_original_color: 0, // FIXME get the original color of the pixel clicked
-                pixel_original_text: 0
+                pixel_original_color: pixel.color, 
+                pixel_original_text: pixel.text
             };
-
+'aa'.print();
             // Store the dojo model for the Snake
             set!(world, (snake, segment));
-
+'bb'.print();
             // Call core_actions to update the color
             core_actions
                 .update_pixel(
@@ -180,15 +180,19 @@ mod snake_actions {
                     get_execution_info().unbox().entry_point_selector, // This selector
                     calldata.span() // The calldata prepared
                 );
+
+            id
         }
 
         fn move(self: @ContractState, snake_id: u32) {
-            'move'.print();
+            'snake: move'.print();
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
             // Load the Snake
             let mut snake = get!(world, (snake_id), (Snake));
+snake.id.print();
+            assert(snake.id != 0, 'no snake');
             let first_segment = get!(world, (snake.first_segment_id), SnakeSegment);
 
             // If the snake is dying, handle that
@@ -200,10 +204,14 @@ mod snake_actions {
                     // This will stop the movement loop
                     // TODO handle situation where someone manually calls 'move', it will
                     // spam Died events..
+                    let snake_id_felt: felt252 = snake.id.into();
+                    world.delete_entity('Snake'.into(), array![snake_id_felt.into()].span());
                     return;
+                }else {
+                    snake.last_segment_id = remove_last_segment(world, core_actions, snake);
+                    snake.length -= 1;
                 }
-                snake.last_segment_id = remove_last_segment(world, core_actions, snake);
-                snake.length -= 1;
+
             } // FIXME else block
 
             // Load the current pixel
@@ -218,13 +226,15 @@ mod snake_actions {
             // Determine what happens to the snake
             // MOVE, GROW, SHRINK, DIE
             if next_pixel.owner.is_zero() { // Snake just moves
+                'snake moves'.print();
                 // Add a new segment on the next pixel and update the snake
                 snake
                     .first_segment_id =
                         create_new_segment(world, core_actions, next_pixel, snake, first_segment);
+                snake.last_segment_id = remove_last_segment(world, core_actions, snake);
 
-                    // TODO remove last segment
             } else if next_pixel.owner == snake.owner {
+                'snake grows'.print();
                 // Next pixel is owned by snake owner: GROW
 
                 // Add a new segment
@@ -257,6 +267,7 @@ mod snake_actions {
                             action: Option::None  // Not using this feature for snake
                         }
                     ) {
+                'snake shrinks'.print();
                 // Next pixel is not owned but can be used temporarily
                 // SHRINK, though
                 if snake.length == 1 {
@@ -272,6 +283,7 @@ mod snake_actions {
                     snake.last_segment_id = remove_last_segment(world, core_actions, snake);
                 }
             } else {
+                'snake will die'.print();
                 // Snake hit a pixel that is not allowing anyting: DIE
                 snake.is_dying = true;
             }
@@ -325,8 +337,9 @@ mod snake_actions {
             );
 
         let result = last_segment.previous_id;
-        // TODO properly delete the last segment, if possible (??)
-        // Right now we just orphan the object.. (!!)
+
+        let segment_id_felt: felt252 = snake.last_segment_id.into();
+        world.delete_entity('SnakeSegment'.into(), array![segment_id_felt.into()].span());
 
         // Return the new last_segment_id for the snake
         result

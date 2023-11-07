@@ -123,12 +123,6 @@ mod actions {
                     .span()
             );
 
-            // 'DUMPING'.print();
-            // timestamp.print();
-            // called_system.print();
-            // selector.print();
-            // calldata.print();
-            // 'DUMPING DONE'.print();
 
             // Emit the event, so an external scheduler can pick it up
             emit!(world, QueueScheduled { id, timestamp, called_system, selector, calldata: calldata });
@@ -253,15 +247,9 @@ mod actions {
             assert(self.has_write_access(for_player,for_system,pixel, pixel_update), 'No access!');
 
             // If the pixel has no owner set yet, do that now.
-            if pixel.owner.is_zero() {
+            if pixel.created_at == 0 {
                 let now = starknet::get_block_timestamp();
 
-            'for_player'.print();
-            for_player.print();
-
-
-                pixel.owner = for_player;
-                pixel.app = for_system;
                 pixel.created_at = now;
                 pixel.updated_at = now;
             }

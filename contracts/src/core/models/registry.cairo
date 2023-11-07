@@ -5,7 +5,7 @@ use pixelaw::core::actions::{
     IActionsDispatcher as ICoreActionsDispatcher,
     IActionsDispatcherTrait as ICoreActionsDispatcherTrait
 };
-    use debug::PrintTrait;
+use debug::PrintTrait;
 #[derive(Model, Copy, Drop, Serde)]
 struct AppBySystem {
     #[key]
@@ -60,39 +60,40 @@ impl RegistryImpl of Registry {
 
 
     fn get_player_address(world: IWorldDispatcher, for_player: ContractAddress) -> ContractAddress {
-
-        if !for_player.is_zero() {
+        if for_player.is_zero() {
+            'get_player_address.zero'.print();
+            let result = get_tx_info().unbox().account_contract_address;
+            result.print();
+            // Return the caller account from the transaction (the end user)
+            return result;
+        } else {
+            'get_player_address.nonzero'.print();
             // Check that the caller is the CoreActions contract
-            assert(get_caller_address() == Registry::get_core_actions_address(world), 'Invalid caller');
+            assert(
+                get_caller_address() == Registry::get_core_actions_address(world), 'Invalid caller'
+            );
 
             // Return the for_player
             return for_player;
-        }else{
-            'aaaaa'.print();
-let result = get_tx_info().unbox().account_contract_address;
-result.print();
-            // Return the caller account from the transaction (the end user)
-            return result;
         }
-
     }
 
 
     fn get_system_address(world: IWorldDispatcher, for_system: ContractAddress) -> ContractAddress {
-
         if !for_system.is_zero() {
             // Check that the caller is the CoreActions contract
             // Otherwise, it should be 0 (if caller not core_actions)
-            assert(get_caller_address() == Registry::get_core_actions_address(world), 'for_system == 0 unless schedule');
+            assert(
+                get_caller_address() == Registry::get_core_actions_address(world),
+                'for_system == 0 unless schedule'
+            );
 
             // Return the for_player
             return for_system;
-        }else{
-
+        } else {
             // Return the caller account from the transaction (the end user)
             return get_contract_address();
         }
-
     }
 
     /// Registers an App
