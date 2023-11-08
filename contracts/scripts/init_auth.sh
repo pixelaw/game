@@ -37,6 +37,13 @@ for model in ${SNAKE_MODELS[@]}; do
 done
 echo "Write permissions for SNAKE_ACTIONS: Done"
 
+echo "Write permissions for RPS_ACTIONS"
+for model in ${APP_MODELS[@]}; do
+    sleep 0.1
+    sozo auth writer $model $RPS_ACTIONS
+done
+echo "Write permissions for RPS_ACTIONS: Done"
+
 
 echo "Initialize CORE_ACTIONS"
 sleep 0.1
@@ -52,5 +59,10 @@ echo "Initialize SNAKE_ACTIONS: Done"
 sleep 0.1
 sozo execute $SNAKE_ACTIONS init
 echo "Initialize SNAKE_ACTIONS: Done"
+
+echo "Initialize RPS_ACTIONS: Done"
+sleep 0.1
+sozo execute $RPS_ACTIONS init
+echo "Initialize RPS_ACTIONS: Done"
 
 
