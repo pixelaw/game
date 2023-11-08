@@ -150,20 +150,20 @@ jobs:
             chmod +x /usr/local/bin/argocd
           fi
 
-      # - name: Deploy Application Dry Run
-      #   env:
-      #     ARGOCD_SERVER: ${{ vars.ARGOCD_SERVER }}
-      #     ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}   
-      #   run: |
-      #     argocd app create $PROJECTNAME-dev \
-      #     --repo https://github.com/$GITHUB_REPOSITORY.git \
-      #     --revision $GITHUB_REF_NAME --path ./chart/$PROJECTNAME \
-      #     --values values-dev.yaml \
-      #     --dest-namespace $PROJECTNAME-dev \
-      #     --dest-server https://kubernetes.default.svc \
-      #     --upsert
-      #     argocd app sync $PROJECTNAME-dev
-      #     argocd app wait $PROJECTNAME-dev
-      #     argocd app actions run $PROJECTNAME-dev --namespace $PROJECTNAME-dev restart --kind Deployment 
+      - name: Deploy Application Dry Run
+        env:
+          ARGOCD_SERVER: ${{ vars.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}   
+        run: |
+          argocd app create $PROJECTNAME-dev \
+          --repo https://github.com/$GITHUB_REPOSITORY.git \
+          --revision $GITHUB_REF_NAME --path ./chart/$PROJECTNAME \
+          --values values-dev.yaml \
+          --dest-namespace $PROJECTNAME-dev \
+          --dest-server https://kubernetes.default.svc \
+          --upsert
+          argocd app sync $PROJECTNAME-dev
+          argocd app wait $PROJECTNAME-dev
+          argocd app actions run $PROJECTNAME-dev --namespace $PROJECTNAME-dev restart --kind Deployment 
           
   
