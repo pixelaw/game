@@ -61,7 +61,7 @@ The App is also tracking score for each Player.
 ## Param of the action
 - (Hashed Commit)
   - parametername of action has structure: "PREFIX_TYPE_NAME"
-  - PREFIX is "cm_"
+  - PREFIX is "cr_"
   - TYPE for now is the name of an int, felt or Enum declared in the manifest
   - NAME is a chosen name to refer to the param.
 - (Value+Salt reveal)

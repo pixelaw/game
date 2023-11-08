@@ -42,6 +42,7 @@ mod actions {
     use debug::PrintTrait;
     use poseidon::poseidon_hash_span;
     use pixelaw::core::models::queue::{QueueItem};
+  use zeroable::Zeroable;
 
 
     #[derive(Drop, starknet::Event)]
@@ -143,11 +144,11 @@ mod actions {
             // A quick check on the timestamp so we know its not too early for this one
             assert(timestamp <= starknet::get_block_timestamp(), 'timestamp still in the future');
 
-            // TODO Do we need a mechanism to ensure that Queued items are really coming from a schedule? 
+            // TODO Do we need a mechanism to ensure that Queued items are really coming from a schedule?
             // In theory someone can just call this action directly with whatever, as long as the ID is correct it will be executed.
             // It is only possible to call Apps though, so as long as the security of the Apps is okay, it should be fine?
             // And we could add some rate limiting to prevent griefing?
-            // 
+            //
             // The only way i can think of doing "authentication" of a QueueItem would be to store the ID (hash) onchain, but that gets expensive soon?
 
             // Recreate the id to check the integrity
@@ -160,6 +161,13 @@ mod actions {
 
             // Only valid when the queue item was found by the hash
             assert(calculated_id == id, 'Invalid Id');
+'beforea'.print();
+called_system.print();
+timestamp.print();
+selector.print();
+calldata.get(0).unwrap().unbox().clone().print();
+
+let calldata = array![21].span();
 
             // Make the call itself
             starknet::call_contract_syscall(called_system, selector, calldata);
@@ -169,12 +177,11 @@ mod actions {
             'process_queue DONE'.print();
         }
 
-
         fn has_write_access(
-            self: @ContractState, 
+            self: @ContractState,
             for_player: ContractAddress,
-            for_system: ContractAddress,  
-            pixel: Pixel, 
+            for_system: ContractAddress,
+            pixel: Pixel,
             pixel_update: PixelUpdate
             ) -> bool {
             let world = self.world_dispatcher.read();

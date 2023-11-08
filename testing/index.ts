@@ -26,22 +26,26 @@ const QUEUED_EVENTKEY = '0x1c4fa7f75d1ea055adccbf8f86b75224181a3036d672762185805
 
   const signer = new Account(setup.provider.provider, accounts[0].address, accounts[0].private_key)
 
-  const tx = await setup.execute(signer, 'paint_actions', 'put_fading_color', [
+  // const tx = await setup.execute(signer, 'snake_actions', 'move', [
+  //   1 // Snake id
+  // ])
+
+  const tx = await setup.execute(signer, 'snake_actions', 'interact', [
     0, // for_player
     0, // for_system
-    1, // x
-    2, // y
+    1,2, // y
     0x161616, // color
+    1 // Direction
   ])
 
   const receipt: any = await signer.waitForTransaction(tx.transaction_hash, { retryInterval: 100})
 
   const queuedEvent = receipt.events.filter(e => e.keys.includes(QUEUED_EVENTKEY))[0]
-
+  console.log(queuedEvent)
   await setup.execute(signer, 'actions', 'process_queue', queuedEvent.data)
 
-  const pixel: Pixel = await setup.getPixel(1,2);
-  console.log(pixel)
+  // const pixel: Pixel = await setup.getPixel(1,2);
+  // console.log(pixel)
 
 
 

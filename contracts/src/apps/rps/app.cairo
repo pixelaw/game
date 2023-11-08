@@ -61,7 +61,7 @@ struct Player {
 #[starknet::interface]
 trait IRpsActions<TContractState> {
     fn init(self: @TContractState);
-    fn interact(self: @TContractState, default_params: DefaultParameters, cm_Move_move: felt252);
+    fn interact(self: @TContractState, default_params: DefaultParameters, cr_Move_move: felt252);
     fn join(self: @TContractState, default_params: DefaultParameters, player2_move: Move);
     fn finish(self: @TContractState, default_params: DefaultParameters, rv_move: Move, rs_move: felt252);
 }
@@ -109,7 +109,7 @@ mod rps_actions {
         }
 
 
-        fn interact(self: @ContractState, default_params: DefaultParameters, cm_Move_move: felt252) {
+        fn interact(self: @ContractState, default_params: DefaultParameters, cr_Move_move: felt252) {
 
             // Load important variables
             let world = self.world_dispatcher.read();
@@ -131,7 +131,7 @@ mod rps_actions {
                 assert(game.state == State::Created, 'cannot reset rps game');
 
                 // Player1 changing their commit
-                game.player1_commit = cm_Move_move;
+                game.player1_commit = cr_Move_move;
             } else {
                 game =
                     Game {
@@ -141,7 +141,7 @@ mod rps_actions {
                         state: State::Created,
                         player1: player,
                         player2: Zeroable::zero(),
-                        player1_commit: cm_Move_move,
+                        player1_commit: cr_Move_move,
                         player1_move: Move::None,
                         player2_move: Move::None,
                         started_timestamp: starknet::get_block_timestamp()

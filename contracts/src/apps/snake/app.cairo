@@ -1,6 +1,6 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use starknet::{ContractAddress, ClassHash};
-use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+use pixelaw::core::utils::{Direction, Position, DefaultParameters, starknet_keccak};
 
 
 fn next_position(x: u64, y: u64, direction: Direction) -> (u64, u64) {
@@ -55,7 +55,7 @@ mod snake_actions {
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::registry::Registry;
     use super::{Snake, SnakeSegment};
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{Direction, Position, DefaultParameters, starknet_keccak};
     use super::next_position;
     use super::ISnakeActions;
     use pixelaw::core::actions::{
@@ -100,7 +100,7 @@ mod snake_actions {
         }
 
 
-        // A new snake starts 
+        // A new snake starts
         fn interact(self: @ContractState, default_params: DefaultParameters, direction: Direction) -> u32 {
             'snake: interact'.print();
             let world = self.world_dispatcher.read();
@@ -139,7 +139,7 @@ mod snake_actions {
                 next_id: id,
                 x: position.x,
                 y: position.y,
-                pixel_original_color: pixel.color, 
+                pixel_original_color: pixel.color,
                 pixel_original_text: pixel.text
             };
 
@@ -172,12 +172,15 @@ mod snake_actions {
             // Calldata[0] : id
             calldata.append(id.into());
 
+            // TODO should use something like: starknet_keccak(array!['move'].span())
+            let MOVE_SELECTOR = 0x239e4c8fbd11b680d7214cfc26d1780d5c099453f0832beb15fd040aebd4ebb;
+
             // Schedule the next move
             core_actions
                 .schedule_queue(
                     queue_timestamp, // When to fade next
                     THIS_CONTRACT_ADDRESS, // This contract address
-                    get_execution_info().unbox().entry_point_selector, // This selector
+                    MOVE_SELECTOR, // The move function
                     calldata.span() // The calldata prepared
                 );
 
@@ -217,7 +220,7 @@ snake.id.print();
             // Load the current pixel
             let mut current_pixel = get!(world, (first_segment.x, first_segment.y), Pixel);
 
-            // Determine next pixel the head will move to 
+            // Determine next pixel the head will move to
             let (next_x, next_y) = next_position(first_segment.x, first_segment.y, snake.direction);
 
             // Load next pixel
@@ -298,6 +301,9 @@ snake.id.print();
 
             // Calldata[0] : id
             calldata.append(snake.id.into());
+
+'selector'.print();
+get_execution_info().unbox().entry_point_selector.print();
 
             // Schedule the next move
             core_actions

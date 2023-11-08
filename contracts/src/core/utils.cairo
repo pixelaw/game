@@ -42,6 +42,29 @@ impl DirectionIntoFelt252 of Into<Direction, felt252> {
 }
 const U64_MAX: u64 = 0xFFFFFFFFFFFFFFFF;
 
+
+/// Computes the starknet keccak to have a hash that fits in one felt.
+fn starknet_keccak(data: Span<felt252>) -> felt252 {
+  let mut u256_data: Array<u256> = array![];
+
+  let mut i = 0_usize;
+  loop {
+    if i == data.len() {
+      break;
+    }
+    u256_data.append((*data[i]).into());
+    i += 1;
+  };
+
+  let mut hash = keccak::keccak_u256s_be_inputs(u256_data.span());
+  let low = integer::u128_byte_reverse(hash.high);
+  let high = integer::u128_byte_reverse(hash.low);
+  hash = u256 { low, high };
+  hash = hash & 0x03ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff_u256;
+  hash.try_into().expect('starknet keccak overflow')
+}
+
+
 fn get_position(direction: Direction, position: Position) -> Position {
     match direction {
         Direction::None => { position },
