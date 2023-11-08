@@ -96,7 +96,7 @@ const useInteract = (
     }
   })
 
-  const fillableParamDefs = paramsDef.filter(paramDef => !paramDef?.value)
+  const fillableParamDefs = paramsDef.filter(paramDef => paramDef?.value == null)
 
   return {
     interact: useMutation({
@@ -132,8 +132,6 @@ const useInteract = (
             else additionalParams.push(param)
           }
         }
-
-        console.log(additionalParams)
 
         interact(account, contractName, position, decimalColor, methodName, additionalParams)
       }

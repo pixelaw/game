@@ -161,7 +161,7 @@ const interpret: InterpretType = (appName: string, position: {x: number, y: numb
         variants: [],
         type: 'number',
         structDefinition: {},
-        value: getStorage(appName, name, position, 'value')
+        value: getStorage(appName, name, position, 'value') ?? 0
       }
       break
     }
@@ -173,7 +173,7 @@ const interpret: InterpretType = (appName: string, position: {x: number, y: numb
         variants: [],
         type: 'number',
         structDefinition: {},
-        value: getStorage(appName, name, position, 'salt')
+        value: getStorage(appName, name, position, 'salt') ?? 0
       }
       break
     }
