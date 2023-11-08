@@ -1,4 +1,4 @@
-# PixeLAW Game
+# PixeLAW Game (test)
 A game built on top of Dojo. See live example [here](https://pixelaw.aw.oostvoort.work/)
 
 ## Concepts
