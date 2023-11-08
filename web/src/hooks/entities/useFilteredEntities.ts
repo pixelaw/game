@@ -26,7 +26,7 @@ export function useFilteredEntities(
     queryKey: ['filtered-entitities', xMin, xMax, yMin, yMax],
     queryFn: async () => {
       const {data} = await graphSdk.all_filtered_entities({first: 65536, xMin, xMax, yMin, yMax})
-      if (!data || !data.pixelModels?.edges) return { colorModels: { edges: [] } }
+      if (!data || !data.pixelModels?.edges) return { pixelModels: { edges: [] } }
       for (const edge of data.pixelModels.edges) {
         if (!edge || !edge.node) continue
         const fetchedNode = edge.node

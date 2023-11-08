@@ -8,7 +8,8 @@ let lines = content.split('\n');
 
 const issues = [
   `import { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';`,
-  `Dom.Headers`
+  `Dom.Headers`,
+  `GraphQLError`
 ]
 
 const fix = '// eslint-disable-next-line @typescript-eslint/ban-ts-comment\n' +

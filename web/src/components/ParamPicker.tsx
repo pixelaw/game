@@ -22,7 +22,7 @@ const ParamPicker: React.FC<PropsType> = ({ value, onChange, params }) => {
           case 'enum':
             return (
               <select
-                class={'text-black'}
+                className={'text-black'}
                 key={param.name}
                 value={value[param.name]}
                 onChange={(e) => onChange({...value, [param.name]: e.target.value})}

@@ -65,8 +65,10 @@ export function defineContractComponents(world: World) {
 	    );
 	  })(),
 	  Permissions: (() => {
-	    return defineComponent(
+      return defineComponent(
 	      world,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
 	      { allowing_app: RecsType.String, allowed_app: RecsType.String, permission: { alert: RecsType.Boolean, app: RecsType.Boolean, color: RecsType.Boolean, owner: RecsType.Boolean, text: RecsType.Boolean, timestamp: RecsType.Boolean, action: RecsType.Boolean } },
 	      {
 	        metadata: {

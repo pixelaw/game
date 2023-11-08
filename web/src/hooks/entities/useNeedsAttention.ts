@@ -14,43 +14,48 @@ export function useNeedsAttention() {
     },
     setup: {
       components: {
-        _Owner,
-        _NeedsAttention,
+        Pixel,
+        Alert
       },
       network: { graphSdk },
     },
   } = useDojo()
 
   return useQuery({
-    queryKey: [ 'needs-aatention' ],
+    queryKey: [ 'needs-attention' ],
     queryFn: async () => {
       const { data } = await graphSdk.getNeedsAttention({ first: 65536, address: account.address })
-      if (!data || !data.ownerModels?.edges) return {ownerModels: {edges: []}}
-      for (const edge of data.ownerModels.edges) {
+      if (!data || !data.pixelModels?.edges) return { pixelModels: { edges: [] } }
+      for (const edge of data.pixelModels.edges) {
         if (!edge || !edge.node) continue
-        const { x, y, address } = edge.node
-        const owner = { x, y, address }
-        const entityId = getEntityIdFromKeys([ BigInt(x), BigInt(y) ])
-        const currentOwner = getComponentValue(_Owner, entityId)
+        const fetchedNode = edge.node
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        delete fetchedNode['__typename']
+        const entityId = getEntityIdFromKeys([ BigInt(fetchedNode.x), BigInt(fetchedNode.y) ])
+        const currentColor = getComponentValue(Pixel, entityId)
 
         // do not update if it's already equal
-        if (isEqual(currentOwner, owner)) continue
+        if (isEqual(currentColor, fetchedNode)) continue
 
-        setComponent(_Owner, entityId, owner)
+        // to update latticexyz indexer
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        setComponent(Pixel, entityId, fetchedNode)
       }
 
-      if (!data || !data.needsattentionModels?.edges) return {needsattentionModels: {edges: []}}
-      for (const edge of data.needsattentionModels.edges) {
+      if (!data || !data.alertModels?.edges) return {needsattentionModels: {edges: []}}
+      for (const edge of data.alertModels.edges) {
         if (!edge || !edge.node) continue
-        const { x, y, value } = edge.node
-        const needsAttentionValue = { x, y, value }
+        const { x, y, alert } = edge.node
+        const needsAttentionValue = { x, y, alert }
         const entityId = getEntityIdFromKeys([ BigInt(x), BigInt(y) ])
-        const currentNeedsAttentionValue = getComponentValue(_NeedsAttention, entityId)
+        const currentNeedsAttentionValue = getComponentValue(Alert, entityId)
 
         // do not update if it's already equal
         if (isEqual(currentNeedsAttentionValue, needsAttentionValue)) continue
 
-        setComponent(_NeedsAttention, entityId, needsAttentionValue)
+        setComponent(Alert, entityId, needsAttentionValue)
       }
 
       return data

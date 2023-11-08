@@ -101,11 +101,27 @@ export const isInstruction = (paramName: string) => {
   }
 }
 
-const interpret = (appName: string, position: {x: number, y: number}, typeInstruction: string, abi: AbiType) => {
+export type Variant = {
+  name: string,
+  value: number,
+}
+
+export type ParamDefinitionType = {
+  name: string,
+  type: 'string' | 'number' | 'enum' | 'struct',
+  variants: Variant[],
+  structDefinition: Record<string, any>
+  transformValue?: (value: number) => bigint,
+  value?: number | null
+}
+
+type InterpretType = (appName: string, position: {x: number, y: number}, typeInstruction: string, abi: AbiType) => ParamDefinitionType
+
+const interpret: InterpretType = (appName: string, position: {x: number, y: number}, typeInstruction: string, abi: AbiType) => {
   const [instruction, ...otherValues] = typeInstruction.split("_")
   switch (instruction) {
     case 'cr': {
-      let finalizedType = 'number'
+      let finalizedType: 'number' | 'string' | 'enum' | 'struct' = 'number'
       const [type, name] = otherValues
       let variants: {name: string, value: number}[] = []
       if (!isPrimitive(type)) {

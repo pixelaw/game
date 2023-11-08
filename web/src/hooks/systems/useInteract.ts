@@ -5,7 +5,7 @@ import { EntityIndex, getComponentValue } from '@latticexyz/recs'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
 import manifest from './../../dojo/manifest.json'
 import { num } from 'starknet'
-import interpret, { isInstruction } from '@/lib/Instruction'
+import interpret, { isInstruction, ParamDefinitionType } from '@/lib/Instruction'
 
 const DEFAULT_PARAMETERS_TYPE = 'pixelaw::core::utils::DefaultParameters'
 
@@ -55,7 +55,7 @@ const useInteract = (
   }
   const parameters = functionDef.inputs.filter(input => input.type !== DEFAULT_PARAMETERS_TYPE)
 
-  const paramsDef = parameters.map(param => {
+  const paramsDef: ParamDefinitionType[] = parameters.map(param => {
     if (isInstruction(param.name)) {
       // problem with types on contract.abi
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

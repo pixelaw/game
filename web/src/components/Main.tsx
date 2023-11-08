@@ -65,6 +65,7 @@ const Main = () => {
     setColor(color.hex)
   }
 
+
   return (
       <React.Fragment>
           {
@@ -74,6 +75,8 @@ const Main = () => {
                         <DrawPanel />
 
                           <div className="fixed bottom-5 right-20">
+                            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+                            {/*// @ts-ignore*/}
                             <CompactPicker color={selectedHexColor} onChangeComplete={handleColorChange} />
                           </div>
                       </div>

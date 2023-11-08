@@ -1,6 +1,8 @@
 import { GraphQLClient } from 'graphql-request';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';
 import { print } from 'graphql'
 import gql from 'graphql-tag';
@@ -1380,12 +1382,18 @@ const All_Filtered_EntitiesDocumentString = print(All_Filtered_EntitiesDocument)
 const GetNeedsAttentionDocumentString = print(GetNeedsAttentionDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetEntitiesQuery>(GetEntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getEntities', 'query');
     },
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     all_filtered_entities(variables?: All_Filtered_EntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: All_Filtered_EntitiesQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<All_Filtered_EntitiesQuery>(All_Filtered_EntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'all_filtered_entities', 'query');
     },
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     getNeedsAttention(variables?: GetNeedsAttentionQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetNeedsAttentionQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetNeedsAttentionQuery>(GetNeedsAttentionDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getNeedsAttention', 'query');
     }
