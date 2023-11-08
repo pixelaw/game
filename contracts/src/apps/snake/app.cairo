@@ -106,7 +106,6 @@ mod snake_actions {
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(world);
             let position = default_params.position;
-
             let player = Registry::get_player_address(world, default_params.for_player);
             let system = Registry::get_system_address(world, default_params.for_system);
 
