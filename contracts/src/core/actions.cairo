@@ -161,13 +161,7 @@ mod actions {
 
             // Only valid when the queue item was found by the hash
             assert(calculated_id == id, 'Invalid Id');
-'beforea'.print();
-called_system.print();
-timestamp.print();
-selector.print();
-calldata.get(0).unwrap().unbox().clone().print();
 
-let calldata = array![21].span();
 
             // Make the call itself
             starknet::call_contract_syscall(called_system, selector, calldata);
