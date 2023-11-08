@@ -129,7 +129,8 @@ mod tests {
             );
 
         starknet::testing::set_account_contract_address(player1);
-        // Player2 joins
+
+        // Player1 finishes
         rps_actions
             .finish(
                 DefaultParameters {
@@ -140,6 +141,17 @@ mod tests {
                 },
                 player1_commit,
                 player1_salt
+            );
+
+        // Player1 secondary (reset pixel)
+        rps_actions
+            .secondary(
+                DefaultParameters {
+                    for_player: Zeroable::zero(),
+                    for_system: Zeroable::zero(),
+                    position: Position { x: 1, y: 1 },
+                    color: 0
+                }
             );
     }
     use array::ArrayTrait;

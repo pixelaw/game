@@ -61,6 +61,7 @@ struct Player {
 #[starknet::interface]
 trait IRpsActions<TContractState> {
     fn init(self: @TContractState);
+    fn secondary(self: @TContractState, default_params: DefaultParameters);
     fn interact(self: @TContractState, default_params: DefaultParameters, cr_Move_move: felt252);
     fn join(self: @TContractState, default_params: DefaultParameters, player2_move: Move);
     fn finish(self: @TContractState, default_params: DefaultParameters, rv_move: Move, rs_move: felt252);
@@ -327,7 +328,41 @@ mod rps_actions {
             set!(world, (game));
         }
 
+        fn secondary(self: @ContractState, default_params: DefaultParameters) {
 
+            // Load important variables
+            let world = self.world_dispatcher.read();
+            let core_actions = Registry::core_actions(world);
+            let position = default_params.position;
+            let player = Registry::get_player_address(world, default_params.for_player);
+            let system = Registry::get_system_address(world, default_params.for_system);
+            let pixel = get!(world, (position.x, position.y), Pixel);
+            let game = get!(world, (position.x, position.y), Game);
+
+            // reset the pixel in the right circumstances
+            assert(pixel.owner == player, 'player doesnt own pixel');
+
+            let game_id_felt: felt252 = game.id.into();
+            world.delete_entity('Game'.into(), array![game_id_felt.into()].span());
+
+            core_actions
+                .update_pixel(
+                    player,
+                    get_contract_address(),
+                    PixelUpdate {
+                        x: position.x,
+                        y: position.y,
+                        color: Option::Some(0),
+                        alert: Option::Some(Zeroable::zero()),
+                        timestamp: Option::None,
+                        text: Option::Some(Zeroable::zero()),
+                        app: Option::Some(Zeroable::zero()),
+                        owner: Option::Some(Zeroable::zero()),
+                        action: Option::Some(Zeroable::zero())
+                    }
+                );
+
+        }
 
     }
 
