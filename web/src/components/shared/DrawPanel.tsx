@@ -89,22 +89,14 @@ const DrawPanel = () => {
   function onClickCoordinates(clientX: number, clientY: number) {
     if (!gridCanvasRef.current) return
 
-    switch (gameMode) {
-      case 'paint': {
-        const rect = gridCanvasRef.current.getBoundingClientRect()
-        const x = Math.abs(panOffsetX) + clientX - rect.left  // pixel
-        const y = Math.abs(panOffsetY) + clientY - rect.top  // pixel
+    const rect = gridCanvasRef.current.getBoundingClientRect()
+    const x = Math.abs(panOffsetX) + clientX - rect.left  // pixel
+    const y = Math.abs(panOffsetY) + clientY - rect.top  // pixel
 
-        const gridX = Math.floor(x / cellSize)
-        const gridY = Math.floor(y / cellSize)
+    const gridX = Math.floor(x / cellSize)
+    const gridY = Math.floor(y / cellSize)
 
-        onCellClick?.([ gridX, gridY ])
-        break
-      }
-      default: {
-        console.error('unknown game mode', gameMode)
-      }
-    }
+    onCellClick?.([ gridX, gridY ])
   }
 
   function onMouseLeave() {

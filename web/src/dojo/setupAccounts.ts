@@ -18,6 +18,23 @@ type Burner = {
 }
 
 const getAccounts = async () => {
+  if (
+    import.meta.env.VITE_MASTER_ACCOUNT_ADDRESS &&
+    import.meta.env.VITE_MASTER_PRIVATE_KEY &&
+    import.meta.env.VITE_ACCOUNT_CLASS_HASH &&
+    import.meta.env.VITE_MASTER_PUBLIC_KEY
+  ) {
+    return [
+      {
+        address: import.meta.env.VITE_MASTER_ACCOUNT_ADDRESS,
+        balance: "1000000000000000000000",
+        class_hash: import.meta.env.VITE_ACCOUNT_CLASS_HASH,
+        private_key: import.meta.env.VITE_MASTER_PRIVATE_KEY,
+        public_key: import.meta.env.VITE_MASTER_PUBLIC_KEY
+      }
+    ]
+  }
+
   const result = await fetch("/api/accounts")
   const stream = result.body
   if (!stream) return [] as Account[]

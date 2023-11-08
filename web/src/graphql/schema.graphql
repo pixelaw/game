@@ -1,46 +1,97 @@
 query getEntities {
-  entities(keys: ["%"] first: 4096) {
+  entities(keys: ["*"], first: 4096) {
     edges {
       node {
         keys
         models {
-          ... on Color {
-            __typename
+          ... on Alert {
             x
             y
-            r
-            g
-            b
+            alert
+            __typename
           }
-          ... on Timestamp {
+          ... on AppByName {
+            name
+            system
+            __typename
+          }
+          ... on AppBySystem {
+            name
+            system
+            __typename
+          }
+          ... on CoreActionsAddress {
+            key
+            value
+            __typename
+          }
+          ... on Game {
+            x
+            y
+            id
+            state
+            player1
+            player2
+            player1_commit
+            player1_move
+            player2_move
+            started_timestamp
+            __typename
+          }
+          ... on Permissions {
+            allowing_app
+            allowed_app
+            permission {
+              alert
+              app
+              color
+              owner
+              text
+              timestamp
+              action
+              __typename
+            }
+            __typename
+          }
+          ... on Pixel {
             x
             y
             created_at
             updated_at
+            alert
+            app
+            color
+            owner
+            text
+            timestamp
+            action
             __typename
           }
-          ... on Owner {
-            x
-            y
-            address
+          ... on Player {
+            player_id
+            wins
             __typename
           }
-          ... on Text {
-            x
-            y
-            string
+          ... on Snake {
+            id
+            length
+            first_segment_id
+            last_segment_id
+            direction
+            owner
+            color
+            text
+            is_dying
             __typename
           }
-          ... on PixelType {
+          ... on SnakeSegment {
+            id
+            previous_id
+            next_id
             x
             y
-            name
-            __typename
-          }
-          ... on NeedsAttention {
-            x
-            y
-            value
+            pixel_original_color
+            pixel_original_text
             __typename
           }
         }
@@ -56,7 +107,7 @@ query all_filtered_entities(
   $yMin: u64
   $yMax: u64
 ) {
-  colorModels(
+  pixelModels(
     first: $first
     where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax }
   ) {
@@ -64,60 +115,47 @@ query all_filtered_entities(
       node {
         x
         y
-        r
-        g
-        b
-        entity {
-          id
-        }
-      }
-    }
-  }
-  ownerModels(
-    first: $first
-    where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax }
-  ) {
-    edges {
-      node {
-        x
-        y
-        address
-        entity {
-          id
-        }
-      }
-    }
-  }
-  pixeltypeModels(
-    first: $first
-    where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax }
-  ) {
-    edges {
-      node {
-        x
-        y
-        name
+        created_at
+        updated_at
+        alert
+        app
+        color
+        owner
+        text
+        timestamp
+        action
+        __typename
       }
     }
   }
 }
 
-query getNeedsAttention($first: Int, $address: felt252){
-  ownerModels(first: $first, where: { addressEQ: $address}) {
+query getNeedsAttention($first: Int, $address: ContractAddress){
+  pixelModels(first: $first, where: { ownerEQ: $address}) {
     edges {
       node {
         x
         y
-        address
+        created_at
+        updated_at
+        alert
+        app
+        color
+        owner
+        text
+        timestamp
+        action
+        __typename
       }
     }
   }
-  needsattentionModels(first:$first, where: { value: 1}){
+  alertModels(first:$first, where: { alert: true}){
     edges{
       node{
         x
         y
-        value
+        alert
+        __typename
       }
     }
   }
