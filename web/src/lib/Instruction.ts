@@ -144,7 +144,6 @@ const interpret: InterpretType = (appName: string, position: {x: number, y: numb
         value: undefined,
         name,
         transformValue: (value: number) => {
-          if(!value) value = variants[0].value
           setStorage(appName, name, position, { value, salt: SALT })
           return poseidonHashMany([BigInt(value), BigInt(SALT)])
         },

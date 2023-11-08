@@ -68,12 +68,14 @@ const useInteract = (
     if (!isPrimitiveType) {
         const typeDefinition = contract.abi.find(x => x.name === param.type)
         if (typeDefinition?.type === "enum") {
-          variants = (typeDefinition?.variants ?? []).map((variant, index) => {
-            return {
-              name: variant.name,
-              value: index
-            }
-          })
+          variants = (typeDefinition?.variants ?? [])
+            .map((variant, index) => {
+              return {
+                name: variant.name,
+                value: index
+              }
+            })
+            .filter(variant => variant.name !== 'None')
           type = 'enum'
         }
     } else if (param.type.includes("core::felt252")) {
@@ -114,7 +116,10 @@ const useInteract = (
             additionalParams.push(paramDef.value)
           } else {
             if(!otherParams) continue
-            const param = otherParams[paramDef.name]
+            let param = otherParams[paramDef.name]
+            if (!param && paramDef.variants.length) {
+              param = paramDef.variants[0].value
+            }
             if (
               (paramDef.type === 'string' && typeof param !== 'string') ||
               (paramDef.type === 'number' && typeof param !== 'number')
