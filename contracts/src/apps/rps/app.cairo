@@ -134,11 +134,16 @@ mod rps_actions {
                 // Player1 changing their commit
                 game.player1_commit = cr_Move_move;
             } else {
-                game =
+              let mut id = world.uuid();
+              if id == 0 {
+                id = world.uuid();
+              }
+
+              game =
                     Game {
                         x: position.x,
                         y: position.y,
-                        id: world.uuid(),
+                        id,
                         state: State::Created,
                         player1: player,
                         player2: Zeroable::zero(),
@@ -369,7 +374,7 @@ mod rps_actions {
     fn get_unicode_for_rps(move: Move) -> felt252 {
         let mut result = 'U+1FAA8';
         match move {
-            Move::None => '',   
+            Move::None => '',
             Move::Rock => 'U+1FAA8',
             Move::Paper => 'U+1F9FB',
             Move::Scissors => 'U+2702',

@@ -115,7 +115,10 @@ mod snake_actions {
 
             // TODO check if the pixel is unowned or player owned
 
-            let id = world.uuid();
+            let mut id = world.uuid();
+            if id == 0 {
+              id = world.uuid();
+            }
 
             let color = default_params.color;
             let text = ''; //TODO
