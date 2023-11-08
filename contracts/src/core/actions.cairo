@@ -279,6 +279,10 @@ mod actions {
                 pixel.timestamp = pixel_update.timestamp.unwrap();
             }
 
+            if pixel_update.action.is_some() {
+              pixel.action = pixel_update.action.unwrap()
+            }
+
             // Set Pixel
             set!(world, (pixel));
             'update_pixel DONE'.print();
