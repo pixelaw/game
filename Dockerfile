@@ -25,7 +25,7 @@ COPY --from=web_node_deps /app/node_modules ./node_modules
 # Build the webapp
 RUN yarn build --mode production
 
-FROM oostvoort/dojo:v0.3.2 AS contracts_builder
+FROM oostvoort/dojo:v0.3.6 AS contracts_builder
 WORKDIR /app
 COPY /contracts .
 RUN sozo build
