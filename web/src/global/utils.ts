@@ -78,6 +78,8 @@ export async function streamToString(readableStream: ReadableStream) {
 export const felt252ToString = (felt252: string | number) => {
   switch (felt252) {
     case  '0x7061696e74': return 'Paint'
+    case '0x6a6f696e': return 'join'
+    case '0x66696e697368': return 'finish'
     default: return felt252 as string
   }
 }

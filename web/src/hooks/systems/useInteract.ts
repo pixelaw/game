@@ -5,6 +5,7 @@ import { EntityIndex, getComponentValue } from '@latticexyz/recs'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
 import manifest from './../../dojo/manifest.json'
 import { num } from 'starknet'
+import interpret, { isInstruction } from '@/lib/Instruction'
 
 const DEFAULT_PARAMETERS_TYPE = 'pixelaw::core::utils::DefaultParameters'
 
@@ -14,7 +15,6 @@ const convertSnakeToPascal = (snakeCaseString: string) => {
   }).join('')
 }
 
-/// @dev this does not handle enum and struct lookup yet for the params
 const useInteract = (
   contractName: string,
   color: string,
@@ -28,6 +28,8 @@ const useInteract = (
     },
     account: { account }
   } = useDojo()
+
+
 
 
   const solidColor = color.replace('#', '0xFF')
@@ -46,37 +48,53 @@ const useInteract = (
   if (!methods) throw new Error(`unknown interface: ${interfaceName}`)
   if (!methods?.items) throw new Error(`no methods for interface: ${interfaceName}`)
 
-  const functionDef = methods.items.find(method => method.name === methodName && method.type === 'function')
-  if (!functionDef) throw new Error(`function ${methodName} not found`)
+  let functionDef = methods.items.find(method => method.name === methodName && method.type === 'function')
+  if (!functionDef) {
+    functionDef = methods.items.find(method => method.name === 'interact' && method.type === 'function')
+    if (!functionDef) throw new Error(`function ${methodName} not found`)
+  }
   const parameters = functionDef.inputs.filter(input => input.type !== DEFAULT_PARAMETERS_TYPE)
 
   const paramsDef = parameters.map(param => {
+    if (isInstruction(param.name)) {
+      // problem with types on contract.abi
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return interpret(contractName, position, param.name, contract.abi)
+    }
     const isPrimitiveType = param.type.includes("core::integer") || param.type.includes("core::felt252")
     let type: 'number' | 'string' | 'enum' | 'struct' = 'number'
     let variants: {name: string, value: number}[] = []
     if (!isPrimitiveType) {
-      const typeDefinition = contract.abi.find(x => x.name === param.type)
-      if (typeDefinition?.type === "enum") {
-        variants = (typeDefinition?.variants ?? []).map((variant, index) => {
-          return {
-            name: variant.name,
-            value: index
-          }
-        })
-        type = 'enum'
-      }
+        const typeDefinition = contract.abi.find(x => x.name === param.type)
+        if (typeDefinition?.type === "enum") {
+          variants = (typeDefinition?.variants ?? []).map((variant, index) => {
+            return {
+              name: variant.name,
+              value: index
+            }
+          })
+          type = 'enum'
+        }
     } else if (param.type.includes("core::felt252")) {
       type = 'string'
     }
     return {
       name: param.name,
       type,
+
       // if is not primitive type fill these out
       variants,
-      structDefinition: {}
+      structDefinition: {},
+
+      // for interpret instruction only
+      transformValue: undefined,
+      value: undefined,
+
     }
   })
 
+  const fillableParamDefs = paramsDef.filter(paramDef => !paramDef?.value)
 
   return {
     interact: useMutation({
@@ -84,28 +102,38 @@ const useInteract = (
       mutationFn: async ({otherParams}: {
         otherParams?: Record<string, any>
       }) => {
-        if (!otherParams && paramsDef.length > 0) throw new Error('incomplete parameters')
-        else if (!otherParams) {
+        if (!otherParams && fillableParamDefs.length > 0) throw new Error('incomplete parameters')
+        else if (!otherParams && !paramsDef.length) {
           return interact(account, contractName, position, decimalColor, methodName)
         }
 
         const additionalParams: num.BigNumberish[] = []
 
         for (const paramDef of paramsDef) {
-          const param = otherParams[paramDef.name]
-          if (
-            (paramDef.type === 'string' && typeof param !== 'string') ||
-            (paramDef.type === 'number' && typeof param !== 'number')
-          ) throw new Error(`incorrect parameter for ${paramDef.name}. supplied is ${param}`)
+          if (paramDef.value) {
+            additionalParams.push(paramDef.value)
+          } else {
+            if(!otherParams) continue
+            const param = otherParams[paramDef.name]
+            if (
+              (paramDef.type === 'string' && typeof param !== 'string') ||
+              (paramDef.type === 'number' && typeof param !== 'number')
+            ) throw new Error(`incorrect parameter for ${paramDef.name}. supplied is ${param}`)
 
-          // TODO handle structs and enums
-          additionalParams.push(param)
+            // TODO handle structs
+            if (paramDef.transformValue) {
+              additionalParams.push(paramDef.transformValue(param))
+            }
+            else additionalParams.push(param)
+          }
         }
+
+        console.log(additionalParams)
 
         interact(account, contractName, position, decimalColor, methodName, additionalParams)
       }
     }),
-    params: paramsDef
+    params: fillableParamDefs
   }
 }
 

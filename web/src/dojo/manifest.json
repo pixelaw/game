@@ -1439,7 +1439,7 @@
     {
       "name": "rps_actions",
       "address": "0x617decd4dbeb7291a7a00a506f9287389eb75a7fc125edf49e3cad4611ef175",
-      "class_hash": "0x228537cbbe84dc8b27aa65df0d9276954980788eccd0b5c3a26de431ef51380",
+      "class_hash": "0x4adb5993f78b47b1f3ee3ce4c228d947c26a7cb31b61a94bac5e6913ba8d3c8",
       "abi": [
         {
           "type": "impl",
@@ -1506,6 +1506,28 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "pixelaw::apps::rps::app::Move",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "Rock",
+              "type": "()"
+            },
+            {
+              "name": "Paper",
+              "type": "()"
+            },
+            {
+              "name": "Scissors",
+              "type": "()"
+            }
+          ]
+        },
+        {
           "type": "interface",
           "name": "pixelaw::apps::rps::app::IRpsActions",
           "items": [
@@ -1518,6 +1540,18 @@
             },
             {
               "type": "function",
+              "name": "secondary",
+              "inputs": [
+                {
+                  "name": "default_params",
+                  "type": "pixelaw::core::utils::DefaultParameters"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
               "name": "interact",
               "inputs": [
                 {
@@ -1525,7 +1559,7 @@
                   "type": "pixelaw::core::utils::DefaultParameters"
                 },
                 {
-                  "name": "commit",
+                  "name": "cr_Move_move",
                   "type": "core::felt252"
                 }
               ],
@@ -1542,7 +1576,7 @@
                 },
                 {
                   "name": "player2_move",
-                  "type": "core::integer::u8"
+                  "type": "pixelaw::apps::rps::app::Move"
                 }
               ],
               "outputs": [],
@@ -1557,11 +1591,11 @@
                   "type": "pixelaw::core::utils::DefaultParameters"
                 },
                 {
-                  "name": "player1_move",
-                  "type": "core::integer::u8"
+                  "name": "rv_move",
+                  "type": "pixelaw::apps::rps::app::Move"
                 },
                 {
-                  "name": "player1_salt",
+                  "name": "rs_move",
                   "type": "core::felt252"
                 }
               ],
@@ -1622,7 +1656,7 @@
     {
       "name": "snake_actions",
       "address": "0x26c141617c37324fa943e5509d29a21b4017abad5ee56f6351deef299c819d0",
-      "class_hash": "0x7a6fdb8251ea693ee2fa142ff0c2c8db507f9a9021d771de2d3c183ece14aec",
+      "class_hash": "0x6bd83e497e84342eb1469bdbf2014f09d10f3ee8ef597df295da884cbb4fd3",
       "abi": [
         {
           "type": "impl",
@@ -2572,7 +2606,7 @@
         },
         {
           "name": "state",
-          "type": "u8",
+          "type": "State",
           "key": false
         },
         {
@@ -2592,12 +2626,12 @@
         },
         {
           "name": "player1_move",
-          "type": "u8",
+          "type": "Move",
           "key": false
         },
         {
           "name": "player2_move",
-          "type": "u8",
+          "type": "Move",
           "key": false
         },
         {
@@ -2606,7 +2640,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x6d7c8c64cc0e865a542e071598421fb12a80bcdf716bad8dc63e6b4b2797ceb",
+      "class_hash": "0x7013e36daf8e106b7e02a57309a1fe6fcaaacbfacbcb922c64831ff45d46b78",
       "abi": [
         {
           "type": "function",
