@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { CellDatum, NeedsAttentionDatum } from '@/components/shared/DrawPanel.tsx'
+import { felt252ToString } from '@/global/utils'
 
 export function useRenderGrid() {
   return useCallback((ctx: CanvasRenderingContext2D, options: {
@@ -41,6 +42,7 @@ export function useRenderGrid() {
         const y = col * cellSize + panOffsetY
 
         let pixelColor = '#2F1643' // default color
+        let pixelText = ''
 
         if (pixels && pixels.length > 0) {
           const pixel = pixels.find(p => p && p.coordinates[0] === row && p.coordinates[1] === col)
@@ -48,6 +50,10 @@ export function useRenderGrid() {
             // Get the current color of the pixel
             const imageData = ctx.getImageData(x, y, 1, 1).data
             const currentColor = '#' + ((1 << 24) | (imageData[0] << 16) | (imageData[1] << 8) | imageData[2]).toString(16).slice(1)
+
+            if (pixel.text && pixel.text !== '0x0') {
+              pixelText = pixel.text
+            }
 
             // Check if the pixel color has changed
             if (pixel.hexColor !== currentColor) {
@@ -80,9 +86,23 @@ export function useRenderGrid() {
         ctx.strokeStyle = '#2E0A3E'
         ctx.strokeRect(x, y, cellSize, cellSize)
 
-        // ctx.fillStyle = '#FFFFFF'
-        // ctx.textAlign = 'center'
-        // ctx.fillText(`(${r}, ${c})`, x + cellSize / 2, y + cellSize / 2)
+
+
+        if (pixelText) {
+          ctx.textAlign = 'center'
+          ctx.font
+
+          let text = felt252ToString(pixelText)
+
+          if (text.includes('U+')) {
+              text = text.replace('U+', '')
+              const codePoint = parseInt(text, 16)
+              text = String.fromCodePoint(codePoint)
+          }
+
+          ctx.fillText(text, x + cellSize / 2, y + cellSize / 2)
+        }
+
       }
     }
   }, [])

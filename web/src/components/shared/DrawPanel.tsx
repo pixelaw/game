@@ -9,6 +9,7 @@ export type Coordinate = [ number, number ]
 export type CellDatum = {
   coordinates: Array<number>
   hexColor: string
+  text: string
 }
 
 export type NeedsAttentionDatum = {

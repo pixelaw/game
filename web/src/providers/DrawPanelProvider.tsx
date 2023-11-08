@@ -95,12 +95,12 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
 
 
   //For instant coloring the pixel
-  const [ tempData, setTempData ] = React.useState<Record<`[${number},${number}]`, string>>({})
+  const [ tempData, setTempData ] = React.useState<Record<`[${number},${number}]`, { color: string, text: string}>>({})
 
   //for notification
   const [ notificationData, ] = useAtom(notificationDataAtom)
 
-  const pixelData: Record<`[${number},${number}]`, string> = {}
+  const pixelData: Record<`[${number},${number}]`, { color: string, text: string}> = {}
   const needAttentionData: Record<`[${number},${number}]`, boolean | undefined> = {}
 
   const entityIds = useEntityQuery([ Has(Pixel) ])
@@ -115,7 +115,10 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
 
 
   pixels.forEach(pixel => {
-      pixelData[`[${pixel!.x},${pixel!.y}]`] = argbToHex(pixel!.color)
+      pixelData[`[${pixel!.x},${pixel!.y}]`] = {
+        color: argbToHex(pixel!.color),
+        text: pixel?.text?.toString() ?? ''
+      }
   })
 
   const entityNeedsAttentions = notifEntitiyIds
@@ -135,7 +138,8 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     return Object.entries(data).map(([ key, value ]) => {
       return {
         coordinates: key.match(/\d+/g)?.map(Number) as [ number, number ],
-        hexColor: value,
+        hexColor: value.color,
+        text: value.text
       }
     })
   }
@@ -152,7 +156,11 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   const updatePixelData = (position: Coordinate, color: string) => {
     const newData = { ...pixelData }
 
-    newData[`[${position[0]},${position[1]}]`] = color
+    newData[`[${position[0]},${position[1]}]`] = {
+      text: pixelData[`[${position[0]},${position[1]}]`]?.text ?? '',
+      color,
+
+    }
 
     setTempData(prev => {
       return {

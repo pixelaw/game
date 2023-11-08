@@ -1,3 +1,5 @@
+import { shortString } from 'starknet'
+
 export const rgbToHex = (r: number, g: number, b: number) => '#' + [r, g, b].map(x => {
   const hex = x.toString(16)
   return hex.length === 1 ? '0' + hex : hex
@@ -74,14 +76,15 @@ export async function streamToString(readableStream: ReadableStream) {
   }
 }
 
-// TODO: replace this with actual parser
 export const felt252ToString = (felt252: string | number) => {
-  switch (felt252) {
-    case  '0x7061696e74': return 'Paint'
-    case '0x6a6f696e': return 'join'
-    case '0x66696e697368': return 'finish'
-    default: return felt252 as string
+  if (typeof felt252 === 'string') {
+    try {
+      return shortString.decodeShortString(felt252)
+    } catch (e) {
+      return felt252
+    }
   }
+  return felt252.toString()
 }
 
 export const formatAddress = (address: string) => {
