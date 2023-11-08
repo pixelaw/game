@@ -8,7 +8,7 @@ homepage = "https://github.com/pixelaw/contracts"
 sierra-replace-ids = true
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v0.3.2" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v0.3.6" }
 
 [[target.dojo]]
 build-external-contracts = []
@@ -34,7 +34,7 @@ update_accounts = "./scripts/update_accounts.sh"
 
 [tool.dojo.env]
 rpc_url = "http://localhost:5050/"
-world_address = "0x48f47b66cb8b6fbd4bc14add36f4476437f68ced98d0e43a2ac8f498ca9a821"
+world_address = "0x72025860d14238aa9fe95c5657e130155518d9d1e8eaef1e174ef4b40972720"
 
 # Default account for katana with seed = 0
 account_address = "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973"
