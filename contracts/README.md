@@ -57,34 +57,31 @@ The App is also tracking score for each Player.
 - reset (position)
 
 
-## General UI considerations
-- Selected App
-- Click on a pixel
-  - Empty -> DEFAULT
-  - OwnedByMe -> UPDATE
-  - OwnedByOther -> GUEST
-
-rps (ui calls these if rps app selected and rps pixel clicked)
-- empty(param_rpsEnumHash)
-- unowned(rpsEnum)
-- owned(rpsEnumHash)
-- param_rpsEnumHash(rpsEnum)
-
-paint
-- empty(position, color)
-- owned(position, color)
-- SCHEDULER: fade(position)
-
-snake
-- empty(color)
-- notOwned()
-- owned()
-- SCHEDULER: move(id)
-
-# Default
-- empty()
-- owned()
-- 
+# CommitReveal inputs
+## Param of the action
+- (Hashed Commit)
+  - parametername of action has structure: "PREFIX_TYPE_NAME"
+  - PREFIX is "cm_"
+  - TYPE for now is the name of an int, felt or Enum declared in the manifest
+  - NAME is a chosen name to refer to the param.
+- (Value+Salt reveal)
+  - parametername of action has structure: "PREFIX_NAME"
+  - PREFIX shall always be "rv_"
+  - NAME is the same name user during sending the commit
+## Clientside functioning
+- If client finds a param starting with "cr_"
+- It will prompt user for a param with TYPE
+  - example:
+    - The game RPS needs player1 to choose one option, but only send the hashedcommit
+    - Then, during a next stage of the game, the plaintext move and the salt will be requested
+    - The challenge is that the UI needsto be capable of doing this without knowing about the specific application. Reveal/Commit is a feature of the platform.
+    - Commit
+      - RpsMove is an enum with 3 fields, so ui presents user with 3 choices
+      - UI stores this clientside related to the pixel/app
+      - UI then hashes this with a salt, and also stores the salt with the choice
+      - UI then calls the functions with only the hash value
+    - Reveal
+      - there will be 2 params: "rv_NAME" (the actual param) and "rs_NAME" (the used salt)
 
 
 

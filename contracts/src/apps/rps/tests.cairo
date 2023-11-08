@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
     use starknet::class_hash::Felt252TryIntoClassHash;
@@ -20,9 +19,8 @@ mod tests {
         rps_actions, game, player, IRpsActionsDispatcher, IRpsActionsDispatcherTrait
     };
     use pixelaw::apps::rps::app::{Game, Player};
-    use pixelaw::apps::rps::app::{
-        STATE_CREATED, STATE_JOINED, STATE_FINISHED, ROCK, PAPER, SCISSORS
-    };
+    use pixelaw::apps::rps::app::{State, Move};
+    
 
 
     use zeroable::Zeroable;
@@ -44,16 +42,26 @@ mod tests {
         );
 
         // Deploy Core actions
-        let core_actions = IActionsDispatcher {
-            contract_address: world
-                .deploy_contract('salt', actions::TEST_CLASS_HASH.try_into().unwrap())
-        };
+        let core_actions_address = world
+            .deploy_contract('salt1', actions::TEST_CLASS_HASH.try_into().unwrap());
+        let core_actions = IActionsDispatcher { contract_address: core_actions_address };
 
         // Deploy RPS actions
-        let rps_actions = IRpsActionsDispatcher {
-            contract_address: world
-                .deploy_contract('salt', rps_actions::TEST_CLASS_HASH.try_into().unwrap())
-        };
+        let rps_actions_address = world
+            .deploy_contract('salt', rps_actions::TEST_CLASS_HASH.try_into().unwrap());
+        let rps_actions = IRpsActionsDispatcher { contract_address: rps_actions_address };
+
+        // Setup dojo auth
+        world.grant_writer('Pixel',core_actions_address);
+        world.grant_writer('AppBySystem',core_actions_address);
+        world.grant_writer('AppByName',core_actions_address);
+        world.grant_writer('CoreActionsAddress',core_actions_address);
+        world.grant_writer('Permissions',core_actions_address);
+
+        world.grant_writer('Game',rps_actions_address);
+        world.grant_writer('Player',rps_actions_address);
+
+
         (world, core_actions, rps_actions)
     }
 
@@ -69,11 +77,13 @@ mod tests {
         // Impersonate player1
         let player1 = starknet::contract_address_const::<0x1337>();
         let player2 = starknet::contract_address_const::<0x42>();
-        starknet::testing::set_contract_address(player1);
+
+
+        starknet::testing::set_account_contract_address(player1);
 
         // Set the players commitments
-        let player1_commit: u8 = SCISSORS;
-        let player2_commit: u8 = PAPER;
+        let player1_commit: Move = Move::Scissors;
+        let player2_commit: Move = Move::Paper;
 
         // Set the player's secret salt. For the test its just different, client will send truly random
         let player1_salt = '1';
@@ -104,8 +114,8 @@ mod tests {
             );
 
         // TODO assert state
+        starknet::testing::set_account_contract_address(player2);
 
-        starknet::testing::set_contract_address(player2);
         // Player2 joins
         rps_actions
             .join(
@@ -118,7 +128,7 @@ mod tests {
                 player2_commit
             );
 
-        starknet::testing::set_contract_address(player1);
+        starknet::testing::set_account_contract_address(player1);
         // Player2 joins
         rps_actions
             .finish(
@@ -144,7 +154,7 @@ mod tests {
         (seed.low % range) + min
     }
 
-    fn hash_commit(commit: u8, salt: felt252) -> felt252 {
+    fn hash_commit(commit: Move, salt: felt252) -> felt252 {
         let mut hash_span = ArrayTrait::<felt252>::new();
         hash_span.append(commit.into());
         hash_span.append(salt.into());

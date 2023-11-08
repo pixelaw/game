@@ -2,18 +2,37 @@ use starknet::{ContractAddress, ClassHash};
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 
 use pixelaw::core::utils::{Direction, Position, DefaultParameters};
-const STATE_NONE: u8 = 0;
-const STATE_CREATED: u8 = 1;
-const STATE_JOINED: u8 = 2;
-const STATE_FINISHED: u8 = 3;
 
 const APP_KEY: felt252 = 'rps';
 const GAME_MAX_DURATION: u64 = 20000;
 
-const ROCK: u8 = 1;
-const PAPER: u8 = 2;
-const SCISSORS: u8 = 3;
 
+#[derive(Serde, Copy, Drop, PartialEq, Introspect)]
+enum State {
+    None: (),
+    Created: (),
+    Joined: (),
+    Finished: ()
+}
+
+#[derive(Serde, Copy, Drop, PartialEq, Introspect)]
+enum Move {
+    None: (),
+    Rock: (),
+    Paper: (),
+    Scissors: (),
+}
+
+impl MoveIntoFelt252 of Into<Move, felt252> {
+    fn into(self: Move) -> felt252 {
+        match self {
+            Move::None(()) => 0,
+            Move::Rock(()) => 1,
+            Move::Paper(()) => 2,
+            Move::Scissors(()) => 3,
+        }
+    }
+}
 
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
 struct Game {
@@ -22,12 +41,12 @@ struct Game {
     #[key]
     y: u64,
     id: u32,
-    state: u8,
+    state: State,
     player1: ContractAddress,
     player2: ContractAddress,
     player1_commit: felt252,
-    player1_move: u8,
-    player2_move: u8,
+    player1_move: Move,
+    player2_move: Move,
     started_timestamp: u64
 }
 
@@ -42,9 +61,9 @@ struct Player {
 #[starknet::interface]
 trait IRpsActions<TContractState> {
     fn init(self: @TContractState);
-    fn interact(self: @TContractState, default_params: DefaultParameters, commit: felt252);
-    fn join(self: @TContractState, default_params: DefaultParameters, player2_move: u8);
-    fn finish(self: @TContractState, default_params: DefaultParameters, player1_move: u8, player1_salt: felt252);
+    fn interact(self: @TContractState, default_params: DefaultParameters, cm_Move_move: felt252);
+    fn join(self: @TContractState, default_params: DefaultParameters, player2_move: Move);
+    fn finish(self: @TContractState, default_params: DefaultParameters, rv_move: Move, rs_move: felt252);
 }
 
 #[dojo::contract]
@@ -61,9 +80,9 @@ mod rps_actions {
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
     use super::IRpsActions;
-    use super::{APP_KEY, GAME_MAX_DURATION, ROCK, PAPER, SCISSORS};
+    use super::{APP_KEY, GAME_MAX_DURATION, Move, State};
     use super::{Game, Player};
-    use super::{STATE_NONE, STATE_CREATED, STATE_JOINED, STATE_FINISHED};
+    // use super::{STATE_NONE, State::Created, State::Joined, State::Finished};
 
     use zeroable::Zeroable;
 
@@ -89,27 +108,16 @@ mod rps_actions {
             core_actions.update_app_name(APP_KEY);
         }
 
-        // fn paramhint(
-        //     self: @ContractState,
-        //     function_name: felt252,
-        //     param_index: u8
-        //     ) -> Span<felt252>
-        //     {
-        //         if function_name == 'interact' && param_index == 0 {
-        //             return 'hash(RpsEnum)';
-        //         }else if function_name == 'join' && param_index == 0 {
-        //             return 'RpsEnum';
-        //         }else if function_name == 'finish' && param_index == 0 {
-        //             return 'RpsEnum, salt';
-        //         }
-        // }
 
+        fn interact(self: @ContractState, default_params: DefaultParameters, cm_Move_move: felt252) {
 
-        fn interact(self: @ContractState, default_params: DefaultParameters, commit: felt252) {
+            // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(world);
             let position = default_params.position;
-            let player = get_caller_address();
+            let player = Registry::get_player_address(world, default_params.for_player);
+            let system = Registry::get_system_address(world, default_params.for_system);
+
             let pixel = get!(world, (position.x, position.y), Pixel);
 
             // Bail if the caller is not allowed here
@@ -120,22 +128,22 @@ mod rps_actions {
 
             if game.id != 0 {
                 // Bail if we're waiting for other player
-                assert(game.state == STATE_CREATED, 'cannot reset rps game');
+                assert(game.state == State::Created, 'cannot reset rps game');
 
                 // Player1 changing their commit
-                game.player1_commit = commit;
+                game.player1_commit = cm_Move_move;
             } else {
                 game =
                     Game {
                         x: position.x,
                         y: position.y,
                         id: world.uuid(),
-                        state: STATE_CREATED,
+                        state: State::Created,
                         player1: player,
                         player2: Zeroable::zero(),
-                        player1_commit: commit,
-                        player1_move: 0,
-                        player2_move: 0,
+                        player1_commit: cm_Move_move,
+                        player1_move: Move::None,
+                        player2_move: Move::None,
                         started_timestamp: starknet::get_block_timestamp()
                     };
                 // Emit event
@@ -166,12 +174,15 @@ mod rps_actions {
         }
 
 
-        fn join(self: @ContractState, default_params: DefaultParameters, player2_move: u8) {
+        fn join(self: @ContractState, default_params: DefaultParameters, player2_move: Move) {
+
+            // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(world);
             let position = default_params.position;
+            let player = Registry::get_player_address(world, default_params.for_player);
+            let system = Registry::get_system_address(world, default_params.for_system);
 
-            let player = get_caller_address();
             let pixel = get!(world, (position.x, position.y), Pixel);
 
             // Load the game
@@ -181,15 +192,17 @@ mod rps_actions {
             assert(game.id != 0, 'No game to join');
 
             // Bail if wrong gamestate
-            assert(game.state == STATE_CREATED, 'Wrong gamestate');
+            assert(game.state == State::Created, 'Wrong gamestate');
+
 
             // Bail if the player is joining their own game
             assert(game.player1 != player, 'Cant join own game');
 
+
             // Update the game
             game.player2 = player;
             game.player2_move = player2_move;
-            game.state = STATE_JOINED;
+            game.state = State::Joined;
 
             // game entity
             set!(world, (game));
@@ -216,13 +229,16 @@ mod rps_actions {
 
 
         fn finish(
-            self: @ContractState, default_params: DefaultParameters, player1_move: u8, player1_salt: felt252
+            self: @ContractState, default_params: DefaultParameters, rv_move: Move, rs_move: felt252
         ) {
+
+            // Load important variables
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(world);
             let position = default_params.position;
+            let player = Registry::get_player_address(world, default_params.for_player);
+            let system = Registry::get_system_address(world, default_params.for_system);
 
-            let player = get_caller_address();
             let pixel = get!(world, (position.x, position.y), Pixel);
 
             // Load the game
@@ -232,18 +248,18 @@ mod rps_actions {
             assert(game.id != 0, 'No game to finish');
 
             // Bail if wrong gamestate
-            assert(game.state == STATE_JOINED, 'Wrong gamestate');
+            assert(game.state == State::Joined, 'Wrong gamestate');
 
             // Bail if another player is finishing (has to be player1)
             assert(game.player1 == player, 'Cant finish others game');
 
             // Check player1's move
             assert(
-                validate_commit(game.player1_commit, player1_move, player1_salt), 'player1 cheating'
+                validate_commit(game.player1_commit, rv_move, rs_move), 'player1 cheating'
             );
 
             // Decide the winner
-            let winner = decide(player1_move, game.player2_move);
+            let winner = decide(rv_move, game.player2_move);
 
             if winner == 0 { // No winner: Wipe the pixel
                 core_actions
@@ -265,8 +281,8 @@ mod rps_actions {
             // TODO emit event
             } else {
                 // Update the game
-                game.player1_move = player1_move;
-                game.state = STATE_FINISHED;
+                game.player1_move = rv_move;
+                game.state = State::Finished;
 
                 if winner == 2 {
                     // Change ownership of Pixel to player2
@@ -315,23 +331,19 @@ mod rps_actions {
 
     }
 
-    fn get_unicode_for_rps(rps: u8) -> felt252 {
+    fn get_unicode_for_rps(move: Move) -> felt252 {
         let mut result = 'U+1FAA8';
-        if rps == ROCK {
-            result = 'U+1FAA8';
-        } else if rps == PAPER {
-            result = 'U+1F9FB';
-        } else if rps == SCISSORS {
-            result = 'U+2702';
-        } else {
-            panic_with_felt252('incorrect rps');
+        match move {
+            Move::None => '',   
+            Move::Rock => 'U+1FAA8',
+            Move::Paper => 'U+1F9FB',
+            Move::Scissors => 'U+2702',
         }
-        result
     }
 
-    fn validate_commit(committed_hash: felt252, commit: u8, salt: felt252) -> bool {
+    fn validate_commit(committed_hash: felt252, move: Move, salt: felt252) -> bool {
         let mut hash_span = ArrayTrait::<felt252>::new();
-        hash_span.append(commit.into());
+        hash_span.append(move.into());
         hash_span.append(salt.into());
 
         let computed_hash: felt252 = poseidon_hash_span(hash_span.span());
@@ -339,18 +351,18 @@ mod rps_actions {
         committed_hash == computed_hash
     }
 
-    fn decide(player1_commit: u8, player2_commit: u8) -> u8 {
-        if player1_commit == ROCK && player2_commit == PAPER {
+    fn decide(player1_commit: Move, player2_commit: Move) -> u8 {
+        if player1_commit == Move::Rock && player2_commit == Move::Paper {
             2
-        } else if player1_commit == PAPER && player2_commit == ROCK {
+        } else if player1_commit == Move::Paper && player2_commit == Move::Rock {
             1
-        } else if player1_commit == ROCK && player2_commit == SCISSORS {
+        } else if player1_commit == Move::Rock && player2_commit == Move::Scissors {
             1
-        } else if player1_commit == SCISSORS && player2_commit == ROCK {
+        } else if player1_commit == Move::Scissors && player2_commit == Move::Rock {
             2
-        } else if player1_commit == SCISSORS && player2_commit == PAPER {
+        } else if player1_commit == Move::Scissors && player2_commit == Move::Paper {
             1
-        } else if player1_commit == PAPER && player2_commit == SCISSORS {
+        } else if player1_commit == Move::Paper && player2_commit == Move::Scissors {
             2
         } else {
             0

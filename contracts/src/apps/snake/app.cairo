@@ -142,10 +142,10 @@ mod snake_actions {
                 pixel_original_color: pixel.color, 
                 pixel_original_text: pixel.text
             };
-'aa'.print();
+
             // Store the dojo model for the Snake
             set!(world, (snake, segment));
-'bb'.print();
+
             // Call core_actions to update the color
             core_actions
                 .update_pixel(
