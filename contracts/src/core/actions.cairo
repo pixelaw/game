@@ -213,26 +213,27 @@ mod actions {
 
             let permissions = get!(world, (pixel.app, caller_app.system).into(), (Permissions));
 
-            if pixel_update.alert.is_some() {
-                assert(permissions.permission.alert, 'Cannot update alert')
+
+            if pixel_update.alert.is_some() && !permissions.permission.alert {
+                return false;
             };
-            if pixel_update.app.is_some() {
-                assert(permissions.permission.app, 'Cannot update app')
+            if pixel_update.app.is_some() && !permissions.permission.alert  {
+                return false;
             };
-            if pixel_update.color.is_some() {
-                assert(permissions.permission.color, 'Cannot update color')
+            if pixel_update.color.is_some() && !permissions.permission.color  {
+                return false;
             };
-            if pixel_update.owner.is_some() {
-                assert(permissions.permission.owner, 'Cannot update owner')
+            if pixel_update.owner.is_some() && !permissions.permission.owner {
+                return false;
             };
-            if pixel_update.text.is_some() {
-                assert(permissions.permission.text, 'Cannot update text')
+            if pixel_update.text.is_some() && !permissions.permission.text {
+                return false;
             };
-            if pixel_update.timestamp.is_some() {
-                assert(permissions.permission.timestamp, 'Cannot update timestamp')
+            if pixel_update.timestamp.is_some() && !permissions.permission.timestamp {
+                return false;
             };
-            if pixel_update.action.is_some() {
-                assert(permissions.permission.action, 'Cannot update action')
+            if pixel_update.action.is_some() && !permissions.permission.action {
+                return false;
             };
 
             // Since we checked all the permissions and no assert fired, we can return true

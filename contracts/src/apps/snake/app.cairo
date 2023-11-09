@@ -197,13 +197,17 @@ mod snake_actions {
 
             // Load the Snake
             let mut snake = get!(world, (snake_id), (Snake));
-snake.id.print();
+            snake.id.print();
             assert(snake.id != 0, 'no snake');
             let first_segment = get!(world, (snake.first_segment_id), SnakeSegment);
 
             // If the snake is dying, handle that
             if snake.is_dying {
-                if snake.length == 1 {
+
+                snake.last_segment_id = remove_last_segment(world, core_actions, snake);
+                snake.length -= 1;
+
+                if snake.length == 0 {
                     emit!(world, Died { id: snake.id, x: first_segment.x, y: first_segment.y });
                     set!(world, (snake));
                     // Since we return immediately, the next Queue for move will never be set
@@ -213,9 +217,6 @@ snake.id.print();
                     let snake_id_felt: felt252 = snake.id.into();
                     world.delete_entity('Snake'.into(), array![snake_id_felt.into()].span());
                     return;
-                }else {
-                    snake.last_segment_id = remove_last_segment(world, core_actions, snake);
-                    snake.length -= 1;
                 }
 
             } // FIXME else block
@@ -229,6 +230,24 @@ snake.id.print();
             // Load next pixel
             let next_pixel = get!(world, (next_x, next_y), Pixel);
 
+            let has_write_access = core_actions
+              .has_write_access(
+                snake.owner,
+                get_contract_address(),
+                next_pixel,
+                PixelUpdate {
+                  x: next_x,
+                  y: next_y,
+                  color: Option::Some(snake.color),
+                  alert: Option::None,
+                  timestamp: Option::None,
+                  text: Option::Some(snake.text),
+                  app: Option::None,
+                  owner: Option::None,
+                  action: Option::None  // Not using this feature for snake
+                }
+            );
+
             // Determine what happens to the snake
             // MOVE, GROW, SHRINK, DIE
             if next_pixel.owner.is_zero() { // Snake just moves
@@ -239,6 +258,10 @@ snake.id.print();
                         create_new_segment(world, core_actions, next_pixel, snake, first_segment);
                 snake.last_segment_id = remove_last_segment(world, core_actions, snake);
 
+            } else if !has_write_access {
+              'snake will die'.print();
+              // Snake hit a pixel that is not allowing anyting: DIE
+              snake.is_dying = true;
             } else if next_pixel.owner == snake.owner {
                 'snake grows'.print();
                 // Next pixel is owned by snake owner: GROW
@@ -255,24 +278,7 @@ snake.id.print();
                 }
             // We leave the tail as is
 
-            } else if next_pixel.owner != snake.owner
-                && core_actions
-                    .has_write_access(
-                        snake.owner,
-                        get_contract_address(),
-                        next_pixel,
-                        PixelUpdate {
-                            x: next_x,
-                            y: next_y,
-                            color: Option::Some(snake.color),
-                            alert: Option::None,
-                            timestamp: Option::None,
-                            text: Option::Some(snake.text),
-                            app: Option::None,
-                            owner: Option::None,
-                            action: Option::None  // Not using this feature for snake
-                        }
-                    ) {
+            } else {
                 'snake shrinks'.print();
                 // Next pixel is not owned but can be used temporarily
                 // SHRINK, though
@@ -288,10 +294,6 @@ snake.id.print();
                     // Remove another last segment (for shrinking)
                     snake.last_segment_id = remove_last_segment(world, core_actions, snake);
                 }
-            } else {
-                'snake will die'.print();
-                // Snake hit a pixel that is not allowing anyting: DIE
-                snake.is_dying = true;
             }
 
             // Save the snake
