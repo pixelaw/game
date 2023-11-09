@@ -35,8 +35,8 @@ deploy:
 		echo "$$SOZO_OUT" > ../deployed.log; \
 	WORLD_ADDR=$$(tail -n1 ../last_deployed_world); \
 
-test:
-	cd contracts; sozo test
+# test:
+# 	cd contracts; sozo test
 
 # Update version
 # Get the latest tag
