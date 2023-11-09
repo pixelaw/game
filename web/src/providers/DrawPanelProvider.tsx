@@ -165,7 +165,10 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     setTempData(prev => {
       return {
         ...prev,
-        [`[${position[0]},${position[1]}]`]: color,
+        [`[${position[0]},${position[1]}]`]: {
+          text: prev[`[${position[0]},${position[1]}]`]?.text ?? '',
+          color
+        },
       }
     })
   }
