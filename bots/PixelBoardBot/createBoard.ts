@@ -25,8 +25,11 @@ const createBoard = (data: Pixel[], config: BoardConfig, defaultPixels?: Pixel[]
   board.forEach(item => {
     ctx.fillStyle = `rgb(${item.color.r}, ${item.color.g}, ${item.color.b})`;
     ctx.fillRect(item.x, item.y, config.pixelSize.width, config.pixelSize.height);
-    ctx.font = '10px Arial'; // Adjust size as needed
-    ctx.fillText(item.text, item.x, item.y);
+    if (item.text) {
+      ctx.textAlign = 'center'
+      ctx.fillText(item.text, item.x + config.pixelSize.width / 2, item.y + config.pixelSize.height / 2);
+    }
+
   });
 
   return canvas.toBuffer('image/png')

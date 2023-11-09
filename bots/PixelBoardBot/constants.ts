@@ -1,30 +1,24 @@
 import { gql } from 'graphql-tag'
 import getEnv from '../utils/getEnv'
 import hexToRGB from '../utils/hexToRGB'
-
-const NUMBER_OF_PIXELS = 250_000
-
-export const GET_ENTITIES = gql`query getEntities {
-  entities(keys: ["%"] first: ${NUMBER_OF_PIXELS}) {
+export const GET_ENTITIES = gql`query getPixels(
+  $first: Int
+  $xMin: u64
+  $xMax: u64
+  $yMin: u64
+  $yMax: u64
+) {
+  pixelModels(
+    first: $first
+    where: { xGTE: $xMin, xLTE: $xMax, yGTE: $yMin, yLTE: $yMax }
+  ) {
     edges {
       node {
-        keys
-        models {
-          ... on Color {
-            __typename
-            x
-            y
-            r
-            g
-            b
-          }
-          ... on Text {
-            __typename
-            x
-            y
-            string
-          }
-        }
+        x
+        y
+        color
+        text
+        __typename
       }
     }
   }
