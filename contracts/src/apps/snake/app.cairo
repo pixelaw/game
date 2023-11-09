@@ -3,13 +3,19 @@ use starknet::{ContractAddress, ClassHash};
 use pixelaw::core::utils::{Direction, Position, DefaultParameters, starknet_keccak};
 
 
-fn next_position(x: u64, y: u64, direction: Direction) -> (u64, u64) {
+fn next_position(x: u64, y: u64, direction: Direction) -> Option<(u64, u64)> {
     match direction {
-        Direction::None(()) => { return (x, y); },
-        Direction::Left(()) => { return (x - 1, y); },
-        Direction::Right(()) => { return (x + 1, y); },
-        Direction::Up(()) => { return (x, y - 1); },
-        Direction::Down(()) => { return (x, y + 1); },
+        Direction::None(()) => { Option::Some((x, y)) },
+        Direction::Left(()) => {
+          if x == 0 { Option::None }
+          else { Option::Some((x - 1, y)) }
+        },
+        Direction::Right(()) => { Option::Some((x + 1, y)) },
+        Direction::Up(()) => {
+          if y == 0 { Option::None }
+          else { Option::Some((x, y - 1)) }
+        },
+        Direction::Down(()) => { Option::Some((x, y + 1)) },
     }
 }
 
@@ -219,81 +225,91 @@ mod snake_actions {
                     return;
                 }
 
-            } // FIXME else block
+            }
 
             // Load the current pixel
             let mut current_pixel = get!(world, (first_segment.x, first_segment.y), Pixel);
 
             // Determine next pixel the head will move to
-            let (next_x, next_y) = next_position(first_segment.x, first_segment.y, snake.direction);
+            let next_move = next_position(first_segment.x, first_segment.y, snake.direction);
 
-            // Load next pixel
-            let next_pixel = get!(world, (next_x, next_y), Pixel);
+            if next_move.is_some() {
+              let (next_x, next_y) = next_move.unwrap();
 
-            let has_write_access = core_actions
-              .has_write_access(
-                snake.owner,
-                get_contract_address(),
-                next_pixel,
-                PixelUpdate {
-                  x: next_x,
-                  y: next_y,
-                  color: Option::Some(snake.color),
-                  alert: Option::None,
-                  timestamp: Option::None,
-                  text: Option::Some(snake.text),
-                  app: Option::None,
-                  owner: Option::None,
-                  action: Option::None  // Not using this feature for snake
-                }
-            );
+                // Load next pixel
+                let next_pixel = get!(world, (next_x, next_y), Pixel);
 
-            // Determine what happens to the snake
-            // MOVE, GROW, SHRINK, DIE
-            if next_pixel.owner.is_zero() { // Snake just moves
-                'snake moves'.print();
-                // Add a new segment on the next pixel and update the snake
-                snake
-                    .first_segment_id =
+                let has_write_access = core_actions
+                  .has_write_access(
+                    snake.owner,
+                    get_contract_address(),
+                    next_pixel,
+                    PixelUpdate {
+                      x: next_x,
+                      y: next_y,
+                      color: Option::Some(snake.color),
+                      alert: Option::None,
+                      timestamp: Option::None,
+                      text: Option::Some(snake.text),
+                      app: Option::None,
+                      owner: Option::None,
+                      action: Option::None  // Not using this feature for snake
+                    }
+                );
+
+                // Determine what happens to the snake
+                // MOVE, GROW, SHRINK, DIE
+                if next_pixel.owner.is_zero() { // Snake just moves
+                    'snake moves'.print();
+                    // Add a new segment on the next pixel and update the snake
+                    snake
+                        .first_segment_id =
+                            create_new_segment(world, core_actions, next_pixel, snake, first_segment);
+                    snake.last_segment_id = remove_last_segment(world, core_actions, snake);
+
+                } else if !has_write_access {
+                  'snake will die'.print();
+                  // Snake hit a pixel that is not allowing anyting: DIE
+                  snake.is_dying = true;
+                } else if next_pixel.owner == snake.owner {
+                    'snake grows'.print();
+                    // Next pixel is owned by snake owner: GROW
+
+                    // Add a new segment
+                    snake
+                        .first_segment_id =
+                            create_new_segment(world, core_actions, next_pixel, snake, first_segment);
+
+                    // No growth if max length was reached
+                    if snake.length >= SNAKE_MAX_LENGTH {
+                        // Revert last segment pixel
+                        snake.last_segment_id = remove_last_segment(world, core_actions, snake);
+                    } else {
+                        snake.length = snake.length + 1;
+                    }
+                // We leave the tail as is
+
+                } else {
+                    'snake shrinks'.print();
+                    // Next pixel is not owned but can be used temporarily
+                    // SHRINK, though
+                    if snake.length == 1 {
+                        snake.is_dying = true;
+                    } else {
+                        // Add a new segment
                         create_new_segment(world, core_actions, next_pixel, snake, first_segment);
-                snake.last_segment_id = remove_last_segment(world, core_actions, snake);
 
-            } else if !has_write_access {
+                        // Remove last segment (this is normal for "moving")
+                        snake.last_segment_id = remove_last_segment(world, core_actions, snake);
+
+                        // Remove another last segment (for shrinking)
+                        snake.last_segment_id = remove_last_segment(world, core_actions, snake);
+                    }
+                }
+            } else {
               'snake will die'.print();
               // Snake hit a pixel that is not allowing anyting: DIE
               snake.is_dying = true;
-            } else if next_pixel.owner == snake.owner {
-                'snake grows'.print();
-                // Next pixel is owned by snake owner: GROW
-
-                // Add a new segment
-                create_new_segment(world, core_actions, next_pixel, snake, first_segment);
-
-                // No growth if max length was reached
-                if snake.length >= SNAKE_MAX_LENGTH {
-                    // Revert last segment pixel
-                    snake.last_segment_id = remove_last_segment(world, core_actions, snake);
-                } else {
-                    snake.length = snake.length + 1;
-                }
-            // We leave the tail as is
-
-            } else {
-                'snake shrinks'.print();
-                // Next pixel is not owned but can be used temporarily
-                // SHRINK, though
-                if snake.length == 1 {
-                    snake.is_dying = true;
-                } else {
-                    // Add a new segment
-                    create_new_segment(world, core_actions, next_pixel, snake, first_segment);
-
-                    // Remove last segment (this is normal for "moving")
-                    snake.last_segment_id = remove_last_segment(world, core_actions, snake);
-
-                    // Remove another last segment (for shrinking)
-                    snake.last_segment_id = remove_last_segment(world, core_actions, snake);
-                }
             }
 
             // Save the snake
