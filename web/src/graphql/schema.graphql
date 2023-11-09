@@ -160,3 +160,15 @@ query getNeedsAttention($first: Int, $address: ContractAddress){
     }
   }
 }
+
+query apps {
+  appbysystemModels {
+    edges {
+      node {
+        name
+        system
+        __typename
+      }
+    }
+  }
+}

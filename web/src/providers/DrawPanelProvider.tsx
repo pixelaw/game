@@ -14,7 +14,7 @@ import {useEntityQuery} from '@dojoengine/react'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {getComponentValue, getComponentValueStrict, Has, HasValue} from '@latticexyz/recs'
-import { argbToHex, felt252ToString } from '@/global/utils.ts'
+import { argbToHex } from '@/global/utils.ts'
 import useInteract from '@/hooks/systems/useInteract'
 import ParamPicker from '@/components/ParamPicker'
 
@@ -221,7 +221,7 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
         x: coordinate[0],
         y: coordinate[1],
         address: pixel ? pixel.owner : 'N/A',
-        pixel: pixel ? felt252ToString(pixel.app) : 'N/A'
+        pixel: pixel ? pixel.app : 'N/A'
       }
     })
   }

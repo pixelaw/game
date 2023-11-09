@@ -1,8 +1,4 @@
 import { GraphQLClient } from 'graphql-request';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';
 import { print } from 'graphql'
 import gql from 'graphql-tag';
@@ -230,11 +226,11 @@ export type Game = {
   id?: Maybe<Scalars['u32']['output']>;
   player1?: Maybe<Scalars['ContractAddress']['output']>;
   player1_commit?: Maybe<Scalars['felt252']['output']>;
-  player1_move?: Maybe<Scalars['u8']['output']>;
+  player1_move?: Maybe<Scalars['Enum']['output']>;
   player2?: Maybe<Scalars['ContractAddress']['output']>;
-  player2_move?: Maybe<Scalars['u8']['output']>;
+  player2_move?: Maybe<Scalars['Enum']['output']>;
   started_timestamp?: Maybe<Scalars['u64']['output']>;
-  state?: Maybe<Scalars['u8']['output']>;
+  state?: Maybe<Scalars['Enum']['output']>;
   x?: Maybe<Scalars['u64']['output']>;
   y?: Maybe<Scalars['u64']['output']>;
 };
@@ -291,13 +287,7 @@ export type GameWhereInput = {
   player1_commitLT?: InputMaybe<Scalars['felt252']['input']>;
   player1_commitLTE?: InputMaybe<Scalars['felt252']['input']>;
   player1_commitNEQ?: InputMaybe<Scalars['felt252']['input']>;
-  player1_move?: InputMaybe<Scalars['u8']['input']>;
-  player1_moveEQ?: InputMaybe<Scalars['u8']['input']>;
-  player1_moveGT?: InputMaybe<Scalars['u8']['input']>;
-  player1_moveGTE?: InputMaybe<Scalars['u8']['input']>;
-  player1_moveLT?: InputMaybe<Scalars['u8']['input']>;
-  player1_moveLTE?: InputMaybe<Scalars['u8']['input']>;
-  player1_moveNEQ?: InputMaybe<Scalars['u8']['input']>;
+  player1_move?: InputMaybe<Scalars['Enum']['input']>;
   player2?: InputMaybe<Scalars['ContractAddress']['input']>;
   player2EQ?: InputMaybe<Scalars['ContractAddress']['input']>;
   player2GT?: InputMaybe<Scalars['ContractAddress']['input']>;
@@ -305,13 +295,7 @@ export type GameWhereInput = {
   player2LT?: InputMaybe<Scalars['ContractAddress']['input']>;
   player2LTE?: InputMaybe<Scalars['ContractAddress']['input']>;
   player2NEQ?: InputMaybe<Scalars['ContractAddress']['input']>;
-  player2_move?: InputMaybe<Scalars['u8']['input']>;
-  player2_moveEQ?: InputMaybe<Scalars['u8']['input']>;
-  player2_moveGT?: InputMaybe<Scalars['u8']['input']>;
-  player2_moveGTE?: InputMaybe<Scalars['u8']['input']>;
-  player2_moveLT?: InputMaybe<Scalars['u8']['input']>;
-  player2_moveLTE?: InputMaybe<Scalars['u8']['input']>;
-  player2_moveNEQ?: InputMaybe<Scalars['u8']['input']>;
+  player2_move?: InputMaybe<Scalars['Enum']['input']>;
   started_timestamp?: InputMaybe<Scalars['u64']['input']>;
   started_timestampEQ?: InputMaybe<Scalars['u64']['input']>;
   started_timestampGT?: InputMaybe<Scalars['u64']['input']>;
@@ -319,13 +303,7 @@ export type GameWhereInput = {
   started_timestampLT?: InputMaybe<Scalars['u64']['input']>;
   started_timestampLTE?: InputMaybe<Scalars['u64']['input']>;
   started_timestampNEQ?: InputMaybe<Scalars['u64']['input']>;
-  state?: InputMaybe<Scalars['u8']['input']>;
-  stateEQ?: InputMaybe<Scalars['u8']['input']>;
-  stateGT?: InputMaybe<Scalars['u8']['input']>;
-  stateGTE?: InputMaybe<Scalars['u8']['input']>;
-  stateLT?: InputMaybe<Scalars['u8']['input']>;
-  stateLTE?: InputMaybe<Scalars['u8']['input']>;
-  stateNEQ?: InputMaybe<Scalars['u8']['input']>;
+  state?: InputMaybe<Scalars['Enum']['input']>;
   x?: InputMaybe<Scalars['u64']['input']>;
   xEQ?: InputMaybe<Scalars['u64']['input']>;
   xGT?: InputMaybe<Scalars['u64']['input']>;
@@ -1211,6 +1189,11 @@ export type GetNeedsAttentionQueryVariables = Exact<{
 
 export type GetNeedsAttentionQuery = { __typename?: 'World__Query', pixelModels?: { __typename?: 'PixelConnection', edges?: Array<{ __typename?: 'PixelEdge', node?: { __typename: 'Pixel', x?: any | null, y?: any | null, created_at?: any | null, updated_at?: any | null, alert?: any | null, app?: any | null, color?: any | null, owner?: any | null, text?: any | null, timestamp?: any | null, action?: any | null } | null } | null> | null } | null, alertModels?: { __typename?: 'AlertConnection', edges?: Array<{ __typename?: 'AlertEdge', node?: { __typename: 'Alert', x?: any | null, y?: any | null, alert?: any | null } | null } | null> | null } | null };
 
+export type AppsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AppsQuery = { __typename?: 'World__Query', appbysystemModels?: { __typename?: 'AppBySystemConnection', edges?: Array<{ __typename?: 'AppBySystemEdge', node?: { __typename: 'AppBySystem', name?: any | null, system?: any | null } | null } | null> | null } | null };
+
 
 export const GetEntitiesDocument = gql`
     query getEntities {
@@ -1372,6 +1355,19 @@ export const GetNeedsAttentionDocument = gql`
   }
 }
     `;
+export const AppsDocument = gql`
+    query apps {
+  appbysystemModels {
+    edges {
+      node {
+        name
+        system
+        __typename
+      }
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string) => Promise<T>;
 
@@ -1380,22 +1376,20 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 const GetEntitiesDocumentString = print(GetEntitiesDocument);
 const All_Filtered_EntitiesDocumentString = print(All_Filtered_EntitiesDocument);
 const GetNeedsAttentionDocumentString = print(GetNeedsAttentionDocument);
+const AppsDocumentString = print(AppsDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
     getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetEntitiesQuery>(GetEntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getEntities', 'query');
     },
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
     all_filtered_entities(variables?: All_Filtered_EntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: All_Filtered_EntitiesQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<All_Filtered_EntitiesQuery>(All_Filtered_EntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'all_filtered_entities', 'query');
     },
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
     getNeedsAttention(variables?: GetNeedsAttentionQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetNeedsAttentionQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetNeedsAttentionQuery>(GetNeedsAttentionDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getNeedsAttention', 'query');
+    },
+    apps(variables?: AppsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: AppsQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<AppsQuery>(AppsDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'apps', 'query');
     }
   };
 }
