@@ -22,6 +22,7 @@ mod paint_actions {
     use super::IPaintActions;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::registry::Registry;
+    use pixelaw::core::models::permissions::{Permission};
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
@@ -65,6 +66,21 @@ mod paint_actions {
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
             core_actions.update_app_name(APP_KEY);
+
+
+            // TODO: replace this with proper granting of permission
+
+            core_actions.update_permission('snake',
+              Permission {
+                alert: false,
+                app: false,
+                color: true,
+                owner: false,
+                text: true,
+                timestamp: false,
+                action: false
+              }
+            );
         }
 
 
@@ -150,7 +166,7 @@ mod paint_actions {
             // If the color is 0,0,0 , let's stop the process, fading is done.
             if r == 0 && g == 0 && b == 0 {
                 'fading is done'.print();
-                
+
                 return;
             }
 

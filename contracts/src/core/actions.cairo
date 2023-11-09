@@ -1,5 +1,6 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
+use pixelaw::core::models::permissions::{Permission};
 
 use starknet::{ContractAddress, ClassHash};
 
@@ -7,6 +8,7 @@ use starknet::{ContractAddress, ClassHash};
 #[starknet::interface]
 trait IActions<TContractState> {
     fn init(self: @TContractState);
+    fn update_permission(self: @TContractState, for_system: felt252, permission: Permission);
     fn update_app_name(self: @TContractState, name: felt252);
     fn has_write_access(self: @TContractState, for_player: ContractAddress,for_system: ContractAddress,  pixel: Pixel, pixel_update: PixelUpdate,) -> bool;
     fn process_queue(
@@ -80,6 +82,19 @@ mod actions {
         fn init(self: @ContractState) {
             let world = self.world_dispatcher.read();
             Registry::set_core_actions_address(world, get_contract_address());
+        }
+
+        /// not performing checks because it's only granting permissions to a system by the caller
+        /// it is in the app's responsibility to handle update_permission responsibly
+        fn update_permission(self: @ContractState, for_system: felt252, permission: Permission) {
+          let world = self.world_dispatcher.read();
+          let caller_address = get_caller_address();
+
+          // Retrieve the App of the for_system
+          let allowed_app = get!(world, for_system, (AppByName));
+          let allowed_app = allowed_app.system;
+
+          set!(world, Permissions { allowing_app: caller_address, allowed_app, permission });
         }
 
 
@@ -200,7 +215,7 @@ mod actions {
             // The caller_address is a System, let's see if it has access
 
             // Retrieve the App of the calling System
-            let caller_app = get!(world, get_caller_address(), (AppBySystem));
+            let caller_app = get!(world, caller_address, (AppBySystem));
 
             // TODO decide whether an App by default has write on a pixel with same App?
 

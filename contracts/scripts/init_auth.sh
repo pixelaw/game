@@ -50,15 +50,15 @@ sleep 0.1
 sozo execute $CORE_ACTIONS init
 echo "Initialize CORE_ACTIONS: Done"
 
-echo "Initialize PAINT_ACTIONS: Done"
-sleep 0.1
-sozo execute $PAINT_ACTIONS init
-echo "Initialize PAINT_ACTIONS: Done"
-
 echo "Initialize SNAKE_ACTIONS: Done"
 sleep 0.1
 sozo execute $SNAKE_ACTIONS init
 echo "Initialize SNAKE_ACTIONS: Done"
+
+echo "Initialize PAINT_ACTIONS: Done"
+sleep 0.1
+sozo execute $PAINT_ACTIONS init
+echo "Initialize PAINT_ACTIONS: Done"
 
 echo "Initialize RPS_ACTIONS: Done"
 sleep 0.1
