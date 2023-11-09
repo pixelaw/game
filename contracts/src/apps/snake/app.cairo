@@ -23,12 +23,11 @@ fn next_position(x: u64, y: u64, direction: Direction) -> Option<(u64, u64)> {
 #[derive(Model, Copy, Drop, Serde)]
 struct Snake {
     #[key]
-    id: u32,
+    owner: ContractAddress,
     length: u8,
     first_segment_id: u32,
     last_segment_id: u32,
     direction: Direction,
-    owner: ContractAddress,
     color: u32,
     text: felt252,
     is_dying: bool
@@ -51,7 +50,7 @@ struct SnakeSegment {
 trait ISnakeActions<TContractState> {
     fn init(self: @TContractState);
     fn interact(self: @TContractState, default_params: DefaultParameters, direction: Direction) -> u32;
-    fn move(self: @TContractState, snake_id: u32);
+    fn move(self: @TContractState, owner: ContractAddress);
 }
 
 
@@ -82,14 +81,14 @@ mod snake_actions {
 
     #[derive(Drop, starknet::Event)]
     struct Died {
-        id: u32,
+        owner: ContractAddress,
         x: u64,
         y: u64
     }
 
     #[derive(Drop, starknet::Event)]
     struct Moved {
-        player: ContractAddress,
+        owner: ContractAddress,
         direction: Direction
     }
 
@@ -130,12 +129,11 @@ mod snake_actions {
             let text = ''; //TODO
             // Initialize the Snake model
             let snake = Snake {
-                id,
+                owner: player,
                 length: 1,
                 first_segment_id: id,
                 last_segment_id: id,
                 direction: direction,
-                owner: player,
                 color,
                 text,
                 is_dying: false
@@ -196,15 +194,15 @@ mod snake_actions {
             id
         }
 
-        fn move(self: @ContractState, snake_id: u32) {
+        fn move(self: @ContractState, owner: ContractAddress) {
             'snake: move'.print();
             let world = self.world_dispatcher.read();
             let core_actions = Registry::core_actions(self.world_dispatcher.read());
 
             // Load the Snake
-            let mut snake = get!(world, (snake_id), (Snake));
-            snake.id.print();
-            assert(snake.id != 0, 'no snake');
+            let mut snake = get!(world, (owner), (Snake));
+
+            assert(!snake.owner.is_zero(), 'no snake');
             let first_segment = get!(world, (snake.first_segment_id), SnakeSegment);
 
             // If the snake is dying, handle that
@@ -214,14 +212,14 @@ mod snake_actions {
                 snake.length -= 1;
 
                 if snake.length == 0 {
-                    emit!(world, Died { id: snake.id, x: first_segment.x, y: first_segment.y });
+                    emit!(world, Died { owner: snake.owner, x: first_segment.x, y: first_segment.y });
                     set!(world, (snake));
                     // Since we return immediately, the next Queue for move will never be set
                     // This will stop the movement loop
                     // TODO handle situation where someone manually calls 'move', it will
                     // spam Died events..
-                    let snake_id_felt: felt252 = snake.id.into();
-                    world.delete_entity('Snake'.into(), array![snake_id_felt.into()].span());
+                    let snake_owner_felt: felt252 = snake.owner.into();
+                    world.delete_entity('Snake'.into(), array![snake_owner_felt.into()].span());
                     return;
                 }
 
@@ -315,16 +313,14 @@ mod snake_actions {
             // Save the snake
             set!(world, (snake));
 
+            // Bot can execute this Queue as soon as possible
             let MOVE_SECONDS = 0;
             let queue_timestamp = starknet::get_block_timestamp() + MOVE_SECONDS;
             let mut calldata: Array<felt252> = ArrayTrait::new();
             let THIS_CONTRACT_ADDRESS = get_contract_address();
 
-            // Calldata[0] : id
-            calldata.append(snake.id.into());
-
-'selector'.print();
-get_execution_info().unbox().entry_point_selector.print();
+            // Calldata[0] : owner
+            calldata.append(snake.owner.into());
 
             // Schedule the next move
             core_actions

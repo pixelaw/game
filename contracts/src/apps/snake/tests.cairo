@@ -87,9 +87,6 @@ mod tests {
         let (world, core_actions, snake_actions, paint_actions) = deploy_world();
         let SNAKE_COLOR = 0xFF00FF;
 
-        // Fix: increment uuid with 1 so the snake doesnt start with 0..
-        world.uuid().print();
-
         core_actions.init();
         snake_actions.init();
 
@@ -148,8 +145,7 @@ mod tests {
                     color: 0xF0F0F0
                 }
             );
-        'owner'.print();
-        get!(world, (4, 1), Pixel).owner.print();
+
 
         // Grow right (head at 4,1 now) -> on top of the painted. Snake should grow
         snake_actions.move(snake_id);
