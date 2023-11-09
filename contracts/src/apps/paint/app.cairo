@@ -118,8 +118,17 @@ mod paint_actions {
                     - pixel.timestamp < COOLDOWN_SECS,
                 'Cooldown not over'
             );
-            
-            // let mut text = Option::Some('U+2605');
+
+            // Add treasure hunter feature.
+
+            let mut text = Option::None;
+
+            let block_hash = starknet::get_block_hash(starknet::get_block_number() - 1); // felt252
+            let random_num: u256 = block_hash.into() + position.x.into() + position.y.into();
+
+            if (random_num % 1000 == 0) {
+                text = Option::Some('U+2605');
+            }
 
             // We can now update color of the pixel
             core_actions
@@ -132,7 +141,7 @@ mod paint_actions {
                         color: Option::Some(default_params.color),
                         alert: Option::None,
                         timestamp: Option::None,
-                        text: Option::None,
+                        text: text,
                         app: Option::Some(system),
                         owner: Option::Some(player),
                         action: Option::None  // Not using this feature for paint
