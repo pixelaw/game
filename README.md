@@ -157,6 +157,8 @@ yarn install
 yarn dev
 ````
 
+- to run here, you can check this page: https://www.npmjs.com/package/canvas 
+
 #### NOTE
 To change accounts, add an account query to the frontend url. For example: http://localhost:3000/?account=1. Add
 as many accounts as desired by following the pattern set in the env.example.
