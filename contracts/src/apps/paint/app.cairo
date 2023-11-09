@@ -118,6 +118,8 @@ mod paint_actions {
                     - pixel.timestamp < COOLDOWN_SECS,
                 'Cooldown not over'
             );
+            
+            // let mut text = Option::Some('U+2605');
 
             // We can now update color of the pixel
             core_actions
