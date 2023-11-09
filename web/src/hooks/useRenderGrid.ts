@@ -90,7 +90,6 @@ export function useRenderGrid() {
 
         if (pixelText) {
           ctx.textAlign = 'center'
-          ctx.font
 
           let text = felt252ToString(pixelText)
 
