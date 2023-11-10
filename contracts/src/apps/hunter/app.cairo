@@ -5,7 +5,7 @@ use starknet::{get_caller_address, get_contract_address, get_execution_info, Con
 
 
 #[starknet::interface]
-trait IActions<TContractState> {
+trait IHunterActions<TContractState> {
     fn init(self: @TContractState);
     fn interact(self: @TContractState, default_params: DefaultParameters);
 }
@@ -21,13 +21,13 @@ struct LastAttempt {
 const APP_KEY: felt252 = 'hunter';
 
 #[dojo::contract]
-mod actions {
+mod hunter_actions {
     use poseidon::poseidon_hash_span;
     use starknet::{
         get_tx_info, get_caller_address, get_contract_address, get_execution_info, ContractAddress
     };
 
-    use super::{IActions, LastAttempt};
+    use super::{IHunterActions, LastAttempt};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
 
     use pixelaw::core::models::permissions::{Permission};
@@ -43,7 +43,7 @@ mod actions {
 
     // impl: implement functions specified in trait
     #[external(v0)]
-    impl ActionsImpl of IActions<ContractState> {
+    impl HunterActionsImpl of IHunterActions<ContractState> {
         /// Initialize the Hunter App
         fn init(self: @ContractState) {
             let core_actions = get_core_actions(self.world_dispatcher.read());

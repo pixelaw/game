@@ -101,7 +101,7 @@ mod rps_actions {
 
 
     #[external(v0)]
-    impl ActionsImpl of IRpsActions<ContractState> {
+    impl RpsActionsImpl of IRpsActions<ContractState> {
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(self: @ContractState) {
             let core_actions = get_core_actions(self.world_dispatcher.read());
@@ -187,7 +187,7 @@ mod rps_actions {
             let core_actions = get_core_actions(world);
             let position = default_params.position;
             let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address(default_params.for_system);
+            let system = core_actions.get_system_address( default_params.for_system);
 
             let pixel = get!(world, (position.x, position.y), Pixel);
 
@@ -243,7 +243,7 @@ mod rps_actions {
             let core_actions = get_core_actions(world);
             let position = default_params.position;
             let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address(default_params.for_system);
+            let system = core_actions.get_system_address( default_params.for_system);
 
             let pixel = get!(world, (position.x, position.y), Pixel);
 
@@ -340,7 +340,7 @@ mod rps_actions {
             let core_actions = get_core_actions(world);
             let position = default_params.position;
             let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address(default_params.for_system);
+            let system = core_actions.get_system_address( default_params.for_system);
             let pixel = get!(world, (position.x, position.y), Pixel);
             let game = get!(world, (position.x, position.y), Game);
 
