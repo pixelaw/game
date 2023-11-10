@@ -156,6 +156,11 @@ cd bots
 yarn install
 yarn dev
 ````
+- to run here, you can check this page: https://www.npmjs.com/package/canvas
+- the following command might fix your issue.
+```
+brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman
+```
 
 #### NOTE
 To change accounts, add an account query to the frontend url. For example: http://localhost:3000/?account=1. Add

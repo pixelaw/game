@@ -91,6 +91,8 @@ mod hunter_actions {
             let MASK = 0xFFFFFFFFFFFFFFFF0000;  // TODO, this is a placeholder
             let result = hash & MASK == hash;
 
+            
+
             assert(result, 'Oops, no luck');
 
             // We can now update color of the pixel
