@@ -171,9 +171,9 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   }
 
   const [openModal, setOpenModal] = React.useState(false)
-  const handleInteract = () => {
+  const handleInteract = (otherParams?: Record<string, any>) => {
     const variables = hasParams ? {
-      otherParams: additionalParams
+      otherParams
     } : {}
 
     interact.mutateAsync(variables)
@@ -273,10 +273,14 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       {children}
       <ParamPicker
         value={additionalParams}
-        onChange={(newValue) => setAdditionalParams(newValue)}
+        onChange={(newValue) => {
+          setAdditionalParams(newValue)
+          // TODO: right now this is assuming we olways only have one other parameter aside from the defaultParams
+          // fix this to be able to handle more than one parameter
+          handleInteract(newValue)
+        }}
         params={params}
         open={openModal}
-        onSubmit={handleInteract}
         onOpenChange={(open) => setOpenModal(open)}
       />
     </DrawPanelContext.Provider>
