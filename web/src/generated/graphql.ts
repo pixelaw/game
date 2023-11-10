@@ -84,36 +84,56 @@ export type AlertWhereInput = {
   yNEQ?: InputMaybe<Scalars['u64']['input']>;
 };
 
-export type AppByName = {
-  __typename?: 'AppByName';
+export type App = {
+  __typename?: 'App';
+  action?: Maybe<Scalars['felt252']['output']>;
   entity?: Maybe<World__Entity>;
   name?: Maybe<Scalars['felt252']['output']>;
   system?: Maybe<Scalars['ContractAddress']['output']>;
 };
 
-export type AppByNameConnection = {
-  __typename?: 'AppByNameConnection';
-  edges?: Maybe<Array<Maybe<AppByNameEdge>>>;
+export type AppConnection = {
+  __typename?: 'AppConnection';
+  edges?: Maybe<Array<Maybe<AppEdge>>>;
   total_count: Scalars['Int']['output'];
 };
 
-export type AppByNameEdge = {
-  __typename?: 'AppByNameEdge';
+export type AppEdge = {
+  __typename?: 'AppEdge';
   cursor?: Maybe<Scalars['Cursor']['output']>;
-  node?: Maybe<AppByName>;
+  node?: Maybe<App>;
 };
 
-export type AppByNameOrder = {
+export type AppName = {
+  __typename?: 'AppName';
+  entity?: Maybe<World__Entity>;
+  name?: Maybe<Scalars['felt252']['output']>;
+  system?: Maybe<Scalars['ContractAddress']['output']>;
+};
+
+export type AppNameConnection = {
+  __typename?: 'AppNameConnection';
+  edges?: Maybe<Array<Maybe<AppNameEdge>>>;
+  total_count: Scalars['Int']['output'];
+};
+
+export type AppNameEdge = {
+  __typename?: 'AppNameEdge';
+  cursor?: Maybe<Scalars['Cursor']['output']>;
+  node?: Maybe<AppName>;
+};
+
+export type AppNameOrder = {
   direction: OrderDirection;
-  field: AppByNameOrderField;
+  field: AppNameOrderField;
 };
 
-export enum AppByNameOrderField {
+export enum AppNameOrderField {
   Name = 'NAME',
   System = 'SYSTEM'
 }
 
-export type AppByNameWhereInput = {
+export type AppNameWhereInput = {
   name?: InputMaybe<Scalars['felt252']['input']>;
   nameEQ?: InputMaybe<Scalars['felt252']['input']>;
   nameGT?: InputMaybe<Scalars['felt252']['input']>;
@@ -130,36 +150,80 @@ export type AppByNameWhereInput = {
   systemNEQ?: InputMaybe<Scalars['ContractAddress']['input']>;
 };
 
-export type AppBySystem = {
-  __typename?: 'AppBySystem';
-  entity?: Maybe<World__Entity>;
-  name?: Maybe<Scalars['felt252']['output']>;
-  system?: Maybe<Scalars['ContractAddress']['output']>;
-};
-
-export type AppBySystemConnection = {
-  __typename?: 'AppBySystemConnection';
-  edges?: Maybe<Array<Maybe<AppBySystemEdge>>>;
-  total_count: Scalars['Int']['output'];
-};
-
-export type AppBySystemEdge = {
-  __typename?: 'AppBySystemEdge';
-  cursor?: Maybe<Scalars['Cursor']['output']>;
-  node?: Maybe<AppBySystem>;
-};
-
-export type AppBySystemOrder = {
+export type AppOrder = {
   direction: OrderDirection;
-  field: AppBySystemOrderField;
+  field: AppOrderField;
 };
 
-export enum AppBySystemOrderField {
+export enum AppOrderField {
+  Action = 'ACTION',
   Name = 'NAME',
   System = 'SYSTEM'
 }
 
-export type AppBySystemWhereInput = {
+export type AppUser = {
+  __typename?: 'AppUser';
+  action?: Maybe<Scalars['felt252']['output']>;
+  entity?: Maybe<World__Entity>;
+  player?: Maybe<Scalars['ContractAddress']['output']>;
+  system?: Maybe<Scalars['ContractAddress']['output']>;
+};
+
+export type AppUserConnection = {
+  __typename?: 'AppUserConnection';
+  edges?: Maybe<Array<Maybe<AppUserEdge>>>;
+  total_count: Scalars['Int']['output'];
+};
+
+export type AppUserEdge = {
+  __typename?: 'AppUserEdge';
+  cursor?: Maybe<Scalars['Cursor']['output']>;
+  node?: Maybe<AppUser>;
+};
+
+export type AppUserOrder = {
+  direction: OrderDirection;
+  field: AppUserOrderField;
+};
+
+export enum AppUserOrderField {
+  Action = 'ACTION',
+  Player = 'PLAYER',
+  System = 'SYSTEM'
+}
+
+export type AppUserWhereInput = {
+  action?: InputMaybe<Scalars['felt252']['input']>;
+  actionEQ?: InputMaybe<Scalars['felt252']['input']>;
+  actionGT?: InputMaybe<Scalars['felt252']['input']>;
+  actionGTE?: InputMaybe<Scalars['felt252']['input']>;
+  actionLT?: InputMaybe<Scalars['felt252']['input']>;
+  actionLTE?: InputMaybe<Scalars['felt252']['input']>;
+  actionNEQ?: InputMaybe<Scalars['felt252']['input']>;
+  player?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerEQ?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerGT?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerGTE?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerLT?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerLTE?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerNEQ?: InputMaybe<Scalars['ContractAddress']['input']>;
+  system?: InputMaybe<Scalars['ContractAddress']['input']>;
+  systemEQ?: InputMaybe<Scalars['ContractAddress']['input']>;
+  systemGT?: InputMaybe<Scalars['ContractAddress']['input']>;
+  systemGTE?: InputMaybe<Scalars['ContractAddress']['input']>;
+  systemLT?: InputMaybe<Scalars['ContractAddress']['input']>;
+  systemLTE?: InputMaybe<Scalars['ContractAddress']['input']>;
+  systemNEQ?: InputMaybe<Scalars['ContractAddress']['input']>;
+};
+
+export type AppWhereInput = {
+  action?: InputMaybe<Scalars['felt252']['input']>;
+  actionEQ?: InputMaybe<Scalars['felt252']['input']>;
+  actionGT?: InputMaybe<Scalars['felt252']['input']>;
+  actionGTE?: InputMaybe<Scalars['felt252']['input']>;
+  actionLT?: InputMaybe<Scalars['felt252']['input']>;
+  actionLTE?: InputMaybe<Scalars['felt252']['input']>;
+  actionNEQ?: InputMaybe<Scalars['felt252']['input']>;
   name?: InputMaybe<Scalars['felt252']['input']>;
   nameEQ?: InputMaybe<Scalars['felt252']['input']>;
   nameGT?: InputMaybe<Scalars['felt252']['input']>;
@@ -322,7 +386,53 @@ export type GameWhereInput = {
   yNEQ?: InputMaybe<Scalars['u64']['input']>;
 };
 
-export type ModelUnion = Alert | AppByName | AppBySystem | CoreActionsAddress | Game | Permissions | Pixel | Player | QueueItem | Snake | SnakeSegment;
+export type LastAttempt = {
+  __typename?: 'LastAttempt';
+  entity?: Maybe<World__Entity>;
+  player?: Maybe<Scalars['ContractAddress']['output']>;
+  timestamp?: Maybe<Scalars['u64']['output']>;
+};
+
+export type LastAttemptConnection = {
+  __typename?: 'LastAttemptConnection';
+  edges?: Maybe<Array<Maybe<LastAttemptEdge>>>;
+  total_count: Scalars['Int']['output'];
+};
+
+export type LastAttemptEdge = {
+  __typename?: 'LastAttemptEdge';
+  cursor?: Maybe<Scalars['Cursor']['output']>;
+  node?: Maybe<LastAttempt>;
+};
+
+export type LastAttemptOrder = {
+  direction: OrderDirection;
+  field: LastAttemptOrderField;
+};
+
+export enum LastAttemptOrderField {
+  Player = 'PLAYER',
+  Timestamp = 'TIMESTAMP'
+}
+
+export type LastAttemptWhereInput = {
+  player?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerEQ?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerGT?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerGTE?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerLT?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerLTE?: InputMaybe<Scalars['ContractAddress']['input']>;
+  playerNEQ?: InputMaybe<Scalars['ContractAddress']['input']>;
+  timestamp?: InputMaybe<Scalars['u64']['input']>;
+  timestampEQ?: InputMaybe<Scalars['u64']['input']>;
+  timestampGT?: InputMaybe<Scalars['u64']['input']>;
+  timestampGTE?: InputMaybe<Scalars['u64']['input']>;
+  timestampLT?: InputMaybe<Scalars['u64']['input']>;
+  timestampLTE?: InputMaybe<Scalars['u64']['input']>;
+  timestampNEQ?: InputMaybe<Scalars['u64']['input']>;
+};
+
+export type ModelUnion = Alert | App | AppName | AppUser | CoreActionsAddress | Game | LastAttempt | Permissions | Pixel | Player | QueueItem | Snake | SnakeSegment;
 
 export enum OrderDirection {
   Asc = 'ASC',
@@ -613,7 +723,6 @@ export type Snake = {
   direction?: Maybe<Scalars['Enum']['output']>;
   entity?: Maybe<World__Entity>;
   first_segment_id?: Maybe<Scalars['u32']['output']>;
-  id?: Maybe<Scalars['u32']['output']>;
   is_dying?: Maybe<Scalars['bool']['output']>;
   last_segment_id?: Maybe<Scalars['u32']['output']>;
   length?: Maybe<Scalars['u8']['output']>;
@@ -642,7 +751,6 @@ export enum SnakeOrderField {
   Color = 'COLOR',
   Direction = 'DIRECTION',
   FirstSegmentId = 'FIRST_SEGMENT_ID',
-  Id = 'ID',
   IsDying = 'IS_DYING',
   LastSegmentId = 'LAST_SEGMENT_ID',
   Length = 'LENGTH',
@@ -757,13 +865,6 @@ export type SnakeWhereInput = {
   first_segment_idLT?: InputMaybe<Scalars['u32']['input']>;
   first_segment_idLTE?: InputMaybe<Scalars['u32']['input']>;
   first_segment_idNEQ?: InputMaybe<Scalars['u32']['input']>;
-  id?: InputMaybe<Scalars['u32']['input']>;
-  idEQ?: InputMaybe<Scalars['u32']['input']>;
-  idGT?: InputMaybe<Scalars['u32']['input']>;
-  idGTE?: InputMaybe<Scalars['u32']['input']>;
-  idLT?: InputMaybe<Scalars['u32']['input']>;
-  idLTE?: InputMaybe<Scalars['u32']['input']>;
-  idNEQ?: InputMaybe<Scalars['u32']['input']>;
   is_dying?: InputMaybe<Scalars['bool']['input']>;
   is_dyingEQ?: InputMaybe<Scalars['bool']['input']>;
   is_dyingGT?: InputMaybe<Scalars['bool']['input']>;
@@ -902,13 +1003,15 @@ export type World__ModelEdge = {
 export type World__Query = {
   __typename?: 'World__Query';
   alertModels?: Maybe<AlertConnection>;
-  appbynameModels?: Maybe<AppByNameConnection>;
-  appbysystemModels?: Maybe<AppBySystemConnection>;
+  appModels?: Maybe<AppConnection>;
+  appnameModels?: Maybe<AppNameConnection>;
+  appuserModels?: Maybe<AppUserConnection>;
   coreactionsaddressModels?: Maybe<CoreActionsAddressConnection>;
   entities?: Maybe<World__EntityConnection>;
   entity: World__Entity;
   events?: Maybe<World__EventConnection>;
   gameModels?: Maybe<GameConnection>;
+  lastattemptModels?: Maybe<LastAttemptConnection>;
   metadatas?: Maybe<World__MetadataConnection>;
   model: World__Model;
   models?: Maybe<World__ModelConnection>;
@@ -935,27 +1038,39 @@ export type World__QueryAlertModelsArgs = {
 };
 
 
-export type World__QueryAppbynameModelsArgs = {
+export type World__QueryAppModelsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
-  order?: InputMaybe<AppByNameOrder>;
-  where?: InputMaybe<AppByNameWhereInput>;
+  order?: InputMaybe<AppOrder>;
+  where?: InputMaybe<AppWhereInput>;
 };
 
 
-export type World__QueryAppbysystemModelsArgs = {
+export type World__QueryAppnameModelsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
-  order?: InputMaybe<AppBySystemOrder>;
-  where?: InputMaybe<AppBySystemWhereInput>;
+  order?: InputMaybe<AppNameOrder>;
+  where?: InputMaybe<AppNameWhereInput>;
+};
+
+
+export type World__QueryAppuserModelsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order?: InputMaybe<AppUserOrder>;
+  where?: InputMaybe<AppUserWhereInput>;
 };
 
 
@@ -1007,6 +1122,18 @@ export type World__QueryGameModelsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   order?: InputMaybe<GameOrder>;
   where?: InputMaybe<GameWhereInput>;
+};
+
+
+export type World__QueryLastattemptModelsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order?: InputMaybe<LastAttemptOrder>;
+  where?: InputMaybe<LastAttemptWhereInput>;
 };
 
 
@@ -1130,12 +1257,18 @@ export type World__Social = {
 export type World__Subscription = {
   __typename?: 'World__Subscription';
   entityUpdated: World__Entity;
+  eventEmitted: World__Event;
   modelRegistered: World__Model;
 };
 
 
 export type World__SubscriptionEntityUpdatedArgs = {
   id?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type World__SubscriptionEventEmittedArgs = {
+  keys?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
@@ -1170,7 +1303,7 @@ export type World__TransactionEdge = {
 export type GetEntitiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetEntitiesQuery = { __typename?: 'World__Query', entities?: { __typename?: 'World__EntityConnection', edges?: Array<{ __typename?: 'World__EntityEdge', node?: { __typename?: 'World__Entity', keys?: Array<string | null> | null, models?: Array<{ __typename: 'Alert', x?: any | null, y?: any | null, alert?: any | null } | { __typename: 'AppByName', name?: any | null, system?: any | null } | { __typename: 'AppBySystem', name?: any | null, system?: any | null } | { __typename: 'CoreActionsAddress', key?: any | null, value?: any | null } | { __typename: 'Game', x?: any | null, y?: any | null, id?: any | null, state?: any | null, player1?: any | null, player2?: any | null, player1_commit?: any | null, player1_move?: any | null, player2_move?: any | null, started_timestamp?: any | null } | { __typename: 'Permissions', allowing_app?: any | null, allowed_app?: any | null, permission?: { __typename: 'Permissions_Permission', alert?: any | null, app?: any | null, color?: any | null, owner?: any | null, text?: any | null, timestamp?: any | null, action?: any | null } | null } | { __typename: 'Pixel', x?: any | null, y?: any | null, created_at?: any | null, updated_at?: any | null, alert?: any | null, app?: any | null, color?: any | null, owner?: any | null, text?: any | null, timestamp?: any | null, action?: any | null } | { __typename: 'Player', player_id?: any | null, wins?: any | null } | { __typename?: 'QueueItem' } | { __typename: 'Snake', id?: any | null, length?: any | null, first_segment_id?: any | null, last_segment_id?: any | null, direction?: any | null, owner?: any | null, color?: any | null, text?: any | null, is_dying?: any | null } | { __typename: 'SnakeSegment', id?: any | null, previous_id?: any | null, next_id?: any | null, x?: any | null, y?: any | null, pixel_original_color?: any | null, pixel_original_text?: any | null } | null> | null } | null } | null> | null } | null };
+export type GetEntitiesQuery = { __typename?: 'World__Query', entities?: { __typename?: 'World__EntityConnection', edges?: Array<{ __typename?: 'World__EntityEdge', node?: { __typename?: 'World__Entity', keys?: Array<string | null> | null, models?: Array<{ __typename: 'Alert', x?: any | null, y?: any | null, alert?: any | null } | { __typename: 'App', name?: any | null, system?: any | null } | { __typename: 'AppName', name?: any | null, system?: any | null } | { __typename?: 'AppUser' } | { __typename: 'CoreActionsAddress', key?: any | null, value?: any | null } | { __typename: 'Game', x?: any | null, y?: any | null, id?: any | null, state?: any | null, player1?: any | null, player2?: any | null, player1_commit?: any | null, player1_move?: any | null, player2_move?: any | null, started_timestamp?: any | null } | { __typename?: 'LastAttempt' } | { __typename: 'Permissions', allowing_app?: any | null, allowed_app?: any | null, permission?: { __typename: 'Permissions_Permission', alert?: any | null, app?: any | null, color?: any | null, owner?: any | null, text?: any | null, timestamp?: any | null, action?: any | null } | null } | { __typename: 'Pixel', x?: any | null, y?: any | null, created_at?: any | null, updated_at?: any | null, alert?: any | null, app?: any | null, color?: any | null, owner?: any | null, text?: any | null, timestamp?: any | null, action?: any | null } | { __typename: 'Player', player_id?: any | null, wins?: any | null } | { __typename?: 'QueueItem' } | { __typename: 'Snake', length?: any | null, first_segment_id?: any | null, last_segment_id?: any | null, direction?: any | null, owner?: any | null, color?: any | null, text?: any | null, is_dying?: any | null } | { __typename: 'SnakeSegment', id?: any | null, previous_id?: any | null, next_id?: any | null, x?: any | null, y?: any | null, pixel_original_color?: any | null, pixel_original_text?: any | null } | null> | null } | null } | null> | null } | null };
 
 export type All_Filtered_EntitiesQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1194,7 +1327,7 @@ export type GetNeedsAttentionQuery = { __typename?: 'World__Query', pixelModels?
 export type AppsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AppsQuery = { __typename?: 'World__Query', appbysystemModels?: { __typename?: 'AppBySystemConnection', edges?: Array<{ __typename?: 'AppBySystemEdge', node?: { __typename: 'AppBySystem', name?: any | null, system?: any | null } | null } | null> | null } | null };
+export type AppsQuery = { __typename?: 'World__Query', appModels?: { __typename?: 'AppConnection', edges?: Array<{ __typename?: 'AppEdge', node?: { __typename: 'App', action?: any | null, name?: any | null, system?: any | null } | null } | null> | null } | null };
 
 
 export const GetEntitiesDocument = gql`
@@ -1210,12 +1343,12 @@ export const GetEntitiesDocument = gql`
             alert
             __typename
           }
-          ... on AppByName {
+          ... on AppName {
             name
             system
             __typename
           }
-          ... on AppBySystem {
+          ... on App {
             name
             system
             __typename
@@ -1273,7 +1406,6 @@ export const GetEntitiesDocument = gql`
             __typename
           }
           ... on Snake {
-            id
             length
             first_segment_id
             last_segment_id
@@ -1359,9 +1491,10 @@ export const GetNeedsAttentionDocument = gql`
     `;
 export const AppsDocument = gql`
     query apps {
-  appbysystemModels {
+  appModels {
     edges {
       node {
+        action
         name
         system
         __typename

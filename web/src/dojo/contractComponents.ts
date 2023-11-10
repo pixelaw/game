@@ -16,25 +16,37 @@ export function defineContractComponents(world: World) {
 	      }
 	    );
 	  })(),
-	  AppByName: (() => {
+	  App: (() => {
 	    return defineComponent(
 	      world,
-	      { name: RecsType.Number, system: RecsType.String },
+	      { system: RecsType.String, name: RecsType.Number, action: RecsType.Number },
 	      {
 	        metadata: {
-	          name: "AppByName",
+	          name: "App",
 	          types: [],
 	        },
 	      }
 	    );
 	  })(),
-	  AppBySystem: (() => {
+	  AppName: (() => {
 	    return defineComponent(
 	      world,
-	      { system: RecsType.String, name: RecsType.Number },
+	      { name: RecsType.Number, system: RecsType.String },
 	      {
 	        metadata: {
-	          name: "AppBySystem",
+	          name: "AppName",
+	          types: [],
+	        },
+	      }
+	    );
+	  })(),
+	  AppUser: (() => {
+	    return defineComponent(
+	      world,
+	      { system: RecsType.String, player: RecsType.String, action: RecsType.Number },
+	      {
+	        metadata: {
+	          name: "AppUser",
 	          types: [],
 	        },
 	      }
@@ -59,13 +71,25 @@ export function defineContractComponents(world: World) {
 	      {
 	        metadata: {
 	          name: "Game",
+	          types: ["Direction","Direction","Direction"],
+	        },
+	      }
+	    );
+	  })(),
+	  LastAttempt: (() => {
+	    return defineComponent(
+	      world,
+	      { player: RecsType.String, timestamp: RecsType.Number },
+	      {
+	        metadata: {
+	          name: "LastAttempt",
 	          types: [],
 	        },
 	      }
 	    );
 	  })(),
 	  Permissions: (() => {
-      return defineComponent(
+	    return defineComponent(
 	      world,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -117,7 +141,7 @@ export function defineContractComponents(world: World) {
 	  Snake: (() => {
 	    return defineComponent(
 	      world,
-	      { id: RecsType.Number, length: RecsType.Number, first_segment_id: RecsType.Number, last_segment_id: RecsType.Number, direction: RecsType.Number, owner: RecsType.String, color: RecsType.Number, text: RecsType.Number, is_dying: RecsType.Boolean },
+	      { owner: RecsType.String, length: RecsType.Number, first_segment_id: RecsType.Number, last_segment_id: RecsType.Number, direction: RecsType.Number, color: RecsType.Number, text: RecsType.Number, is_dying: RecsType.Boolean },
 	      {
 	        metadata: {
 	          name: "Snake",

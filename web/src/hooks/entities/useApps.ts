@@ -11,8 +11,8 @@ export function useApps() {
   const {
     setup: {
       components: {
-        AppBySystem,
-        AppByName
+        App,
+        AppName
       },
       network: { graphSdk },
     },
@@ -22,19 +22,19 @@ export function useApps() {
     queryKey: ['apps'],
     queryFn: async () => {
       const {data} = await graphSdk.apps()
-      if (!data || !data.appbysystemModels?.edges) return { appbysystemModels: { edges: [] } }
-      for (const edge of data.appbysystemModels.edges) {
+      if (!data || !data.appModels?.edges) return { appbysystemModels: { edges: [] } }
+      for (const edge of data.appModels.edges) {
         if (!edge || !edge.node) continue
-        const {name, system} = edge.node
+        const {name, system, action} = edge.node
         const nameId = getEntityIdFromKeys([ BigInt(name)]) as EntityIndex
         const systemId = getEntityIdFromKeys([BigInt(system)]) as EntityIndex
 
-        const currentName = getComponentValue(AppByName, nameId)
-        const currentSystem = getComponentValue(AppBySystem, systemId)
+        const currentName = getComponentValue(AppName, nameId)
+        const currentSystem = getComponentValue(App, systemId)
 
         // do not update if it's already equal
-        if (!isEqual(currentName, { name, system })) setComponent(AppByName, nameId, { name, system })
-        if (!isEqual(currentSystem, { name, system })) setComponent(AppBySystem, systemId, {name, system })
+        if (!isEqual(currentName, { name, system })) setComponent(AppName, nameId, { name, system })
+        if (!isEqual(currentSystem, { name, system, action })) setComponent(App, systemId, { name, system, action })
       }
 
       return data

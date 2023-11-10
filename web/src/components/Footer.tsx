@@ -19,7 +19,7 @@ export default function Footer(props: PropsType) {
   const {
     setup: {
       components: {
-        AppBySystem,
+        App,
       },
     },
     account: {
@@ -30,7 +30,7 @@ export default function Footer(props: PropsType) {
   const system = (props.type === 'N/A' ? 0 : props.type) ?? 0
 
     const systemId = getEntityIdFromKeys([BigInt(system)]) as EntityIndex
-    const app = useComponentValue(AppBySystem, systemId)
+    const app = useComponentValue(App, systemId)
 
     return (
         <div

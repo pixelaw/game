@@ -10,12 +10,12 @@ query getEntities {
             alert
             __typename
           }
-          ... on AppByName {
+          ... on AppName {
             name
             system
             __typename
           }
-          ... on AppBySystem {
+          ... on App {
             name
             system
             __typename
@@ -73,7 +73,6 @@ query getEntities {
             __typename
           }
           ... on Snake {
-            id
             length
             first_segment_id
             last_segment_id
@@ -162,9 +161,10 @@ query getNeedsAttention($first: Int, $address: ContractAddress){
 }
 
 query apps {
-  appbysystemModels {
+  appModels {
     edges {
       node {
+        action
         name
         system
         __typename

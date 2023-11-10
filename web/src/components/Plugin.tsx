@@ -22,7 +22,7 @@ export default function Plugin() {
   const {
     setup: {
       components: {
-        AppByName
+        AppName
       }
     },
   } = useDojo()
@@ -33,7 +33,7 @@ export default function Plugin() {
 
 
   // TODO: ideally the icons should also come from the contracts instead of hardcoded in
-  const apps = useEntityQuery([Has(AppByName)])
+  const apps = useEntityQuery([Has(AppName)])
     .map(name => felt252ToString(name))
 
     return (
