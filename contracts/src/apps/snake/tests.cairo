@@ -4,13 +4,13 @@ mod tests {
 
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use pixelaw::core::models::registry::{
-        Registry, app_by_system, app_by_name, core_actions_address
+        Registry, app, app_name, core_actions_address
     };
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::pixel::{pixel};
     use pixelaw::core::models::permissions::{permissions};
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
     use dojo::test_utils::{spawn_test_world, deploy_contract};
@@ -39,8 +39,8 @@ mod tests {
         let world = spawn_test_world(
             array![
                 pixel::TEST_CLASS_HASH,
-                app_by_system::TEST_CLASS_HASH,
-                app_by_name::TEST_CLASS_HASH,
+                app::TEST_CLASS_HASH,
+                app_name::TEST_CLASS_HASH,
                 core_actions_address::TEST_CLASS_HASH,
                 permissions::TEST_CLASS_HASH,
                 snake::TEST_CLASS_HASH,
@@ -68,8 +68,8 @@ mod tests {
 
         // Setup dojo auth
         world.grant_writer('Pixel',core_actions_address);
-        world.grant_writer('AppBySystem',core_actions_address);
-        world.grant_writer('AppByName',core_actions_address);
+        world.grant_writer('App',core_actions_address);
+        world.grant_writer('AppName',core_actions_address);
         world.grant_writer('CoreActionsAddress',core_actions_address);
         world.grant_writer('Permissions',core_actions_address);
 
@@ -86,9 +86,6 @@ mod tests {
         // Deploy everything
         let (world, core_actions, snake_actions, paint_actions) = deploy_world();
         let SNAKE_COLOR = 0xFF00FF;
-
-        // Fix: increment uuid with 1 so the snake doesnt start with 0..
-        world.uuid().print();
 
         core_actions.init();
         snake_actions.init();
@@ -148,8 +145,7 @@ mod tests {
                     color: 0xF0F0F0
                 }
             );
-        'owner'.print();
-        get!(world, (4, 1), Pixel).owner.print();
+
 
         // Grow right (head at 4,1 now) -> on top of the painted. Snake should grow
         snake_actions.move(snake_id);
@@ -157,7 +153,7 @@ mod tests {
         // Check that 3,1 is still snake color
         assert(get!(world, (3, 1), Pixel).color == SNAKE_COLOR, 'wrong pixel color 6');
 
-        // Move right (head at 5,1 now) 
+        // Move right (head at 5,1 now)
         snake_actions.move(snake_id);
     }
 }

@@ -4,13 +4,13 @@ mod tests {
 
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use pixelaw::core::models::registry::{
-        Registry, app_by_system, app_by_name, core_actions_address
+        app, app_name, core_actions_address
     };
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::pixel::{pixel};
     use pixelaw::core::models::permissions::{permissions};
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
     use dojo::test_utils::{spawn_test_world, deploy_contract};
@@ -20,7 +20,7 @@ mod tests {
     };
     use pixelaw::apps::rps::app::{Game, Player};
     use pixelaw::apps::rps::app::{State, Move};
-    
+
 
 
     use zeroable::Zeroable;
@@ -34,8 +34,8 @@ mod tests {
                 pixel::TEST_CLASS_HASH,
                 game::TEST_CLASS_HASH,
                 player::TEST_CLASS_HASH,
-                app_by_system::TEST_CLASS_HASH,
-                app_by_name::TEST_CLASS_HASH,
+                app::TEST_CLASS_HASH,
+                app_name::TEST_CLASS_HASH,
                 core_actions_address::TEST_CLASS_HASH,
                 permissions::TEST_CLASS_HASH,
             ]
@@ -53,8 +53,8 @@ mod tests {
 
         // Setup dojo auth
         world.grant_writer('Pixel',core_actions_address);
-        world.grant_writer('AppBySystem',core_actions_address);
-        world.grant_writer('AppByName',core_actions_address);
+        world.grant_writer('App',core_actions_address);
+        world.grant_writer('AppName',core_actions_address);
         world.grant_writer('CoreActionsAddress',core_actions_address);
         world.grant_writer('Permissions',core_actions_address);
 

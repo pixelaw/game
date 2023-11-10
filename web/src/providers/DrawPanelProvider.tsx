@@ -1,7 +1,7 @@
 import React, {SetStateAction} from 'react'
 import {CellDatum, Coordinate, NeedsAttentionDatum} from '@/components/shared/DrawPanel.tsx'
 import {useDojo} from '@/DojoContext.tsx'
-import {useAtom, useAtomValue} from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import {
   colorAtom,
   gameModeAtom,
@@ -14,7 +14,7 @@ import {useEntityQuery} from '@dojoengine/react'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {getComponentValue, getComponentValueStrict, Has, HasValue} from '@latticexyz/recs'
-import { argbToHex, felt252ToString } from '@/global/utils.ts'
+import { argbToHex } from '@/global/utils.ts'
 import useInteract from '@/hooks/systems/useInteract'
 import ParamPicker from '@/components/ParamPicker'
 
@@ -62,9 +62,6 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   //selected color in color pallete
   const [ selectedHexColor,  ] = useAtom(colorAtom)
 
-  //For setting the color of the pixel, getting the x and y coordinates when clicking the pixel
-  const [ coordinates, setCoordinates ] = React.useState<[ number, number ] | undefined>()
-
   // offset is a negative value
   const [ panOffsetX, setPanOffsetX ] = React.useState<number>(0)
   const [ panOffsetY, setPanOffsetY ] = React.useState<number>(0)
@@ -80,8 +77,8 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     `${gameMode}_actions`,
     selectedHexColor,
     {
-      x: position?.x ?? 0,
-      y: position?.y ?? 0
+      x: position?.x ?? 10,
+      y: position?.y ?? 10
     }
   )
 
@@ -165,29 +162,43 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     setTempData(prev => {
       return {
         ...prev,
-        [`[${position[0]},${position[1]}]`]: color,
+        [`[${position[0]},${position[1]}]`]: {
+          text: prev[`[${position[0]},${position[1]}]`]?.text ?? '',
+          color
+        },
       }
     })
   }
 
-  const handleCellClick = (position: Coordinate) => {
-    setCoordinates([ position[0], position[1] ])
-
-    updatePixelData(position, selectedHexColor)
-
+  const [openModal, setOpenModal] = React.useState(false)
+  const handleInteract = (otherParams?: Record<string, any>) => {
     const variables = hasParams ? {
-      otherParams: additionalParams
+      otherParams
     } : {}
 
     interact.mutateAsync(variables)
-      .then(() => {
-        setCoordinates(undefined)
-      })
+      .then()
       .catch(err => {
         console.error('reversing color because of: ', err)
         setTempData({})
-        setCoordinates(undefined)
       })
+
+    setOpenModal(false)
+  }
+
+  const handleCellClick = (coordinate: Coordinate) => {
+    setPositionWithAddressAndType(() => {
+      const pixel = pixels.find(pixel => pixel!.x === coordinate[0] && pixel!.y == coordinate[1])
+      return {
+        x: coordinate[0],
+        y: coordinate[1],
+        address: pixel ? pixel.owner : 'N/A',
+        pixel: pixel ? pixel.app : 'N/A'
+      }
+    })
+    updatePixelData(coordinate, selectedHexColor)
+    if (hasParams) setOpenModal(true)
+    else handleInteract()
   }
 
   const handleVisibleAreaCoordinate = (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => {
@@ -212,13 +223,15 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   }
 
   const handleHover = (coordinate: Coordinate) => {
+    // do not hover when the modal is open
+    if (openModal) return
     setPositionWithAddressAndType(() => {
       const pixel = pixels.find(pixel => pixel!.x === coordinate[0] && pixel!.y == coordinate[1])
       return {
         x: coordinate[0],
         y: coordinate[1],
         address: pixel ? pixel.owner : 'N/A',
-        pixel: pixel ? felt252ToString(pixel.app) : 'N/A'
+        pixel: pixel ? pixel.app : 'N/A'
       }
     })
   }
@@ -244,7 +257,7 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       gameMode,
       cellSize,
       selectedHexColor,
-      coordinates,
+      coordinates: [position.x, position.y],
       visibleAreaStart,
       visibleAreaEnd,
       panOffsetX,
@@ -258,7 +271,18 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       onHover: handleHover,
     }}>
       {children}
-      {hasParams && <ParamPicker value={additionalParams} onChange={(newValue) => setAdditionalParams(newValue)} params={params} />}
+      <ParamPicker
+        value={additionalParams}
+        onChange={(newValue) => {
+          setAdditionalParams(newValue)
+          // TODO: right now this is assuming we olways only have one other parameter aside from the defaultParams
+          // fix this to be able to handle more than one parameter
+          handleInteract(newValue)
+        }}
+        params={params}
+        open={openModal}
+        onOpenChange={(open) => setOpenModal(open)}
+      />
     </DrawPanelContext.Provider>
   )
 }

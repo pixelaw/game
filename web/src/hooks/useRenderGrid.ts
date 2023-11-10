@@ -47,6 +47,8 @@ export function useRenderGrid() {
         if (pixels && pixels.length > 0) {
           const pixel = pixels.find(p => p && p.coordinates[0] === row && p.coordinates[1] === col)
           if (pixel) {
+            /// if hexColor from the contract is empty, then use default color
+            pixel.hexColor = pixel.hexColor === '0x0' ? pixelColor : pixel.hexColor
             // Get the current color of the pixel
             const imageData = ctx.getImageData(x, y, 1, 1).data
             const currentColor = '#' + ((1 << 24) | (imageData[0] << 16) | (imageData[1] << 8) | imageData[2]).toString(16).slice(1)
@@ -90,7 +92,12 @@ export function useRenderGrid() {
 
         if (pixelText) {
           ctx.textAlign = 'center'
-          ctx.font
+
+          /// "✂" seems to not have its own color and such so doing a quick fix by adding a fill-color to it
+          if (pixelText === '0x552b32373032') {
+            ctx.fillStyle = 'red'
+          }
+          ctx.font=`${(cellSize / 2)}px Serif`
 
           let text = felt252ToString(pixelText)
 
@@ -100,7 +107,7 @@ export function useRenderGrid() {
               text = String.fromCodePoint(codePoint)
           }
 
-          ctx.fillText(text, x + cellSize / 2, y + cellSize / 2)
+          ctx.fillText(text, x + cellSize / 2, y + cellSize / 1.5)
         }
 
       }

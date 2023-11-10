@@ -15,6 +15,7 @@ const convertSnakeToPascal = (snakeCaseString: string) => {
   }).join('')
 }
 
+/// @dev this does not handle struct params yet...will support this on a later iteration
 const useInteract = (
   contractName: string,
   color: string,
@@ -28,9 +29,6 @@ const useInteract = (
     },
     account: { account }
   } = useDojo()
-
-
-
 
   const solidColor = color.replace('#', '0xFF')
   const decimalColor = convertToDecimal(solidColor)
@@ -63,7 +61,7 @@ const useInteract = (
       return interpret(contractName, position, param.name, contract.abi)
     }
     const isPrimitiveType = param.type.includes("core::integer") || param.type.includes("core::felt252")
-    let type: 'number' | 'string' | 'enum' | 'struct' = 'number'
+    let type: 'number' | 'string' | 'enum' = 'number'
     let variants: {name: string, value: number}[] = []
     if (!isPrimitiveType) {
         const typeDefinition = contract.abi.find(x => x.name === param.type)
@@ -87,7 +85,6 @@ const useInteract = (
 
       // if is not primitive type fill these out
       variants,
-      structDefinition: {},
 
       // for interpret instruction only
       transformValue: undefined,

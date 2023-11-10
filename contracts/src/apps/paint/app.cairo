@@ -1,6 +1,6 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
 use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress};
 
 
@@ -21,13 +21,14 @@ mod paint_actions {
 
     use super::IPaintActions;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::models::registry::Registry;
+
+    use pixelaw::core::models::permissions::{Permission};
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
     use super::APP_KEY;
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
 
     use debug::PrintTrait;
 
@@ -62,9 +63,25 @@ mod paint_actions {
     impl ActionsImpl of IPaintActions<ContractState> {
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(self: @ContractState) {
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let world = self.world_dispatcher.read();
+            let core_actions = pixelaw::core::utils::get_core_actions(world);
 
             core_actions.update_app_name(APP_KEY);
+
+
+            // TODO: replace this with proper granting of permission
+
+            core_actions.update_permission('snake',
+              Permission {
+                alert: false,
+                app: false,
+                color: true,
+                owner: false,
+                text: true,
+                timestamp: false,
+                action: false
+              }
+            );
         }
 
 
@@ -82,10 +99,10 @@ mod paint_actions {
 
             // Load important variables
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
+            let player = core_actions.get_player_address( default_params.for_player);
+            let system = core_actions.get_system_address( default_params.for_system);
 
 
             // Load the Pixel
@@ -138,10 +155,10 @@ mod paint_actions {
             'fade'.print();
 
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
+            let player = core_actions.get_player_address( default_params.for_player);
+            let system = core_actions.get_system_address( default_params.for_system);
             let pixel = get!(world, (position.x, position.y), Pixel);
 
 
@@ -150,7 +167,7 @@ mod paint_actions {
             // If the color is 0,0,0 , let's stop the process, fading is done.
             if r == 0 && g == 0 && b == 0 {
                 'fading is done'.print();
-                
+
                 return;
             }
 

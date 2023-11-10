@@ -5,13 +5,36 @@ import { plugins } from '@/global/config'
 import { Button } from '@/components/ui/button'
 import Footer from '@/components/Footer'
 import { gameModeAtom, positionWithAddressAndTypeAtom } from '@/global/states'
-import { useAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
+import { useApps } from '@/hooks/entities/useApps'
+import { useEntityQuery } from '@dojoengine/react'
+import { Has } from '@latticexyz/recs'
+import { useDojo } from '@/DojoContext'
+import { felt252ToString } from '@/global/utils'
+
+const Apps: React.FC = () => {
+  useApps()
+  return <></>
+}
 
 export default function Plugin() {
+
+  const {
+    setup: {
+      components: {
+        AppName
+      }
+    },
+  } = useDojo()
     const [isOpen, setIsOpen] = React.useState<boolean>(false)
 
-    const [gameMode, setGameMode] = useAtom(gameModeAtom)
-  const [ positionWithAddressAndType ] = useAtom(positionWithAddressAndTypeAtom)
+  const [gameMode, setGameMode] = useAtom(gameModeAtom)
+  const positionWithAddressAndType = useAtomValue(positionWithAddressAndTypeAtom)
+
+
+  // TODO: ideally the icons should also come from the contracts instead of hardcoded in
+  const apps = useEntityQuery([Has(AppName)])
+    .map(name => felt252ToString(name))
 
     return (
         <>
@@ -60,7 +83,9 @@ export default function Plugin() {
                         ])}
                     >
                         {
-                            plugins.map((plugin, index) => {
+                            plugins
+                              .filter(plugin => apps.includes(plugin.name))
+                              .map((plugin, index) => {
                               const selected = plugin.name === gameMode
                                 return (
                                     <div
@@ -104,6 +129,7 @@ export default function Plugin() {
                     owner={String(positionWithAddressAndType.address)} />
                 </div>
             </div>
+          <Apps />
         </>
     )
 }

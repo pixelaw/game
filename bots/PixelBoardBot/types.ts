@@ -4,7 +4,8 @@ export type Pixel = {
   color: {
     r: number,
     g: number,
-    b: number
+    b: number,
+    a: number,
   },
   text: string
 }

@@ -1,8 +1,5 @@
 use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
-
-use pixelaw::core::models::registry::Registry;
-
-
+use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 
 #[derive(Serde, Copy, Drop, Introspect)]
 enum Direction {
@@ -45,23 +42,23 @@ const U64_MAX: u64 = 0xFFFFFFFFFFFFFFFF;
 
 /// Computes the starknet keccak to have a hash that fits in one felt.
 fn starknet_keccak(data: Span<felt252>) -> felt252 {
-  let mut u256_data: Array<u256> = array![];
+    let mut u256_data: Array<u256> = array![];
 
-  let mut i = 0_usize;
-  loop {
-    if i == data.len() {
-      break;
-    }
-    u256_data.append((*data[i]).into());
-    i += 1;
-  };
+    let mut i = 0_usize;
+    loop {
+        if i == data.len() {
+            break;
+        }
+        u256_data.append((*data[i]).into());
+        i += 1;
+    };
 
-  let mut hash = keccak::keccak_u256s_be_inputs(u256_data.span());
-  let low = integer::u128_byte_reverse(hash.high);
-  let high = integer::u128_byte_reverse(hash.low);
-  hash = u256 { low, high };
-  hash = hash & 0x03ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff_u256;
-  hash.try_into().expect('starknet keccak overflow')
+    let mut hash = keccak::keccak_u256s_be_inputs(u256_data.span());
+    let low = integer::u128_byte_reverse(hash.high);
+    let high = integer::u128_byte_reverse(hash.low);
+    hash = u256 { low, high };
+    hash = hash & 0x03ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff_u256;
+    hash.try_into().expect('starknet keccak overflow')
 }
 
 
@@ -97,4 +94,17 @@ fn get_position(direction: Direction, position: Position) -> Position {
             }
         },
     }
+}
+
+use pixelaw::core::actions::{IActionsDispatcher,IActionsDispatcherTrait, CORE_ACTIONS_KEY};
+    use pixelaw::core::models::registry::{App, AppName, CoreActionsAddress};
+/// Returns the PixeLAW Core actions as Dispatcher, ready to use
+fn get_core_actions_address(world: IWorldDispatcher) -> ContractAddress {
+    let address = get!(world, CORE_ACTIONS_KEY, (CoreActionsAddress));
+    address.value
+}
+
+fn get_core_actions(world: IWorldDispatcher) -> IActionsDispatcher {
+  let address = get!(world, CORE_ACTIONS_KEY, (CoreActionsAddress));
+  IActionsDispatcher { contract_address: address.value }
 }

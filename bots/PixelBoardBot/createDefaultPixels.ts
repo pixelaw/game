@@ -13,7 +13,10 @@ const createDefaultPixels = (gridHeight: number, gridWidth: number) => {
       defaultPixels.push({
         x: columnIndex, // The x-coordinate of the pixel
         y: rowIndex, // The y-coordinate of the pixel
-        color: DEFAULT_COLOR, // The color of the pixel
+        color: {
+          ...DEFAULT_COLOR,
+          a: 1
+        }, // The color of the pixel
         text: '' // The text of the pixel
       })
     }

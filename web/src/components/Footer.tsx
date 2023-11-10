@@ -1,6 +1,9 @@
 import { cn } from '@/lib/utils'
-import { formatAddress } from '@/global/utils.ts'
+import { felt252ToString, formatAddress } from '@/global/utils.ts'
 import { useDojo } from '@/DojoContext.tsx'
+import { useComponentValue } from '@dojoengine/react'
+import { getEntityIdFromKeys } from '@dojoengine/utils'
+import { EntityIndex } from '@latticexyz/recs'
 
 type PropsType = {
     coordinates: {
@@ -14,10 +17,20 @@ type PropsType = {
 
 export default function Footer(props: PropsType) {
   const {
+    setup: {
+      components: {
+        App,
+      },
+    },
     account: {
       account,
     },
   } = useDojo()
+
+  const system = (props.type === 'N/A' ? 0 : props.type) ?? 0
+
+    const systemId = getEntityIdFromKeys([BigInt(system)]) as EntityIndex
+    const app = useComponentValue(App, systemId)
 
     return (
         <div
@@ -44,7 +57,7 @@ export default function Footer(props: PropsType) {
                     className={'text-white font-semibold ml-1'}>{`${props.coordinates.x}, ${props.coordinates.y}`}</span>
                 </h3>
                 <h3 className={cn(['text-brand-violetAccent04 text-sm'])}>Type: <span
-                    className={'text-white font-semibold ml-1'}>{props.type ?? 'null'}</span></h3>
+                    className={'text-white font-semibold ml-1'}>{felt252ToString(app?.name ?? 'null')}</span></h3>
                 <h3 className={cn(['text-brand-violetAccent04 text-sm'])}>Owner: <span
                   className={'text-white font-semibold ml-1'}>{account.address === props.owner ? 'Me' : formatAddress(String(props.owner))}</span>
                 </h3>

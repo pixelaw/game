@@ -1,17 +1,27 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
+use pixelaw::core::models::permissions::{Permission};
+    use pixelaw::core::models::registry::{App, AppName, CoreActionsAddress};
 
 use starknet::{ContractAddress, ClassHash};
 
+const CORE_ACTIONS_KEY: felt252 = 'core_actions';
 
 #[starknet::interface]
 trait IActions<TContractState> {
     fn init(self: @TContractState);
+    fn update_permission(self: @TContractState, for_system: felt252, permission: Permission);
     fn update_app_name(self: @TContractState, name: felt252);
-    fn has_write_access(self: @TContractState, for_player: ContractAddress,for_system: ContractAddress,  pixel: Pixel, pixel_update: PixelUpdate,) -> bool;
+    fn has_write_access(
+        self: @TContractState,
+        for_player: ContractAddress,
+        for_system: ContractAddress,
+        pixel: Pixel,
+        pixel_update: PixelUpdate,
+    ) -> bool;
     fn process_queue(
         self: @TContractState,
-        id:felt252,
+        id: felt252,
         timestamp: u64,
         called_system: ContractAddress,
         selector: felt252,
@@ -24,7 +34,15 @@ trait IActions<TContractState> {
         selector: felt252,
         calldata: Span<felt252>
     );
-    fn update_pixel(self: @TContractState, for_player: ContractAddress, for_system: ContractAddress,  pixel_update: PixelUpdate);
+    fn update_pixel(
+        self: @TContractState,
+        for_player: ContractAddress,
+        for_system: ContractAddress,
+        pixel_update: PixelUpdate
+    );
+    fn new_app(self: @TContractState, system: ContractAddress, name: felt252) -> App;
+    fn get_system_address(self: @TContractState, for_system: ContractAddress) -> ContractAddress;
+    fn get_player_address(self: @TContractState, for_player: ContractAddress) -> ContractAddress;
 }
 
 
@@ -35,14 +53,15 @@ mod actions {
     };
     use starknet::info::TxInfo;
     use super::IActions;
-    use pixelaw::core::models::registry::{AppBySystem, AppByName, Registry};
+    use pixelaw::core::models::registry::{App, AppName, CoreActionsAddress};
     use pixelaw::core::models::permissions::{Permission, Permissions};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
     use debug::PrintTrait;
     use poseidon::poseidon_hash_span;
     use pixelaw::core::models::queue::{QueueItem};
-  use zeroable::Zeroable;
+    use pixelaw::core::utils::{get_core_actions_address};
+    use zeroable::Zeroable;
 
 
     #[derive(Drop, starknet::Event)]
@@ -61,7 +80,7 @@ mod actions {
 
     #[derive(Drop, starknet::Event)]
     struct AppNameUpdated {
-        app: AppBySystem,
+        app: App,
         caller: felt252
     }
 
@@ -79,7 +98,24 @@ mod actions {
         /// Initializes the Pixelaw actions model
         fn init(self: @ContractState) {
             let world = self.world_dispatcher.read();
-            Registry::set_core_actions_address(world, get_contract_address());
+
+            set!(
+                world,
+                (CoreActionsAddress { key: super::CORE_ACTIONS_KEY, value: get_contract_address() })
+            );
+        }
+
+        /// not performing checks because it's only granting permissions to a system by the caller
+        /// it is in the app's responsibility to handle update_permission responsibly
+        fn update_permission(self: @ContractState, for_system: felt252, permission: Permission) {
+            let world = self.world_dispatcher.read();
+            let caller_address = get_caller_address();
+
+            // Retrieve the App of the for_system
+            let allowed_app = get!(world, for_system, (AppName));
+            let allowed_app = allowed_app.system;
+
+            set!(world, Permissions { allowing_app: caller_address, allowed_app, permission });
         }
 
 
@@ -91,7 +127,7 @@ mod actions {
         fn update_app_name(self: @ContractState, name: felt252) {
             let world = self.world_dispatcher.read();
             let system = get_caller_address();
-            let app = Registry::new_app(world, system, name);
+            let app = self.new_app(system, name);
             emit!(world, AppNameUpdated { app, caller: system.into() });
         }
 
@@ -114,19 +150,22 @@ mod actions {
 
             // Retrieve the caller system from the address.
             // This prevents non-system addresses to schedule queue
-            // let caller_system = get!(world, caller_address, (AppBySystem)).system;
+            // let caller_system = get!(world, caller_address, (App)).system;
 
             // let calldata_span = calldata.span();
 
             // hash the call and store the hash for verification
             let id = poseidon_hash_span(
-                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata)]
+                array![
+                    timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata)
+                ]
                     .span()
             );
 
-
             // Emit the event, so an external scheduler can pick it up
-            emit!(world, QueueScheduled { id, timestamp, called_system, selector, calldata: calldata });
+            emit!(
+                world, QueueScheduled { id, timestamp, called_system, selector, calldata: calldata }
+            );
             'schedule_queue DONE'.print();
         }
 
@@ -153,7 +192,9 @@ mod actions {
 
             // Recreate the id to check the integrity
             let calculated_id = poseidon_hash_span(
-                array![timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata)]
+                array![
+                    timestamp.into(), called_system.into(), selector, poseidon_hash_span(calldata)
+                ]
                     .span()
             );
 
@@ -161,7 +202,6 @@ mod actions {
 
             // Only valid when the queue item was found by the hash
             assert(calculated_id == id, 'Invalid Id');
-
 
             // Make the call itself
             starknet::call_contract_syscall(called_system, selector, calldata);
@@ -177,7 +217,7 @@ mod actions {
             for_system: ContractAddress,
             pixel: Pixel,
             pixel_update: PixelUpdate
-            ) -> bool {
+        ) -> bool {
             let world = self.world_dispatcher.read();
 
             // The originator of the transaction
@@ -200,7 +240,7 @@ mod actions {
             // The caller_address is a System, let's see if it has access
 
             // Retrieve the App of the calling System
-            let caller_app = get!(world, get_caller_address(), (AppBySystem));
+            let caller_app = get!(world, caller_address, (App));
 
             // TODO decide whether an App by default has write on a pixel with same App?
 
@@ -210,29 +250,28 @@ mod actions {
                 return true;
             }
 
-
             let permissions = get!(world, (pixel.app, caller_app.system).into(), (Permissions));
 
-            if pixel_update.alert.is_some() {
-                assert(permissions.permission.alert, 'Cannot update alert')
+            if pixel_update.alert.is_some() && !permissions.permission.alert {
+                return false;
             };
-            if pixel_update.app.is_some() {
-                assert(permissions.permission.app, 'Cannot update app')
+            if pixel_update.app.is_some() && !permissions.permission.alert {
+                return false;
             };
-            if pixel_update.color.is_some() {
-                assert(permissions.permission.color, 'Cannot update color')
+            if pixel_update.color.is_some() && !permissions.permission.color {
+                return false;
             };
-            if pixel_update.owner.is_some() {
-                assert(permissions.permission.owner, 'Cannot update owner')
+            if pixel_update.owner.is_some() && !permissions.permission.owner {
+                return false;
             };
-            if pixel_update.text.is_some() {
-                assert(permissions.permission.text, 'Cannot update text')
+            if pixel_update.text.is_some() && !permissions.permission.text {
+                return false;
             };
-            if pixel_update.timestamp.is_some() {
-                assert(permissions.permission.timestamp, 'Cannot update timestamp')
+            if pixel_update.timestamp.is_some() && !permissions.permission.timestamp {
+                return false;
             };
-            if pixel_update.action.is_some() {
-                assert(permissions.permission.action, 'Cannot update action')
+            if pixel_update.action.is_some() && !permissions.permission.action {
+                return false;
             };
 
             // Since we checked all the permissions and no assert fired, we can return true
@@ -240,12 +279,19 @@ mod actions {
         }
 
 
-        fn update_pixel(self: @ContractState, for_player: ContractAddress, for_system: ContractAddress, pixel_update: PixelUpdate) {
+        fn update_pixel(
+            self: @ContractState,
+            for_player: ContractAddress,
+            for_system: ContractAddress,
+            pixel_update: PixelUpdate
+        ) {
             'update_pixel'.print();
             let world = self.world_dispatcher.read();
             let mut pixel = get!(world, (pixel_update.x, pixel_update.y), (Pixel));
 
-            assert(self.has_write_access(for_player,for_system,pixel, pixel_update), 'No access!');
+            assert(
+                self.has_write_access(for_player, for_system, pixel, pixel_update), 'No access!'
+            );
 
             // If the pixel has no owner set yet, do that now.
             if pixel.created_at == 0 {
@@ -280,12 +326,92 @@ mod actions {
             }
 
             if pixel_update.action.is_some() {
-              pixel.action = pixel_update.action.unwrap()
+                pixel.action = pixel_update.action.unwrap()
             }
 
             // Set Pixel
             set!(world, (pixel));
             'update_pixel DONE'.print();
+        }
+
+
+        fn get_player_address(
+            self: @ContractState, for_player: ContractAddress
+        ) -> ContractAddress {
+            let world = self.world_dispatcher.read();
+            if for_player.is_zero() {
+                'get_player_address.zero'.print();
+                let result = get_tx_info().unbox().account_contract_address;
+                result.print();
+                // Return the caller account from the transaction (the end user)
+                return result;
+            } else {
+                'get_player_address.nonzero'.print();
+                // Check that the caller is the CoreActions contract
+                assert(get_caller_address() == get_core_actions_address(world), 'Invalid caller');
+
+                // Return the for_player
+                return for_player;
+            }
+        }
+
+
+        fn get_system_address(
+            self: @ContractState, for_system: ContractAddress
+        ) -> ContractAddress {
+            let world = self.world_dispatcher.read();
+            if !for_system.is_zero() {
+                // Check that the caller is the CoreActions contract
+                // Otherwise, it should be 0 (if caller not core_actions)
+                assert(
+                    get_caller_address() == get_core_actions_address(world),
+                    'for_system == 0 unless schedule'
+                );
+
+                // Return the for_player
+                return for_system;
+            } else {
+                // Return the caller account from the transaction (the end user)
+                return get_contract_address();
+            }
+        }
+
+        /// Registers an App
+        ///
+        /// # Arguments
+        ///
+        /// * `system` - Contract address of the app's systems
+        /// * `name` - Name of the app
+        ///
+        /// # Returns
+        ///
+        /// * `App` - Struct with contractaddress and name fields
+        fn new_app(self: @ContractState, system: ContractAddress, name: felt252) -> App {
+            let world = self.world_dispatcher.read();
+            // Load app
+            let mut app = get!(world, system, (App));
+
+            // Load app_name
+            let mut app_name = get!(world, name, (AppName));
+
+            // Ensure neither contract nor name have been registered
+            assert(
+                app.name == 0
+                    && app_name.system == starknet::contract_address_const::<0x0>(),
+                'app already set'
+            );
+
+            // Associate system with name
+            app.name = name;
+
+            // Associate name with system
+            app_name.system = system;
+
+            // Store both associations
+            set!(world, (app, app_name));
+
+            // Return the system association
+            app
         }
     }
 }

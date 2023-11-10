@@ -1,7 +1,7 @@
 use starknet::{ContractAddress, ClassHash};
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 
-use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
 
 const APP_KEY: felt252 = 'rps';
 const GAME_MAX_DURATION: u64 = 20000;
@@ -74,9 +74,9 @@ mod rps_actions {
     use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
     use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
 
-    use pixelaw::core::models::registry::Registry;
+
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
 
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
@@ -101,10 +101,10 @@ mod rps_actions {
 
 
     #[external(v0)]
-    impl ActionsImpl of IRpsActions<ContractState> {
+    impl RpsActionsImpl of IRpsActions<ContractState> {
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(self: @ContractState) {
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let core_actions = get_core_actions(self.world_dispatcher.read());
 
             core_actions.update_app_name(APP_KEY);
         }
@@ -114,10 +114,10 @@ mod rps_actions {
 
             // Load important variables
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
+            let player = core_actions.get_player_address(default_params.for_player);
+            let system = core_actions.get_system_address(default_params.for_system);
 
             let pixel = get!(world, (position.x, position.y), Pixel);
 
@@ -166,7 +166,7 @@ mod rps_actions {
                     PixelUpdate {
                         x: position.x,
                         y: position.y,
-                        color: Option::None,
+                        color: Option::Some(default_params.color),
                         alert: Option::None, // TODO figure out how we use alert
                         timestamp: Option::None,
                         text: Option::Some(
@@ -184,10 +184,10 @@ mod rps_actions {
 
             // Load important variables
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
+            let player = core_actions.get_player_address(default_params.for_player);
+            let system = core_actions.get_system_address( default_params.for_system);
 
             let pixel = get!(world, (position.x, position.y), Pixel);
 
@@ -240,10 +240,10 @@ mod rps_actions {
 
             // Load important variables
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
+            let player = core_actions.get_player_address(default_params.for_player);
+            let system = core_actions.get_system_address( default_params.for_system);
 
             let pixel = get!(world, (position.x, position.y), Pixel);
 
@@ -337,10 +337,10 @@ mod rps_actions {
 
             // Load important variables
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
+            let player = core_actions.get_player_address(default_params.for_player);
+            let system = core_actions.get_system_address( default_params.for_system);
             let pixel = get!(world, (position.x, position.y), Pixel);
             let game = get!(world, (position.x, position.y), Game);
 
