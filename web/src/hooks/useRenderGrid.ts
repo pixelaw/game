@@ -92,6 +92,11 @@ export function useRenderGrid() {
 
         if (pixelText) {
           ctx.textAlign = 'center'
+
+          /// "✂" seems to not have its own color and such so doing a quick fix by adding a fill-color to it
+          if (pixelText === '0x552b32373032') {
+            ctx.fillStyle = 'red'
+          }
           ctx.font=`${(cellSize / 2)}px Serif`
 
           let text = felt252ToString(pixelText)
