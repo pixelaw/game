@@ -108,9 +108,8 @@ export type Variant = {
 
 export type ParamDefinitionType = {
   name: string,
-  type: 'string' | 'number' | 'enum' | 'struct',
+  type: 'string' | 'number' | 'enum',
   variants: Variant[],
-  structDefinition: Record<string, any>
   transformValue?: (value: number) => bigint,
   value?: number | null
 }
@@ -121,7 +120,7 @@ const interpret: InterpretType = (appName: string, position: {x: number, y: numb
   const [instruction, ...otherValues] = typeInstruction.split("_")
   switch (instruction) {
     case 'cr': {
-      let finalizedType: 'number' | 'string' | 'enum' | 'struct' = 'number'
+      let finalizedType: 'number' | 'string' | 'enum' = 'number'
       const [type, name] = otherValues
       let variants: {name: string, value: number}[] = []
       if (!isPrimitive(type)) {
@@ -148,10 +147,8 @@ const interpret: InterpretType = (appName: string, position: {x: number, y: numb
           return poseidonHashMany([BigInt(value), BigInt(SALT)])
         },
         variants,
-        type: finalizedType,
-        structDefinition: {}
+        type: finalizedType
       }
-      break
     }
     case 'rv': {
       const [name] = otherValues
@@ -160,10 +157,8 @@ const interpret: InterpretType = (appName: string, position: {x: number, y: numb
         name,
         variants: [],
         type: 'number',
-        structDefinition: {},
         value: getStorage(appName, name, position, 'value') ?? 0
       }
-      break
     }
     case 'rs': {
       const [name] = otherValues
@@ -172,10 +167,8 @@ const interpret: InterpretType = (appName: string, position: {x: number, y: numb
         name,
         variants: [],
         type: 'number',
-        structDefinition: {},
         value: getStorage(appName, name, position, 'salt') ?? 0
       }
-      break
     }
     default: throw new Error(`unknown instruction: ${typeInstruction}`)
   }
