@@ -1,6 +1,8 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 
 type ParamDefinition = {
   name: string,
@@ -18,52 +20,71 @@ type PropsType = {
   onOpenChange?: (open: boolean) => void
 }
 
+type EnumPickerPropsType = {
+  value?: number,
+  label: string
+  variants: {name: string, value: number}[],
+  onChange?: (value: number) => void
+}
+
+const EnumPicker: React.FC<EnumPickerPropsType> = ( { label, value, variants, onChange }) => {
+  return (
+    <Select
+      value={value?.toString()}
+      onValueChange={(value) => {
+        if (onChange) onChange(parseInt(value))
+      }}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder={label} />
+      </SelectTrigger>
+      <SelectContent>
+        {variants.map(({value, name}) => (
+          <SelectItem value={value.toString()} key={name}>{name}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
 const ParamPicker: React.FC<PropsType> = ({ value, onChange, params, onSubmit, open, onOpenChange }) => {
   const hasOnSubmit = !!onSubmit
-  console.log(hasOnSubmit)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className={'p-md'}>
         <div>
           {params.map((param) => {
 
             switch (param.type) {
               case 'enum':
                 return (
-                  <label key={param.name}>
-                    {param.name}
-                    <select
-                      className={'text-black'}
-                      value={value[param.name]}
-                      onChange={(e) => onChange({...value, [param.name]: e.target.value})}
-                    >
-                      {param.variants?.map((variant) => (
-                        <option key={variant.value} value={variant.value}>{variant.name}</option>
-                      ))}
-                    </select>
-                  </label>
+                  <EnumPicker
+                    key={param.name}
+                    value={value[param.name]}
+                    label={param.name}
+                    variants={param.variants ?? []}
+                    onChange={(e) => onChange({...value, [param.name]: e})}
+                  />
                 );
               case 'number':
                 return (
-                  <label key={param.name}>
-                    {param.name}
-                    <input
-                      type="number"
-                      value={value[param.name]}
-                      onChange={(e) => onChange({...value, [param.name]: Number(e.target.value)})}
-                    />
-                  </label>
+                  <Input
+                    key={param.name}
+                    type={'number'}
+                    placeholder={param.name}
+                    value={value[param.name]}
+                    onChange={(e) => onChange({...value, [param.name]: Number(e.target.value)})}
+                  />
                 );
               case 'string':
                 return (
-                  <label key={param.name}>
-                    {param.name}
-                    <input
-                      type="text"
-                      value={value[param.name]}
-                      onChange={(e) => onChange({...value, [param.name]: e.target.value})}
-                    />
-                  </label>
+                  <Input
+                    key={param.name}
+                    type={'text'}
+                    placeholder={param.name}
+                    value={value[param.name]}
+                    onChange={(e) => onChange({...value, [param.name]: e.target.value})}
+                  />
                 );
               default:
                 return null;
@@ -71,8 +92,8 @@ const ParamPicker: React.FC<PropsType> = ({ value, onChange, params, onSubmit, o
           })}
         </div>
         {hasOnSubmit && (
-          <DialogFooter className={'justify-center'}>
-            <Button onClick={onSubmit}>Submit Transaction</Button>
+          <DialogFooter>
+            <Button size={"sm"} onClick={onSubmit}>confirm</Button>
           </DialogFooter>
         )}
 
