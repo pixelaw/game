@@ -60,6 +60,8 @@ mod tests {
 
         world.grant_writer('Game',hunter_actions_address);
         world.grant_writer('Player',hunter_actions_address);
+        
+        world.grant_writer('LastAttempt',hunter_actions_address);
 
 
         (world, core_actions, hunter_actions)
@@ -81,12 +83,7 @@ mod tests {
 
         let color = encode_color(1, 1, 1);
 
-        // set!(world,
-        //     LastAttempt{
-        //         player: player1,
-        //         timestamp: 0
-        //     }
-        // );
+        
 
         hunter_actions
             .interact(
