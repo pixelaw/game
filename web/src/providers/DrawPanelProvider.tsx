@@ -273,6 +273,7 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       {children}
       <ParamPicker
         value={additionalParams}
+        setAdditionalParams={setAdditionalParams}
         onChange={(newValue) => {
           setAdditionalParams(newValue)
           // TODO: right now this is assuming we olways only have one other parameter aside from the defaultParams
