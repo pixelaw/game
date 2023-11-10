@@ -1,7 +1,7 @@
 import React, {SetStateAction} from 'react'
 import {CellDatum, Coordinate, NeedsAttentionDatum} from '@/components/shared/DrawPanel.tsx'
 import {useDojo} from '@/DojoContext.tsx'
-import {useAtom, useAtomValue} from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import {
   colorAtom,
   gameModeAtom,
@@ -62,9 +62,6 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   //selected color in color pallete
   const [ selectedHexColor,  ] = useAtom(colorAtom)
 
-  //For setting the color of the pixel, getting the x and y coordinates when clicking the pixel
-  const [ coordinates, setCoordinates ] = React.useState<[ number, number ] | undefined>()
-
   // offset is a negative value
   const [ panOffsetX, setPanOffsetX ] = React.useState<number>(0)
   const [ panOffsetY, setPanOffsetY ] = React.useState<number>(0)
@@ -80,8 +77,8 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     `${gameMode}_actions`,
     selectedHexColor,
     {
-      x: position?.x ?? 0,
-      y: position?.y ?? 0
+      x: position?.x ?? 10,
+      y: position?.y ?? 10
     }
   )
 
@@ -174,31 +171,34 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   }
 
   const [openModal, setOpenModal] = React.useState(false)
-
-  const handleInteract = (position: Coordinate) => {
-    updatePixelData(position, selectedHexColor)
-
+  const handleInteract = () => {
     const variables = hasParams ? {
       otherParams: additionalParams
     } : {}
 
     interact.mutateAsync(variables)
-      .then(() => {
-        setCoordinates(undefined)
-      })
+      .then()
       .catch(err => {
         console.error('reversing color because of: ', err)
         setTempData({})
-        setCoordinates(undefined)
       })
 
     setOpenModal(false)
   }
 
-  const handleCellClick = (position: Coordinate) => {
-    setCoordinates([ position[0], position[1] ])
+  const handleCellClick = (coordinate: Coordinate) => {
+    setPositionWithAddressAndType(() => {
+      const pixel = pixels.find(pixel => pixel!.x === coordinate[0] && pixel!.y == coordinate[1])
+      return {
+        x: coordinate[0],
+        y: coordinate[1],
+        address: pixel ? pixel.owner : 'N/A',
+        pixel: pixel ? pixel.app : 'N/A'
+      }
+    })
+    updatePixelData(coordinate, selectedHexColor)
     if (hasParams) setOpenModal(true)
-    else handleInteract(position)
+    else handleInteract()
   }
 
   const handleVisibleAreaCoordinate = (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => {
@@ -223,6 +223,8 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
   }
 
   const handleHover = (coordinate: Coordinate) => {
+    // do not hover when the modal is open
+    if (openModal) return
     setPositionWithAddressAndType(() => {
       const pixel = pixels.find(pixel => pixel!.x === coordinate[0] && pixel!.y == coordinate[1])
       return {
@@ -255,7 +257,7 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       gameMode,
       cellSize,
       selectedHexColor,
-      coordinates,
+      coordinates: [position.x, position.y],
       visibleAreaStart,
       visibleAreaEnd,
       panOffsetX,
@@ -274,9 +276,7 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
         onChange={(newValue) => setAdditionalParams(newValue)}
         params={params}
         open={openModal}
-        onSubmit={() => {
-          if (coordinates) handleInteract(coordinates)
-        }}
+        onSubmit={handleInteract}
         onOpenChange={(open) => setOpenModal(open)}
       />
     </DrawPanelContext.Provider>
