@@ -6,16 +6,17 @@ use pixelaw::core::actions::{
     IActionsDispatcherTrait as ICoreActionsDispatcherTrait
 };
 
-
 #[derive(Model, Copy, Drop, Serde)]
-struct AppBySystem {
+struct App {
     #[key]
     system: ContractAddress,
-    name: felt252
+    name: felt252,
+    // Default action for the UI (a function in the system)
+    action: felt252
 }
 
 #[derive(Model, Copy, Drop, Serde)]
-struct AppByName {
+struct AppName {
     #[key]
     name: felt252,
     system: ContractAddress

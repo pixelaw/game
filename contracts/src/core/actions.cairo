@@ -1,7 +1,7 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
 use pixelaw::core::models::permissions::{Permission};
-    use pixelaw::core::models::registry::{AppBySystem, AppByName, CoreActionsAddress};
+    use pixelaw::core::models::registry::{App, AppName, CoreActionsAddress};
 
 use starknet::{ContractAddress, ClassHash};
 
@@ -40,7 +40,7 @@ trait IActions<TContractState> {
         for_system: ContractAddress,
         pixel_update: PixelUpdate
     );
-    fn new_app(self: @TContractState, system: ContractAddress, name: felt252) -> AppBySystem;
+    fn new_app(self: @TContractState, system: ContractAddress, name: felt252) -> App;
     fn get_system_address(self: @TContractState, for_system: ContractAddress) -> ContractAddress;
     fn get_player_address(self: @TContractState, for_player: ContractAddress) -> ContractAddress;
 }
@@ -53,7 +53,7 @@ mod actions {
     };
     use starknet::info::TxInfo;
     use super::IActions;
-    use pixelaw::core::models::registry::{AppBySystem, AppByName, CoreActionsAddress};
+    use pixelaw::core::models::registry::{App, AppName, CoreActionsAddress};
     use pixelaw::core::models::permissions::{Permission, Permissions};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
@@ -80,7 +80,7 @@ mod actions {
 
     #[derive(Drop, starknet::Event)]
     struct AppNameUpdated {
-        app: AppBySystem,
+        app: App,
         caller: felt252
     }
 
@@ -112,7 +112,7 @@ mod actions {
             let caller_address = get_caller_address();
 
             // Retrieve the App of the for_system
-            let allowed_app = get!(world, for_system, (AppByName));
+            let allowed_app = get!(world, for_system, (AppName));
             let allowed_app = allowed_app.system;
 
             set!(world, Permissions { allowing_app: caller_address, allowed_app, permission });
@@ -150,7 +150,7 @@ mod actions {
 
             // Retrieve the caller system from the address.
             // This prevents non-system addresses to schedule queue
-            // let caller_system = get!(world, caller_address, (AppBySystem)).system;
+            // let caller_system = get!(world, caller_address, (App)).system;
 
             // let calldata_span = calldata.span();
 
@@ -240,7 +240,7 @@ mod actions {
             // The caller_address is a System, let's see if it has access
 
             // Retrieve the App of the calling System
-            let caller_app = get!(world, caller_address, (AppBySystem));
+            let caller_app = get!(world, caller_address, (App));
 
             // TODO decide whether an App by default has write on a pixel with same App?
 
@@ -385,33 +385,33 @@ mod actions {
         ///
         /// # Returns
         ///
-        /// * `AppBySystem` - Struct with contractaddress and name fields
-        fn new_app(self: @ContractState, system: ContractAddress, name: felt252) -> AppBySystem {
+        /// * `App` - Struct with contractaddress and name fields
+        fn new_app(self: @ContractState, system: ContractAddress, name: felt252) -> App {
             let world = self.world_dispatcher.read();
-            // Load app_by_system
-            let mut app_by_system = get!(world, system, (AppBySystem));
+            // Load app
+            let mut app = get!(world, system, (App));
 
-            // Load app_by_name
-            let mut app_by_name = get!(world, name, (AppByName));
+            // Load app_name
+            let mut app_name = get!(world, name, (AppName));
 
             // Ensure neither contract nor name have been registered
             assert(
-                app_by_system.name == 0
-                    && app_by_name.system == starknet::contract_address_const::<0x0>(),
+                app.name == 0
+                    && app_name.system == starknet::contract_address_const::<0x0>(),
                 'app already set'
             );
 
             // Associate system with name
-            app_by_system.name = name;
+            app.name = name;
 
             // Associate name with system
-            app_by_name.system = system;
+            app_name.system = system;
 
             // Store both associations
-            set!(world, (app_by_system, app_by_name));
+            set!(world, (app, app_name));
 
             // Return the system association
-            app_by_system
+            app
         }
     }
 }
