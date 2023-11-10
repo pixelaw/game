@@ -58,9 +58,9 @@ trait ISnakeActions<TContractState> {
 mod snake_actions {
     use starknet::{ContractAddress, get_caller_address, get_contract_address, get_execution_info};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::models::registry::Registry;
+
     use super::{Snake, SnakeSegment};
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters, starknet_keccak};
+    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters, starknet_keccak};
     use super::next_position;
     use super::ISnakeActions;
     use pixelaw::core::actions::{
@@ -99,7 +99,7 @@ mod snake_actions {
     #[external(v0)]
     impl ActionsImpl of ISnakeActions<ContractState> {
         fn init(self: @ContractState) {
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let core_actions = get_core_actions(self.world_dispatcher.read());
 
             core_actions.update_app_name(APP_KEY);
         }
@@ -109,11 +109,11 @@ mod snake_actions {
         fn interact(self: @ContractState, default_params: DefaultParameters, direction: Direction) -> u32 {
             'snake: interact'.print();
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
 
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
+            let player = core_actions.get_player_address(default_params.for_player);
+            let system = core_actions.get_system_address(default_params.for_system);
 
             // Check if there is already a Snake or SnakeSegment here
             let pixel = get!(world, (position.x, position.y), Pixel);
@@ -197,7 +197,7 @@ mod snake_actions {
         fn move(self: @ContractState, owner: ContractAddress) {
             'snake: move'.print();
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let core_actions = get_core_actions(self.world_dispatcher.read());
 
             // Load the Snake
             let mut snake = get!(world, (owner), (Snake));

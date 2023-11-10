@@ -45,7 +45,7 @@ done
 echo "Write permissions for RPS_ACTIONS: Done"
 
 
-echo "Initialize CORE_ACTIONS"
+echo "Initialize CORE_ACTIONS : $CORE_ACTIONS"
 sleep 0.1
 sozo execute $CORE_ACTIONS init
 echo "Initialize CORE_ACTIONS: Done"
