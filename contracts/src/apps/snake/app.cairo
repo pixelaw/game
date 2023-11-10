@@ -176,8 +176,8 @@ mod snake_actions {
             let mut calldata: Array<felt252> = ArrayTrait::new();
             let THIS_CONTRACT_ADDRESS = get_contract_address();
 
-            // Calldata[0] : id
-            calldata.append(id.into());
+            // Calldata[0] : owner address
+            calldata.append(player.into());
 
             // TODO should use something like: starknet_keccak(array!['move'].span())
             let MOVE_SELECTOR = 0x239e4c8fbd11b680d7214cfc26d1780d5c099453f0832beb15fd040aebd4ebb;

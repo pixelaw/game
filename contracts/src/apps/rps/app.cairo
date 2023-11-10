@@ -166,7 +166,7 @@ mod rps_actions {
                     PixelUpdate {
                         x: position.x,
                         y: position.y,
-                        color: Option::None,
+                        color: Option::Some(default_params.color),
                         alert: Option::None, // TODO figure out how we use alert
                         timestamp: Option::None,
                         text: Option::Some(
