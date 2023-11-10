@@ -27,7 +27,7 @@ mod tests {
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
 
-    use super::{actions, IActionsDispatcher, IActionsDispatcherTrait, APP_KEY};
+    use super::{hunter_actions, IHunterActionsDispatcher, IHunterActionsDispatcherTrait, APP_KEY};
 
     #[test]
     #[available_gas(30000000)]

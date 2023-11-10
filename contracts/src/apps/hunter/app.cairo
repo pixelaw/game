@@ -5,7 +5,7 @@ use starknet::{get_caller_address, get_contract_address, get_execution_info, Con
 
 
 #[starknet::interface]
-trait IActions<TContractState> {
+trait IHunterActions<TContractState> {
     fn init(self: @TContractState);
     fn interact(self: @TContractState, default_params: DefaultParameters);
 }
@@ -21,32 +21,32 @@ struct LastAttempt {
 const APP_KEY: felt252 = 'hunter';
 
 #[dojo::contract]
-mod actions {
+mod hunter_actions {
     use poseidon::poseidon_hash_span;
     use starknet::{
         get_tx_info, get_caller_address, get_contract_address, get_execution_info, ContractAddress
     };
 
-    use super::{IActions, LastAttempt};
+    use super::{IHunterActions, LastAttempt};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::models::registry::Registry;
+
     use pixelaw::core::models::permissions::{Permission};
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
     use super::APP_KEY;
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
 
     use debug::PrintTrait;
 
 
     // impl: implement functions specified in trait
     #[external(v0)]
-    impl ActionsImpl of IActions<ContractState> {
-        /// Initialize the Hunter App 
+    impl HunterActionsImpl of IHunterActions<ContractState> {
+        /// Initialize the Hunter App
         fn init(self: @ContractState) {
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let core_actions = get_core_actions(self.world_dispatcher.read());
 
             core_actions.update_app_name(APP_KEY);
         }
@@ -65,10 +65,10 @@ mod actions {
 
             // Load important variables
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
+            let player = core_actions.get_player_address(default_params.for_player);
+            let system = core_actions.get_system_address(default_params.for_system);
             let mut pixel = get!(world, (position.x, position.y), (Pixel));
 
             // Check if we have a winner
@@ -107,7 +107,7 @@ mod actions {
                         text: Option::Some('U+2B50'),   // Star emoji
                         app: Option::Some(system),
                         owner: Option::Some(player),
-                        action: Option::None 
+                        action: Option::None
                     }
                 );
 

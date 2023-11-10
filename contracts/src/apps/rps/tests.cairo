@@ -4,13 +4,13 @@ mod tests {
 
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use pixelaw::core::models::registry::{
-        Registry, app_by_system, app_by_name, core_actions_address
+        app_by_system, app_by_name, core_actions_address
     };
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::pixel::{pixel};
     use pixelaw::core::models::permissions::{permissions};
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
     use dojo::test_utils::{spawn_test_world, deploy_contract};
@@ -20,7 +20,7 @@ mod tests {
     };
     use pixelaw::apps::rps::app::{Game, Player};
     use pixelaw::apps::rps::app::{State, Move};
-    
+
 
 
     use zeroable::Zeroable;

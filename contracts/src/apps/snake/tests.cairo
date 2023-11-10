@@ -10,7 +10,7 @@ mod tests {
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::models::pixel::{pixel};
     use pixelaw::core::models::permissions::{permissions};
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
     use dojo::test_utils::{spawn_test_world, deploy_contract};
@@ -153,7 +153,7 @@ mod tests {
         // Check that 3,1 is still snake color
         assert(get!(world, (3, 1), Pixel).color == SNAKE_COLOR, 'wrong pixel color 6');
 
-        // Move right (head at 5,1 now) 
+        // Move right (head at 5,1 now)
         snake_actions.move(snake_id);
     }
 }
