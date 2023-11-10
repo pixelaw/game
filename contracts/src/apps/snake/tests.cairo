@@ -4,7 +4,7 @@ mod tests {
 
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use pixelaw::core::models::registry::{
-        Registry, app_by_system, app_by_name, core_actions_address
+        Registry, app, app_name, core_actions_address
     };
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
@@ -39,8 +39,8 @@ mod tests {
         let world = spawn_test_world(
             array![
                 pixel::TEST_CLASS_HASH,
-                app_by_system::TEST_CLASS_HASH,
-                app_by_name::TEST_CLASS_HASH,
+                app::TEST_CLASS_HASH,
+                app_name::TEST_CLASS_HASH,
                 core_actions_address::TEST_CLASS_HASH,
                 permissions::TEST_CLASS_HASH,
                 snake::TEST_CLASS_HASH,
@@ -68,8 +68,8 @@ mod tests {
 
         // Setup dojo auth
         world.grant_writer('Pixel',core_actions_address);
-        world.grant_writer('AppBySystem',core_actions_address);
-        world.grant_writer('AppByName',core_actions_address);
+        world.grant_writer('App',core_actions_address);
+        world.grant_writer('AppName',core_actions_address);
         world.grant_writer('CoreActionsAddress',core_actions_address);
         world.grant_writer('Permissions',core_actions_address);
 
