@@ -47,6 +47,8 @@ export function useRenderGrid() {
         if (pixels && pixels.length > 0) {
           const pixel = pixels.find(p => p && p.coordinates[0] === row && p.coordinates[1] === col)
           if (pixel) {
+            /// if hexColor from the contract is empty, then use default color
+            pixel.hexColor = pixel.hexColor === '0x0' ? pixelColor : pixel.hexColor
             // Get the current color of the pixel
             const imageData = ctx.getImageData(x, y, 1, 1).data
             const currentColor = '#' + ((1 << 24) | (imageData[0] << 16) | (imageData[1] << 8) | imageData[2]).toString(16).slice(1)
