@@ -30,9 +30,6 @@ const useInteract = (
     account: { account }
   } = useDojo()
 
-
-
-
   const solidColor = color.replace('#', '0xFF')
   const decimalColor = convertToDecimal(solidColor)
 
