@@ -34,7 +34,7 @@ export default function MainLayout({children}: { children: React.ReactNode }) {
   const [hasNavbar, setHasNavbar] = React.useState<boolean>(false)
   const [hasBackgroundImage, setHasBackgroundImage] = React.useState<boolean>(true)
   const [hasBackgroundOverlay, setHasBackgroundOverlay] = React.useState<boolean>(false)
-  const [currentPage, setCurrentPage] = useLocalStorage('current-page', 0)
+  const [currentPage, setCurrentPage] = useLocalStorage('current-page', 3)
 
   const {
     account: {
