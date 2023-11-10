@@ -102,7 +102,6 @@ const DrawPanel = () => {
 
   function onMouseLeave() {
     setPanning(false)
-    onHover?.([ 0, 0 ])
 
     onVisibleAreaCoordinate?.([ visibleAreaXStart, visibleAreaYStart ], [ visibleAreaXEnd, visibleAreaYEnd ])
   }
