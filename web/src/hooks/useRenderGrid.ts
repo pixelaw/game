@@ -90,6 +90,7 @@ export function useRenderGrid() {
 
         if (pixelText) {
           ctx.textAlign = 'center'
+          ctx.font=`${(cellSize / 2)}px Serif`
 
           let text = felt252ToString(pixelText)
 
@@ -99,7 +100,7 @@ export function useRenderGrid() {
               text = String.fromCodePoint(codePoint)
           }
 
-          ctx.fillText(text, x + cellSize / 2, y + cellSize / 2)
+          ctx.fillText(text, x + cellSize / 2, y + cellSize / 1.5)
         }
 
       }
