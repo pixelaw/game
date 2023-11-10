@@ -16,6 +16,17 @@ struct App {
 }
 
 #[derive(Model, Copy, Drop, Serde)]
+struct AppUser {
+    #[key]
+    system: ContractAddress,
+    #[key]
+    player: ContractAddress,
+    // Default action for the UI (a function in the system)
+    action: felt252
+    // TODO maybe other generic App/User specific settings can go here.
+}
+
+#[derive(Model, Copy, Drop, Serde)]
 struct AppName {
     #[key]
     name: felt252,
