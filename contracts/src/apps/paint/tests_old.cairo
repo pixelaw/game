@@ -27,7 +27,7 @@ mod tests {
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
 
-    use super::{hunter_actions, IHunterActionsDispatcher, IHunterActionsDispatcherTrait, APP_KEY};
+    use super::{actions, IActionsDispatcher, IActionsDispatcherTrait, APP_KEY};
 
     #[test]
     #[available_gas(30000000)]
@@ -61,10 +61,32 @@ mod tests {
 
         let position = Position { x: 0, y: 0 };
 
-        // TODO implement hunter tests
-        
-        assert(true);
-        'Test is working'.print();
+        let new_color = Color { x: position.x, y: position.y, r: 1, g: 1, b: 1 };
 
+        actions_system.put_color(position.clone(), new_color);
+
+        let (owner, app, timestamp) = get!(world, (position).into(), (Owner, PixelType, Timestamp));
+
+        // check owner
+        assert(owner.address == caller.into(), 'incorrect owner.address');
+        assert(owner.x == position.x, 'incorrect owner.x');
+        assert(owner.y == position.y, 'incorrect owner.y');
+
+        // check app
+        assert(app.name == APP_KEY, 'incorrect app.name');
+        assert(app.x == position.x, 'incorrect app.x');
+        assert(app.y == position.y, 'incorrect app.y');
+
+        // check timestamp
+        assert(
+            timestamp.created_at == starknet::get_block_timestamp(),
+            'incorrect timestamp.created_at'
+        );
+        assert(
+            timestamp.updated_at == starknet::get_block_timestamp(),
+            'incorrect timestamp.updated_at'
+        );
+        assert(timestamp.x == position.x, 'incorrect timestamp.x');
+        assert(timestamp.y == position.y, 'incorrect timestamp.y');
     }
 }
