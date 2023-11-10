@@ -5,7 +5,7 @@ import { plugins } from '@/global/config'
 import { Button } from '@/components/ui/button'
 import Footer from '@/components/Footer'
 import { gameModeAtom, positionWithAddressAndTypeAtom } from '@/global/states'
-import { useAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import { useApps } from '@/hooks/entities/useApps'
 import { useEntityQuery } from '@dojoengine/react'
 import { Has } from '@latticexyz/recs'
@@ -29,7 +29,7 @@ export default function Plugin() {
     const [isOpen, setIsOpen] = React.useState<boolean>(false)
 
   const [gameMode, setGameMode] = useAtom(gameModeAtom)
-  const [ positionWithAddressAndType ] = useAtom(positionWithAddressAndTypeAtom)
+  const positionWithAddressAndType = useAtomValue(positionWithAddressAndTypeAtom)
 
 
   // TODO: ideally the icons should also come from the contracts instead of hardcoded in
