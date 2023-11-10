@@ -173,9 +173,9 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
     })
   }
 
-  const handleCellClick = (position: Coordinate) => {
-    setCoordinates([ position[0], position[1] ])
+  const [openModal, setOpenModal] = React.useState(false)
 
+  const handleInteract = (position: Coordinate) => {
     updatePixelData(position, selectedHexColor)
 
     const variables = hasParams ? {
@@ -191,6 +191,14 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
         setTempData({})
         setCoordinates(undefined)
       })
+
+    setOpenModal(false)
+  }
+
+  const handleCellClick = (position: Coordinate) => {
+    setCoordinates([ position[0], position[1] ])
+    if (hasParams) setOpenModal(true)
+    else handleInteract(position)
   }
 
   const handleVisibleAreaCoordinate = (visibleAreaStart: Coordinate, visibleAreaEnd: Coordinate) => {
@@ -261,7 +269,16 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       onHover: handleHover,
     }}>
       {children}
-      {hasParams && <ParamPicker value={additionalParams} onChange={(newValue) => setAdditionalParams(newValue)} params={params} />}
+      <ParamPicker
+        value={additionalParams}
+        onChange={(newValue) => setAdditionalParams(newValue)}
+        params={params}
+        open={openModal}
+        onSubmit={() => {
+          if (coordinates) handleInteract(coordinates)
+        }}
+        onOpenChange={(open) => setOpenModal(open)}
+      />
     </DrawPanelContext.Provider>
   )
 }
