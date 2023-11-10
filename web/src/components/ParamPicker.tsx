@@ -1,8 +1,9 @@
-import React from 'react';
+import React from 'react'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import ButtonGroup from '@/components/ui/ButtonGroup'
 
 type ParamDefinition = {
   name: string,
@@ -28,22 +29,19 @@ type EnumPickerPropsType = {
 }
 
 const EnumPicker: React.FC<EnumPickerPropsType> = ( { label, value, variants, onChange }) => {
+  const id = `enum-group-${label}`
   return (
-    <Select
-      value={value?.toString()}
-      onValueChange={(value) => {
-        if (onChange) onChange(parseInt(value))
-      }}
-    >
-      <SelectTrigger>
-        <SelectValue placeholder={label} />
-      </SelectTrigger>
-      <SelectContent>
-        {variants.map(({value, name}) => (
-          <SelectItem value={value.toString()} key={name}>{name}</SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <>
+      <Label htmlFor={id} className={'capitalize'}>{label}</Label>
+      <ButtonGroup
+        id={id}
+        options={variants.map(variant => { return { label: variant.name, value: variant.value }})}
+        value={value}
+        onChange={(newValue) => {
+          if (onChange) onChange(newValue ?? 0)
+        }}
+      />
+    </>
   )
 }
 
