@@ -1,157 +1,132 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-use pixelaw::core::utils::{Direction, Position, DefaultParameters};
+use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
 use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress};
 
+const APP_KEY: felt252 = 'minesweeper';
+const GAME_MAX_DURATION: u64 = 20000;
+
+#[derive(Model, Copy, Drop, Serde, SerdeLen)]
+struct Game {
+    #[key]
+    x: u64,
+    #[key]
+    y: u64,
+    id: u32,
+    state: State,
+    size: u8,
+    mines_amount: u8,
+    started_timestamp: u64
+}  
 
 #[starknet::interface]
 trait IMinesweeperActions<TContractState> {
+    
+    //1. read the world state
+    //2. get_core_actions to call the `update_app_name` function and add the minesweeper app to the world.
+    //3. update permissions to other apps (if wanted).
     fn init(self: @TContractState);
-    fn interact(self: @TContractState, default_params: DefaultParameters);
+
+    //1. the interact function is a must of any pixelaw app. This is what the front-end calls.
+    //- If you add an optional third parameter, your can allow for additional user input.
+    
+    //2. Load important variables
+    //- world: any system that impacts the world needs to 
+    //- core_actions:
+    //- position: the position clicked by the player. (part of default parameter utils)
+    //- player: get_player_address
+    //- system: get_system_address
+    //- pixel: get the state of selected pixel.
+    
+    //3. check if 10x10 pixel field around the pixel is ownerless.  && has to check if the selected pixel is inside an open minesweeper.
+
+    //4. load the game
+    //- create a game struct(key x, key y, id, state, size, mines_amount, player address, started _timestamp)
+    //- create minesweeper game
+    
+    //5. add game to world State
+    //- update properties of affected pixels.
+    
+    //6. set the mines
+    
+    
+    //7. checks if there is an open game 
+    fn interact(self: @TContractState, default_params: DefaultParameters, size: u8, mines_amount: u8); //Question: How do we work with numerial input?
+
+    //1. Load relevant pixels
+    //- check if pixel is a mine or not.
+    fn explore(self: @TContractState, default_params: DefaultParameters);
+
+
+
+
     fn fade(self: @TContractState, default_params: DefaultParameters);
 }
 
-const APP_KEY: felt252 = 'minesweeper';
-
 #[dojo::contract]
 mod minesweeper_actions {
-    use starknet::{
-        get_tx_info, get_caller_address, get_contract_address, get_execution_info, ContractAddress
+    use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress
     };
-
     use super::IMinesweeperActions;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::models::registry::Registry;
+    use pixelaw::core::models::permissions::{Permission};
     use pixelaw::core::actions::{
         IActionsDispatcher as ICoreActionsDispatcher,
         IActionsDispatcherTrait as ICoreActionsDispatcherTrait
     };
-    use super::APP_KEY;
-    use pixelaw::core::utils::{Direction, Position, DefaultParameters};
-
+    use super::{APP_KEY, GAME_MAX_DURATION, Game};
+    use pixelaw::core::utils::{get_core_actions, Position, DefaultParameters};
     use debug::PrintTrait;
 
-    fn subu8(nr: u8, sub: u8) -> u8 {
-        if nr >= sub {
-            return nr - sub;
-        } else {
-            return 0;
-        }
-    }
+    // #[derive(Drop, starknet::Event)]
+    // struct GameCreated {
+    //     game_id: u32,
+    //     creator: ContractAddress
+    // }
 
-    // impl: implement functions specified in trait
+    // #[event]
+    // #[derive(Drop, starknet::Event)]
+    // enum Event {
+    //     GameCreated: GameCreated
+    // }
+
     #[external(v0)]
-    impl ActionsImpl of IMinesweeperActions<ContractState> {
-        /// Initialize the Minesweeper App
+    impl MinesweeperActionsImpl of IMinesweeperActions<ContractState> {
+
         fn init(self: @ContractState) {
-            let core_actions = Registry::core_actions(self.world_dispatcher.read());
+            let world = self.world_dispatcher.read();
+            let core_actions = pixelaw::core::utils::get_core_actions(world);
 
             core_actions.update_app_name(APP_KEY);
+
+            core_actions.update_permission('snake',
+                Permission {
+                    alert: false,
+                    app: false,
+                    color: true,
+                    owner: false,
+                    text: true,
+                    timestamp: false,
+                    action: false
+                })
+            core_actions.update_permission('paint',
+                Permission {
+                    alert: false,
+                    app: false,
+                    color: true,
+                    owner: false,
+                    text: true,
+                    timestamp: false,
+                    action: false
+                })            
         }
 
-
-        /// Put color on a certain position
-        ///
-        /// # Arguments
-        ///
-        /// * `position` - Position of the pixel.
-        /// * `new_color` - Color to set the pixel to.
-        fn interact(self: @ContractState, default_params: DefaultParameters) {
-            'put_mine'.print();
-
-            // Load important variables
+        fn interact(self: @TContractState, default_params: DefaultParameters, size: u8, mines_amount: u8) {
             let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
+            let core_actions = get_core_actions(world);
             let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
-
-            // Load the Pixel
-            let mut pixel = get!(world, (position.x, position.y), (Pixel));
-
-            // TODO: Load Paint App Settings like the fade steptime
-            // For example for the Cooldown feature
-            let COOLDOWN_SECS = 300; // every player can only have two bombs active at the same time
-
-            // Check if 300 seconds have passed or if the sender is the owner
-            assert(
-                starknet::get_block_timestamp() - pixel.timestamp < COOLDOWN_SECS,
-                'Cooldown not over'
-            );
-
-            assert(
-                pixel.owner.is_zero() || (pixel.owner) == player && starknet::get_block_timestamp()
-                    - pixel.timestamp < COOLDOWN_SECS,
-                'Pixel is already owned'
-            );
-
-            // We can now update color of the pixel
-            core_actions
-                .update_pixel(
-                    player,
-                    system,
-                    PixelUpdate {
-                        x: position.x,
-                        y: position.y,
-                        color: Option::None, //changed because a minesweeper pixel will be invisible
-                        alert: Option::None,
-                        timestamp: Option::None,
-                        text: Option::None,
-                        app: Option::Some(system),
-                        owner: Option::Some(player),
-                        action: Option::None // Not using this feature for paint
-                    }
-                );
-
-            'put_color DONE'.print();
+            let player = core_actions.get_player_address(default_params.for_player);
         }
 
 
-        /// Put color on a certain position
-        ///
-        /// # Arguments
-        ///
-        /// * `position` - Position of the pixel.
-        /// * `new_color` - Color to set the pixel to.
-        fn fade(self: @ContractState, default_params: DefaultParameters) {
-            'fade'.print();
-
-            let world = self.world_dispatcher.read();
-            let core_actions = Registry::core_actions(world);
-            let position = default_params.position;
-            let player = Registry::get_player_address(world, default_params.for_player);
-            let system = Registry::get_system_address(world, default_params.for_system);
-            let pixel = get!(world, (position.x, position.y), Pixel);
-
-            let FADE_SECONDS = 600;
-
-            // We implement fading by scheduling a new put_fading_color
-            let queue_timestamp = starknet::get_block_timestamp() + FADE_SECONDS;
-            let mut calldata: Array<felt252> = ArrayTrait::new();
-
-            let THIS_CONTRACT_ADDRESS = get_contract_address();
-
-            // Calldata[0]: Calling player
-            calldata.append(player.into());
-
-            // Calldata[1]: Calling system
-            calldata.append(THIS_CONTRACT_ADDRESS.into());
-
-            // Calldata[2,3] : Position[x,y]
-            calldata.append(position.x.into());
-            calldata.append(position.y.into());
-
-            // Calldata[4] : Color
-            //calldata.append(new_color.into()); //changed: removed, no color
-
-            core_actions
-                .schedule_queue(
-                    queue_timestamp, // When to fade next
-                    THIS_CONTRACT_ADDRESS, // This contract address
-                    get_execution_info().unbox().entry_point_selector, // This selector
-                    calldata.span() // The calldata prepared
-                );
-            'put_fading_color DONE'.print();
-        }
-    }
 }
