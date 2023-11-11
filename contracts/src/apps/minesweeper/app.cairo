@@ -141,6 +141,7 @@ mod minesweeper_actions {
 			let caller_address = get_caller_address();
             let caller_app = get!(world, caller_address, (App));
 			let mut game = get!(world, (position.x, position.y), Game);
+			let timestamp = starknet::get_block_timestamp();
 
 			if pixel.app == caller_app.system && game.state == State::Open
 			{
@@ -168,7 +169,7 @@ mod minesweeper_actions {
                         state: State::Open,
                         size: size,
                         mines_amount: mines_amount,
-                        started_timestamp: starknet::get_block_timestamp()
+                        started_timestamp: timestamp
                     };
 
                 emit!(world, GameOpened {game_id: game.id, creator: player});
@@ -197,8 +198,8 @@ mod minesweeper_actions {
 								alert: Option::None,
 								timestamp: Option::None,
 								text: Option::None,
-								app: Option::Some(get_contract_address().into()),
-								owner: Option::Some(player.into()),
+								app: Option::Some(system),
+								owner: Option::Some(player),
 								action: Option::Some('reveal'), //Question: Is this the correct way to use it?
 								}
 							);
@@ -206,18 +207,39 @@ mod minesweeper_actions {
 					};
 					i += 1;
 				};
+
+
+
+				// Check if we have a winner
+				
+
+
+				// let mut last_attempt = get!(world, (player), LastAttempt);
+
+				// assert(timestamp - last_attempt.timestamp > COOLDOWN_SEC, 'Not so fast');
+				// assert(pixel.owner.is_zero(), 'Hunt only empty pixels');
+
+				// let timestamp_felt252 = timestamp.into();
+				// let x_felt252 = position.x.into();
+				// let y_felt252 = position.y.into();
+
+				let mut random: u64 = 0;
+				let mut random_number: u64 = 0;
+
 				i = 0;
 				loop {
 					if i > mines_amount {
 						break;
 					}
+					random = timestamp + position.x.into() + position.y.into();
+					random_number = random % (size * size);
 					core_actions
 					.update_pixel(
 						player,
 						system,
 						PixelUpdate {
-							x: position.x + j, //missing a random element
-							y: position.y + i, //missing a random element
+							x: random_number / size,
+							y: random_number % size,
 							color: Option::Some(default_params.color),
 							alert: Option::None,
 							timestamp: Option::None,
