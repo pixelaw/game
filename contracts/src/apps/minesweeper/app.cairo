@@ -69,7 +69,7 @@ trait IMinesweeperActions<TContractState> {
 
 
     //fn fade(self: @TContractState, default_params: DefaultParameters, size: u64);
-	//fn ownerless_space(self: @TContractState, default_params: DefaultParameters, size: u64) -> bool;
+	fn ownerless_space(self: @TContractState, default_params: DefaultParameters, size: u64) -> bool;
 }
 
 #[dojo::contract]
@@ -151,7 +151,12 @@ mod minesweeper_actions {
 					color: default_params.color, //is there an issue here?
 				});
 			} 
-			else if pixel.owner.is_zero() //self.ownerless_space == true //check if size grid ownerless;
+			else if self.ownerless_space(DefaultParameters {
+					for_player: player,
+					for_system: system,
+					position: position,
+					color: default_params.color,
+				}, size: size) == true //check if size grid ownerless;
 			{
 				let mut id = world.uuid(); //do we need this in this condition?
                 game = 
@@ -333,42 +338,37 @@ mod minesweeper_actions {
 		// 	'Game ending initiated'.print(); //Clarify how to work with the queue.
 		// }
 
-		// fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u64) -> bool {
-		// 	let world = self.world_dispatcher.read();
-        //     let core_actions = get_core_actions(world);
-        //     let position = default_params.position;
-        //     let player = core_actions.get_player_address(default_params.for_player);
-        //     let system = core_actions.get_system_address(default_params.for_system);
-        //     let mut pixel = get!(world, (position.x, position.y), (Pixel));
+		fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u64) -> bool {
+			let world = self.world_dispatcher.read();
+            let core_actions = get_core_actions(world);
+            let position = default_params.position;
+            let player = core_actions.get_player_address(default_params.for_player);
+            let system = core_actions.get_system_address(default_params.for_system);
+            let mut pixel = get!(world, (position.x, position.y), (Pixel));
 
-		// 	let mut i: u64 = 0;
-		// 	let mut j: u64 = 0;
-		// 	let mut check: bool = true;
+			let mut i: u64 = 0;
+			let mut j: u64 = 0;
+			let mut check_test: bool = true;
 
-		// 	let check = loop {
-		// 		if !(pixel.owner.is_zero() && i <= size)
-		// 		{
-		// 			false
-		// 			//break;
-		// 		}
-		// 		pixel = get!(world, (position.x, (position.y + i)), (Pixel));
-		// 		j = 0;
-		// 		loop {
-		// 			if !(pixel.owner.is_zero() && j <= size)
-		// 			{
-		// 				false
-		// 				//break;
-		// 			}
-		// 			pixel = get!(world, ((position.x + j), position.y), (Pixel));
-		// 			j += 1;
-		// 		};
-		// 		i += 1;
-		// 	};
-		// 	true
-		// 	// if i > size && j > size { //how the hell do I return the right stuff??
-		// 	// 	size + 1
-		// 	// }
-		// 	// size + 1
-		// }
+			let check = loop {
+				if !(pixel.owner.is_zero() && i <= size)
+				{
+					break false;
+				}
+				pixel = get!(world, (position.x, (position.y + i)), (Pixel));
+				j = 0;
+				loop {
+					if !(pixel.owner.is_zero() && j <= size)
+					{
+						break false;
+					}
+					pixel = get!(world, ((position.x + j), position.y), (Pixel));
+					j += 1;
+				};
+				i += 1;
+				break true;
+			};
+			check
+		}
 	}
 }
