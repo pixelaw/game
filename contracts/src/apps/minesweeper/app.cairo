@@ -58,11 +58,15 @@ trait IMinesweeperActions<TContractState> {
     
     //6. set the mines
     
-    fn interact(self: @TContractState, default_params: DefaultParameters, size: u64, mines_amount: u64); //Question: How do we work with numerial input?
+    fn interact(self: @TContractState, default_params: DefaultParameters, size: u64, mines_amount: u64);
 
     //1. Load relevant pixels
     //- check if pixel is a mine or not.
-    fn explore(self: @TContractState, default_params: DefaultParameters);
+    //fn explore(self: @TContractState, default_params: DefaultParameters);
+
+	fn reveal(self: @TContractState, default_params: DefaultParameters);
+	fn explode(self: @TContractState, default_params: DefaultParameters);
+
 
 
 
@@ -142,10 +146,14 @@ mod minesweeper_actions {
 			let mut game = get!(world, (position.x, position.y), Game);
 			let timestamp = starknet::get_block_timestamp();
 
-			if pixel.app == caller_app.system && game.state == State::Open
+			if pixel.app == caller_app.system && game.state == State::Open && pixel.alert == 'reveal'
 			{
-				self.explore(default_params);
-			} 
+				self.reveal(default_params);
+			}
+			else if pixel.app == caller_app.system && game.state == State::Open && pixel.alert == 'explode'
+			{
+				self.explode(default_params);
+			}
 			else if self.ownerless_space(default_params, size: size) == true //check if size grid ownerless;
 			{
 				let mut id = world.uuid(); //do we need this in this condition?
@@ -168,12 +176,12 @@ mod minesweeper_actions {
                 let mut i: u64 = 0;
 				let mut j: u64 = 0;
                 loop { 
-					if i > size {
+					if i >= size {
 						break;
 					}
 					j = 0;
 					loop { 
-						if j > size {
+						if j >= size {
 							break;
 						}
 						core_actions
@@ -184,12 +192,12 @@ mod minesweeper_actions {
 								x: position.x + j,
 								y: position.y + i,
 								color: Option::Some(default_params.color), //should I pass in a color to define the minesweepers field color?
-								alert: Option::None,
+								alert: Option::Some('reveal'),
 								timestamp: Option::None,
 								text: Option::None,
 								app: Option::Some(system),
 								owner: Option::Some(player),
-								action: Option::Some('reveal'), //Question: Is this the correct way to use it?
+								action: Option::None,
 								}
 							);
 							j += 1;
@@ -202,7 +210,7 @@ mod minesweeper_actions {
 
 				i = 0;
 				loop {
-					if i > mines_amount {
+					if i >= mines_amount {
 						break;
 					}
 					random = (timestamp + i) + position.x.into() + position.y.into();
@@ -215,12 +223,12 @@ mod minesweeper_actions {
 							x: random_number / size,
 							y: random_number % size,
 							color: Option::Some(default_params.color),
-							alert: Option::None,
+							alert: Option::Some('explode'),
 							timestamp: Option::None,
 							text: Option::None,
 							app: Option::Some(system),
 							owner: Option::Some(player),
-							action: Option::Some('explode'), //Question: See above.
+							action: Option::None,
 						}
 					);
 					i += 1;
@@ -236,7 +244,52 @@ mod minesweeper_actions {
 			// }, size: size);
 		}
 
-		fn explore(self: @ContractState, default_params: DefaultParameters) {
+		// fn explore(self: @ContractState, default_params: DefaultParameters) {
+		// 	let world = self.world_dispatcher.read();
+        //     let core_actions = get_core_actions(world);
+        //     let position = default_params.position;
+        //     let player = core_actions.get_player_address(default_params.for_player);
+        //     let system = core_actions.get_system_address(default_params.for_system);
+        //     let mut pixel = get!(world, (position.x, position.y), (Pixel));
+
+		// 	if pixel.action == 'reveal' {
+		// 		core_actions
+		// 			.update_pixel(
+		// 				player,
+		// 				system,
+		// 				PixelUpdate {
+		// 					x: position.x,
+		// 					y: position.y,
+		// 					color: Option::Some(default_params.color),
+		// 					alert: Option::None,
+		// 					timestamp: Option::None,
+		// 					text: Option::Some('U+1F30E'),
+		// 					app: Option::None,
+		// 					owner: Option::None,
+		// 					action: Option::None,
+		// 				}
+		// 			);
+		// 	} else if pixel.action == 'explode' {
+		// 		core_actions
+		// 			.update_pixel(
+		// 				player,
+		// 				system,
+		// 				PixelUpdate {
+		// 					x: position.x,
+		// 					y: position.y,
+		// 					color: Option::Some(default_params.color),
+		// 					alert: Option::None,
+		// 					timestamp: Option::None,
+		// 					text: Option::Some('U+1F4A3'),
+		// 					app: Option::None,
+		// 					owner: Option::None,
+		// 					action: Option::None,
+		// 				}
+		// 			);
+		// 	}
+        // }
+
+		fn reveal(self: @ContractState, default_params: DefaultParameters) {
 			let world = self.world_dispatcher.read();
             let core_actions = get_core_actions(world);
             let position = default_params.position;
@@ -244,41 +297,48 @@ mod minesweeper_actions {
             let system = core_actions.get_system_address(default_params.for_system);
             let mut pixel = get!(world, (position.x, position.y), (Pixel));
 
-			if pixel.action == 'reveal' {
-				core_actions
-					.update_pixel(
-						player,
-						system,
-						PixelUpdate {
-							x: position.x,
-							y: position.y,
-							color: Option::Some(default_params.color), //whats the default color here?
-							alert: Option::None,
-							timestamp: Option::None,
-							text: Option::None,
-							app: Option::None,
-							owner: Option::None,
-							action: Option::None,
-						}
-					);
-			} else if pixel.action == 'explode' {
-				core_actions
-					.update_pixel(
-						player,
-						system,
-						PixelUpdate {
-							x: position.x,
-							y: position.y,
-							color: Option::Some(default_params.color),
-							alert: Option::None,
-							timestamp: Option::None,
-							text: Option::Some('U+1F4A3'),
-							app: Option::None,
-							owner: Option::None,
-							action: Option::None,
-						}
-					);
-			}
+			core_actions
+				.update_pixel(
+					player,
+					system,
+					PixelUpdate {
+						x: position.x,
+						y: position.y,
+						color: Option::Some(default_params.color),
+						alert: Option::None,
+						timestamp: Option::None,
+						text: Option::Some('U+1F30E'),
+						app: Option::None,
+						owner: Option::None,
+						action: Option::None,
+					}
+				);
+        }
+
+		fn explode(self: @ContractState, default_params: DefaultParameters) {
+			let world = self.world_dispatcher.read();
+            let core_actions = get_core_actions(world);
+            let position = default_params.position;
+            let player = core_actions.get_player_address(default_params.for_player);
+            let system = core_actions.get_system_address(default_params.for_system);
+            let mut pixel = get!(world, (position.x, position.y), (Pixel));
+
+			core_actions
+				.update_pixel(
+					player,
+					system,
+					PixelUpdate {
+						x: position.x,
+						y: position.y,
+						color: Option::Some(default_params.color),
+						alert: Option::None,
+						timestamp: Option::None,
+						text: Option::Some('U+1F4A3'),
+						app: Option::None,
+						owner: Option::None,
+						action: Option::None,
+					}
+				);
         }
 
 		fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u64) -> bool {
