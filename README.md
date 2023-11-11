@@ -132,7 +132,7 @@ via the contracts volume (See the docker-compose.yml for more details), runs the
 the repo's Scarb.toml, and starts up Torii. Keiko Dashboard is accesible via http://localhost:3000/fork.
 
 ```shell
-make start_container
+make start_keiko
 ```
 
 ### Step 3: Get the React frontend ready
@@ -155,6 +155,11 @@ yarn dev
 cd bots
 yarn install
 yarn dev
+````
+- to run here, you can check this page: https://www.npmjs.com/package/canvas
+- the following command might fix your issue.
+````shell
+brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman
 ````
 
 #### NOTE

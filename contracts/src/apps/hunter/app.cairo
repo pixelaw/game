@@ -77,7 +77,7 @@ mod hunter_actions {
 
             let mut last_attempt = get!(world, (player), LastAttempt);
 
-            assert(timestamp - last_attempt.timestamp > COOLDOWN_SEC, 'Not so fast');
+            // assert(timestamp - last_attempt.timestamp > COOLDOWN_SEC, 'Not so fast');
             assert(pixel.owner.is_zero(), 'Hunt only empty pixels');
 
             let timestamp_felt252 = timestamp.into();
@@ -88,8 +88,10 @@ mod hunter_actions {
             let hash: u256 = poseidon_hash_span(array![timestamp_felt252, x_felt252, y_felt252].span()).into();
 
             // Check if the last 3 bytes of the hash are 000
-            let MASK = 0xFFFFFFFFFFFFFFFF0000;  // TODO, this is a placeholder
-            let result = hash & MASK == hash;
+            // let MASK = 0xFFFFFFFFFFFFFFFF0000;  // TODO, this is a placeholder
+            // let MASK: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff; // use this for debug.
+            let MASK: u256 = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00;  // this represents: 1/1024
+            let result = ((hash | MASK) == MASK);
 
             assert(result, 'Oops, no luck');
 

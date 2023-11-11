@@ -8,11 +8,12 @@ homepage = "https://github.com/pixelaw/contracts"
 sierra-replace-ids = true
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v0.3.6" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v0.3.10" }
 
 [[target.dojo]]
 build-external-contracts = []
 
+[lib]
 
 [tool.dojo]
 initializer_class_hash = "0xbeef"
@@ -20,7 +21,9 @@ initializer_class_hash = "0xbeef"
 [scripts]
 init_auth = "./scripts/init_auth.sh"
 post_deploy = "./scripts/update_scarb.sh && ./scripts/update_accounts.sh &&  ./scripts/init_auth.sh"
+post_deploy_mac = "./scripts/update_scarb_mac.sh && ./scripts/update_accounts.sh &&  ./scripts/init_auth.sh"
 deploy = "sozo build &&  sozo migrate --name pixelaw && ./scripts/update_scarb.sh && ./scripts/update_accounts.sh && ./scripts/init_auth.sh"
+deploy_mac = "sozo build &&  sozo migrate --name pixelaw && ./scripts/update_scarb_mac.sh && ./scripts/update_accounts.sh && ./scripts/init_auth.sh"
 spawn_pixel_1 = "./scripts/spawn_pixel_1.sh"
 put_color_1 = "./scripts/put_color_1.sh"
 spawn_rps_1 = "./scripts/spawn_rps_1.sh"

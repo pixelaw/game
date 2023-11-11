@@ -4,7 +4,7 @@ mod tests {
 
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use pixelaw::core::models::registry::{
-        Registry, app, app_name, core_actions_address
+        app, app_name, core_actions_address
     };
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
@@ -102,7 +102,7 @@ mod tests {
         assert(pixel1_1.color == 0, 'wrong pixel color 1');
 
         // Spawn the snake
-        let snake_id = snake_actions
+        snake_actions
             .interact(
                 DefaultParameters {
                     for_player: Zeroable::zero(),
@@ -117,7 +117,7 @@ mod tests {
         assert(pixel1_1.color == SNAKE_COLOR, 'wrong pixel color 2');
 
         // Move the snake
-        snake_actions.move(snake_id);
+        snake_actions.move(player1);
 
         // TODO check if there is a QueueScheduled event and if its correct
 
@@ -130,7 +130,7 @@ mod tests {
         assert(pixel2_1.color == SNAKE_COLOR, 'wrong pixel color 4');
 
         // Move right (head at 3,1 now)
-        snake_actions.move(snake_id);
+        snake_actions.move(player1);
 
         // Check if the pixel is blank again at 2,1
         assert(get!(world, (2, 1), Pixel).color == 0, 'wrong pixel color 5');
@@ -148,12 +148,12 @@ mod tests {
 
 
         // Grow right (head at 4,1 now) -> on top of the painted. Snake should grow
-        snake_actions.move(snake_id);
+        snake_actions.move(player1);
 
         // Check that 3,1 is still snake color
         assert(get!(world, (3, 1), Pixel).color == SNAKE_COLOR, 'wrong pixel color 6');
 
         // Move right (head at 5,1 now)
-        snake_actions.move(snake_id);
+        snake_actions.move(player1);
     }
 }
