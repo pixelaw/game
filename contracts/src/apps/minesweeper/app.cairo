@@ -58,7 +58,7 @@ trait IMinesweeperActions<TContractState> {
     
     //6. set the mines
     
-    fn interact(self: @TContractState, default_params: DefaultParameters, size: u64, mines_amount: u64); //Question: How do we work with numerial input?
+    fn interact(self: @TContractState, default_params: DefaultParameters, size: u64, mines_amount: u64);
 
     //1. Load relevant pixels
     //- check if pixel is a mine or not.
@@ -189,7 +189,7 @@ mod minesweeper_actions {
 								text: Option::None,
 								app: Option::Some(system),
 								owner: Option::Some(player),
-								action: Option::Some('reveal'), //Question: Is this the correct way to use it?
+								action: Option::Some('reveal'),
 								}
 							);
 							j += 1;
@@ -220,7 +220,7 @@ mod minesweeper_actions {
 							text: Option::None,
 							app: Option::Some(system),
 							owner: Option::Some(player),
-							action: Option::Some('explode'), //Question: See above.
+							action: Option::Some('explode'),
 						}
 					);
 					i += 1;
@@ -252,10 +252,10 @@ mod minesweeper_actions {
 						PixelUpdate {
 							x: position.x,
 							y: position.y,
-							color: Option::Some(default_params.color), //whats the default color here?
+							color: Option::Some(default_params.color),
 							alert: Option::None,
 							timestamp: Option::None,
-							text: Option::None,
+							text: Option::Some('U+1F30E'),
 							app: Option::None,
 							owner: Option::None,
 							action: Option::None,
