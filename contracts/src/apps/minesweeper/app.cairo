@@ -168,12 +168,12 @@ mod minesweeper_actions {
                 let mut i: u64 = 0;
 				let mut j: u64 = 0;
                 loop { 
-					if i > size {
+					if i >= size {
 						break;
 					}
 					j = 0;
 					loop { 
-						if j > size {
+						if j >= size {
 							break;
 						}
 						core_actions
@@ -202,7 +202,7 @@ mod minesweeper_actions {
 
 				i = 0;
 				loop {
-					if i > mines_amount {
+					if i >= mines_amount {
 						break;
 					}
 					random = (timestamp + i) + position.x.into() + position.y.into();
