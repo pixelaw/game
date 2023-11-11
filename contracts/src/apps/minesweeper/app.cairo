@@ -58,7 +58,6 @@ trait IMinesweeperActions<TContractState> {
     
     //6. set the mines
     
-    
     fn interact(self: @TContractState, default_params: DefaultParameters, size: u64, mines_amount: u64); //Question: How do we work with numerial input?
 
     //1. Load relevant pixels
@@ -145,19 +144,9 @@ mod minesweeper_actions {
 
 			if pixel.app == caller_app.system && game.state == State::Open
 			{
-				self.explore(DefaultParameters {
-					for_player: player,
-					for_system: system,
-					position: position,
-					color: default_params.color, //is there an issue here?
-				});
+				self.explore(default_params);
 			} 
-			else if self.ownerless_space(DefaultParameters {
-					for_player: player,
-					for_system: system,
-					position: position,
-					color: default_params.color,
-				}, size: size) == true //check if size grid ownerless;
+			else if self.ownerless_space(default_params, size: size) == true //check if size grid ownerless;
 			{
 				let mut id = world.uuid(); //do we need this in this condition?
                 game = 
@@ -208,21 +197,6 @@ mod minesweeper_actions {
 					i += 1;
 				};
 
-
-
-				// Check if we have a winner
-				
-
-
-				// let mut last_attempt = get!(world, (player), LastAttempt);
-
-				// assert(timestamp - last_attempt.timestamp > COOLDOWN_SEC, 'Not so fast');
-				// assert(pixel.owner.is_zero(), 'Hunt only empty pixels');
-
-				// let timestamp_felt252 = timestamp.into();
-				// let x_felt252 = position.x.into();
-				// let y_felt252 = position.y.into();
-
 				let mut random: u64 = 0;
 				let mut random_number: u64 = 0;
 
@@ -231,7 +205,7 @@ mod minesweeper_actions {
 					if i > mines_amount {
 						break;
 					}
-					random = timestamp + position.x.into() + position.y.into();
+					random = (timestamp + i) + position.x.into() + position.y.into();
 					random_number = random % (size * size);
 					core_actions
 					.update_pixel(
@@ -244,8 +218,8 @@ mod minesweeper_actions {
 							alert: Option::None,
 							timestamp: Option::None,
 							text: Option::None,
-							app: Option::Some(get_contract_address().into()),
-							owner: Option::Some(player.into()),
+							app: Option::Some(system),
+							owner: Option::Some(player),
 							action: Option::Some('explode'), //Question: See above.
 						}
 					);
@@ -307,6 +281,37 @@ mod minesweeper_actions {
 			}
         }
 
+		fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u64) -> bool {
+			let world = self.world_dispatcher.read();
+            let core_actions = get_core_actions(world);
+            let position = default_params.position;
+            let mut pixel = get!(world, (position.x, position.y), (Pixel));
+
+			let mut i: u64 = 0;
+			let mut j: u64 = 0;
+			let mut check_test: bool = true;
+
+			let check = loop {
+				if !(pixel.owner.is_zero() && i <= size)
+				{
+					break false;
+				}
+				pixel = get!(world, (position.x, (position.y + i)), (Pixel));
+				j = 0;
+				loop {
+					if !(pixel.owner.is_zero() && j <= size)
+					{
+						break false;
+					}
+					pixel = get!(world, ((position.x + j), position.y), (Pixel));
+					j += 1;
+				};
+				i += 1;
+				break true;
+			};
+			check
+		}
+
 		// this might have to wait due to overloading server.
 		// fn fade(self: @ContractState, default_params: DefaultParameters, size: u64) {
 		// 	let world = self.world_dispatcher.read();
@@ -359,38 +364,5 @@ mod minesweeper_actions {
 		// 		};
 		// 	'Game ending initiated'.print(); //Clarify how to work with the queue.
 		// }
-
-		fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u64) -> bool {
-			let world = self.world_dispatcher.read();
-            let core_actions = get_core_actions(world);
-            let position = default_params.position;
-            let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address(default_params.for_system);
-            let mut pixel = get!(world, (position.x, position.y), (Pixel));
-
-			let mut i: u64 = 0;
-			let mut j: u64 = 0;
-			let mut check_test: bool = true;
-
-			let check = loop {
-				if !(pixel.owner.is_zero() && i <= size)
-				{
-					break false;
-				}
-				pixel = get!(world, (position.x, (position.y + i)), (Pixel));
-				j = 0;
-				loop {
-					if !(pixel.owner.is_zero() && j <= size)
-					{
-						break false;
-					}
-					pixel = get!(world, ((position.x + j), position.y), (Pixel));
-					j += 1;
-				};
-				i += 1;
-				break true;
-			};
-			check
-		}
 	}
 }
