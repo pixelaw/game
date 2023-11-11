@@ -68,8 +68,8 @@ trait IMinesweeperActions<TContractState> {
 
 
 
-    fn fade(self: @TContractState, default_params: DefaultParameters, size: u64);
-	fn ownerless_space(self: @TContractState, default_params: DefaultParameters, size: u64) -> u64;
+    //fn fade(self: @TContractState, default_params: DefaultParameters, size: u64);
+	//fn ownerless_space(self: @TContractState, default_params: DefaultParameters, size: u64) -> bool;
 }
 
 #[dojo::contract]
@@ -151,7 +151,7 @@ mod minesweeper_actions {
 					color: default_params.color, //is there an issue here?
 				});
 			} 
-			else if self.ownerless_space == true //check if size grid ownerless;
+			else if pixel.owner.is_zero() //self.ownerless_space == true //check if size grid ownerless;
 			{
 				let mut id = world.uuid(); //do we need this in this condition?
                 game = 
@@ -198,9 +198,9 @@ mod minesweeper_actions {
 								}
 							);
 							j += 1;
-					}
+					};
 					i += 1;
-				}
+				};
 				i = 0;
 				loop {
 					if i > mines_amount {
@@ -223,16 +223,16 @@ mod minesweeper_actions {
 						}
 					);
 					i += 1;
-				}
+				};
 			} else {
 				'find a free area'.print();
 			}
-			self.fade(DefaultParameters {
-					for_player: player,
-					for_system: system,
-					position: position,
-					color: default_params.color,
-			}, size: size);
+			// self.fade(DefaultParameters {
+			// 		for_player: player,
+			// 		for_system: system,
+			// 		position: position,
+			// 		color: default_params.color,
+			// }, size: size);
 		}
 
 		fn explore(self: @ContractState, default_params: DefaultParameters) {
@@ -280,90 +280,95 @@ mod minesweeper_actions {
 			}
         }
 
-		fn fade(self: @ContractState, default_params: DefaultParameters, size: u64) {
-			let world = self.world_dispatcher.read();
-            let core_actions = get_core_actions(world);
-            let position = default_params.position;
-            let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address(default_params.for_system);
-            let mut pixel = get!(world, (position.x, position.y), (Pixel));
+		// this might have to wait due to overloading server.
+		// fn fade(self: @ContractState, default_params: DefaultParameters, size: u64) {
+		// 	let world = self.world_dispatcher.read();
+        //     let core_actions = get_core_actions(world);
+        //     let position = default_params.position;
+        //     let player = core_actions.get_player_address(default_params.for_player);
+        //     let system = core_actions.get_system_address(default_params.for_system);
+        //     let mut pixel = get!(world, (position.x, position.y), (Pixel));
 
-			//schedule queue to end game
-			let queue_timestamp = starknet::get_block_timestamp() + GAME_MAX_DURATION;
-			let mut calldata: Array<felt252> = ArrayTrait::new();
+		// 	//schedule queue to end game
+		// 	let queue_timestamp = starknet::get_block_timestamp() + GAME_MAX_DURATION;
+		// 	let mut calldata: Array<felt252> = ArrayTrait::new();
 
-            let THIS_CONTRACT_ADDRESS = get_contract_address();
+        //     let THIS_CONTRACT_ADDRESS = get_contract_address();
 
-            // Calldata[0]: Calling player
-            calldata.append(player.into());
+        //     // Calldata[0]: Calling player
+        //     calldata.append(player.into());
 
-            // Calldata[1]: Calling system
-            calldata.append(THIS_CONTRACT_ADDRESS.into());
+        //     // Calldata[1]: Calling system
+        //     calldata.append(THIS_CONTRACT_ADDRESS.into());
 
-			let mut i: u64 = 0;
-			let mut j: u64 = 0;
-			loop { 
-				if i > size {
-					break;
-					}
-					j = 0;
-					loop { 
-						if j > size {
-							break;
-						}
-						// Calldata[2,3] : Position[x,y]
-						calldata.append((position.x + j).into());
-						calldata.append((position.y + i).into());
+		// 	let mut i: u64 = 0;
+		// 	let mut j: u64 = 0;
+		// 	loop { 
+		// 		if i > size {
+		// 			break;
+		// 			}
+		// 			j = 0;
+		// 			loop { 
+		// 				if j > size {
+		// 					break;
+		// 				}
+		// 				// Calldata[2,3] : Position[x,y]
+		// 				calldata.append((position.x + j).into());
+		// 				calldata.append((position.y + i).into());
 
-						// Calldata[4] : Color
-						calldata.append(default_params.color.into());
+		// 				// Calldata[4] : Color
+		// 				calldata.append(default_params.color.into());
 
-						core_actions
-							.schedule_queue(
-								queue_timestamp,
-								THIS_CONTRACT_ADDRESS,
-								get_execution_info().unbox().entry_point_selector, // This selector
-								calldata.span() // The calldata prepared
-							);
-						j += 1;
-					}
-					i += 1;
-				}
-			'Game ending initiated'.print(); //Clarify how to work with the queue.
-		}
+		// 				core_actions
+		// 					.schedule_queue(
+		// 						queue_timestamp,
+		// 						THIS_CONTRACT_ADDRESS,
+		// 						get_execution_info().unbox().entry_point_selector, // This selector
+		// 						calldata.span() // The calldata prepared
+		// 					);
+		// 				j += 1;
+		// 			};
+		// 			i += 1;
+		// 		};
+		// 	'Game ending initiated'.print(); //Clarify how to work with the queue.
+		// }
 
-		fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u64) -> u64 {
-			let world = self.world_dispatcher.read();
-            let core_actions = get_core_actions(world);
-            let position = default_params.position;
-            let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address(default_params.for_system);
-            let mut pixel = get!(world, (position.x, position.y), (Pixel));
+		// fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u64) -> bool {
+		// 	let world = self.world_dispatcher.read();
+        //     let core_actions = get_core_actions(world);
+        //     let position = default_params.position;
+        //     let player = core_actions.get_player_address(default_params.for_player);
+        //     let system = core_actions.get_system_address(default_params.for_system);
+        //     let mut pixel = get!(world, (position.x, position.y), (Pixel));
 
-			let mut i: u64 = 0;
-			let mut j: u64 = 0;
+		// 	let mut i: u64 = 0;
+		// 	let mut j: u64 = 0;
+		// 	let mut check: bool = true;
 
-			loop {
-				if !(pixel.owner.is_zero() && i <= size)
-				{
-					break;
-				}
-				pixel = get!(world, (position.x, (position.y + i)), (Pixel));
-				j = 0;
-				loop {
-					if !(pixel.owner.is_zero() && j <= size)
-					{
-						break;
-					}
-					pixel = get!(world, ((position.x + j), position.y), (Pixel));
-					j += 1;
-				}
-				i += 1;
-			}
-			if i > size && j > size { //how the hell do I return the right stuff??
-				size + 1
-			}
-			size + 1
-		}
+		// 	let check = loop {
+		// 		if !(pixel.owner.is_zero() && i <= size)
+		// 		{
+		// 			false
+		// 			//break;
+		// 		}
+		// 		pixel = get!(world, (position.x, (position.y + i)), (Pixel));
+		// 		j = 0;
+		// 		loop {
+		// 			if !(pixel.owner.is_zero() && j <= size)
+		// 			{
+		// 				false
+		// 				//break;
+		// 			}
+		// 			pixel = get!(world, ((position.x + j), position.y), (Pixel));
+		// 			j += 1;
+		// 		};
+		// 		i += 1;
+		// 	};
+		// 	true
+		// 	// if i > size && j > size { //how the hell do I return the right stuff??
+		// 	// 	size + 1
+		// 	// }
+		// 	// size + 1
+		// }
 	}
 }
