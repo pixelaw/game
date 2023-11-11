@@ -4,7 +4,7 @@ mod tests {
 
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use pixelaw::core::models::registry::{
-        Registry, app, app_name, core_actions_address
+        app, app_name, core_actions_address
     };
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
