@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     #[available_gas(3000000000)]
-    fn test_playthrough() {
+    fn test_create_minefield() {
         // Deploy everything
         let (world, core_actions, minesweeper_actions) = deploy_world();
 
@@ -80,5 +80,58 @@ mod tests {
                 size,
                 mines_amount
             );
-    }   
+    }
+    
+    // #[test]
+    // #[available_gas(3000000000)]
+    // fn test_create_conditions() {
+    //     // Deploy everything
+    //     let (world, core_actions, minesweeper_actions) = deploy_world();
+
+    //     core_actions.init();
+    //     minesweeper_actions.init();
+
+    //     // Impersonate player
+    //     let player = starknet::contract_address_const::<0x1337>();
+    //     starknet::testing::set_account_contract_address(player);
+
+
+
+    //     //computer variables
+    //     let size: u64 = 5;
+    //     let mines_amount: u64 = 10;
+
+    //     //add owned pixel
+    //     core_actions
+    //         .update_pixel(
+    //         player,
+    //         system,
+    //         PixelUpdate {
+    //             x: 1,
+    //             y: 1,
+    //             color: Option::Some(default_params.color), //should I pass in a color to define the minesweepers field color?
+    //             alert: Option::None,
+    //             timestamp: Option::None,
+    //             text: Option::None,
+    //             app: Option::Some(system),
+    //             owner: Option::Some(player),
+    //             action: Option::Some('reveal'),
+    //             }
+    //         );
+        
+
+
+    //     // Player creates minefield
+    //     minesweeper_actions
+    //         .interact(
+    //             DefaultParameters {
+    //                 for_player: Zeroable::zero(),
+    //                 for_system: Zeroable::zero(),
+    //                 position: Position { x: 1, y: 1 },
+    //                 color: 0
+    //             },
+    //             size,
+    //             mines_amount
+    //         );
+    // }
 }

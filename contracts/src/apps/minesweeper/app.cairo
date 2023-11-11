@@ -146,11 +146,13 @@ mod minesweeper_actions {
 			let mut game = get!(world, (position.x, position.y), Game);
 			let timestamp = starknet::get_block_timestamp();
 
-			if pixel.app == caller_app.system && game.state == State::Open && pixel.alert == 'reveal'
+			//if pixel.app == caller_app.system && game.state == State::Open && pixel.alert == 'reveal'
+			if pixel.alert == 'reveal'
 			{
 				self.reveal(default_params);
 			}
-			else if pixel.app == caller_app.system && game.state == State::Open && pixel.alert == 'explode'
+			//else if pixel.app == caller_app.system && game.state == State::Open && pixel.alert == 'explode'
+			else if pixel.alert == 'explode'
 			{
 				self.explode(default_params);
 			}
