@@ -7,4 +7,3 @@ declare "CORE_ACTIONS"=$(cat target/dev/manifest.copy.json | jq -r '.contracts[]
 declare "PAINT_ACTIONS"=$(cat target/dev/manifest.copy.json | jq -r '.contracts[] | select(.name=="paint_actions") | .address')
 declare "RPS_ACTIONS"=$(cat target/dev/manifest.copy.json | jq -r '.contracts[] | select(.name=="rps_actions") | .address')
 declare "SNAKE_ACTIONS"=$(cat target/dev/manifest.copy.json | jq -r '.contracts[] | select(.name=="snake_actions") | .address')
-declare "HUNTER_ACTIONS"=$(cat target/dev/manifest.copy.json | jq -r '.contracts[] | select(.name=="hunter_actions") | .address')

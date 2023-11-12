@@ -45,6 +45,14 @@ done
 echo "Write permissions for RPS_ACTIONS: Done"
 
 
+echo "Write permissions for HUNTER_ACTIONS"
+for model in ${APP_MODELS[@]}; do
+    sleep 0.1
+    sozo auth writer $model $HUNTER_ACTIONS
+done
+echo "Write permissions for HUNTER_ACTIONS: Done"
+
+
 echo "Initialize CORE_ACTIONS : $CORE_ACTIONS"
 sleep 0.1
 sozo execute $CORE_ACTIONS init
@@ -65,4 +73,7 @@ sleep 0.1
 sozo execute $RPS_ACTIONS init
 echo "Initialize RPS_ACTIONS: Done"
 
-
+echo "Initialize HUNTER_ACTIONS: Done"
+sleep 0.1
+sozo execute $HUNTER_ACTIONS init
+echo "Initialize HUNTER_ACTIONS: Done"
