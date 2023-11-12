@@ -217,22 +217,37 @@ mod minesweeper_actions {
 					}
 					random = (timestamp + i) + position.x.into() + position.y.into();
 					random_number = random % (size * size);
-					core_actions
-					.update_pixel(
-						player,
-						system,
-						PixelUpdate {
-							x: random_number / size,
-							y: random_number % size,
-							color: Option::Some(default_params.color),
-							alert: Option::Some('explode'),
-							timestamp: Option::None,
-							text: Option::None,
-							app: Option::Some(system),
-							owner: Option::Some(player),
-							action: Option::None,
-						}
-					);
+					
+					
+					//get a random value
+					//random = (timestamp + i) ^ (position.x.into() + position.y.into());
+
+					//generate random x and y within the grid.
+					//let mut random_x = random % size;
+					//let mut random_y = (random / size) % size;
+
+					//check if mine already on this pixel
+					//if get!(world, ((position.x + random_x), (position.y + random_y)), Pixel).alert != 'explode'
+					//{
+						core_actions
+							.update_pixel(
+								player,
+								system,
+								PixelUpdate {
+									//x: (position.x + random_x),
+									x: position.x + (random_number / size),
+									//y: (position.y + random_y),
+									y: position.y + (random_number % size),
+									color: Option::Some(default_params.color),
+									alert: Option::Some('explode'),
+									timestamp: Option::None,
+									text: Option::None,
+									app: Option::Some(system),
+									owner: Option::Some(player),
+									action: Option::None,
+								}
+							);
+					//}
 					i += 1;
 				};
 			} else {
@@ -245,51 +260,6 @@ mod minesweeper_actions {
 			// 		color: default_params.color,
 			// }, size: size);
 		}
-
-		// fn explore(self: @ContractState, default_params: DefaultParameters) {
-		// 	let world = self.world_dispatcher.read();
-        //     let core_actions = get_core_actions(world);
-        //     let position = default_params.position;
-        //     let player = core_actions.get_player_address(default_params.for_player);
-        //     let system = core_actions.get_system_address(default_params.for_system);
-        //     let mut pixel = get!(world, (position.x, position.y), (Pixel));
-
-		// 	if pixel.action == 'reveal' {
-		// 		core_actions
-		// 			.update_pixel(
-		// 				player,
-		// 				system,
-		// 				PixelUpdate {
-		// 					x: position.x,
-		// 					y: position.y,
-		// 					color: Option::Some(default_params.color),
-		// 					alert: Option::None,
-		// 					timestamp: Option::None,
-		// 					text: Option::Some('U+1F30E'),
-		// 					app: Option::None,
-		// 					owner: Option::None,
-		// 					action: Option::None,
-		// 				}
-		// 			);
-		// 	} else if pixel.action == 'explode' {
-		// 		core_actions
-		// 			.update_pixel(
-		// 				player,
-		// 				system,
-		// 				PixelUpdate {
-		// 					x: position.x,
-		// 					y: position.y,
-		// 					color: Option::Some(default_params.color),
-		// 					alert: Option::None,
-		// 					timestamp: Option::None,
-		// 					text: Option::Some('U+1F4A3'),
-		// 					app: Option::None,
-		// 					owner: Option::None,
-		// 					action: Option::None,
-		// 				}
-		// 			);
-		// 	}
-        // }
 
 		fn reveal(self: @ContractState, default_params: DefaultParameters) {
 			let world = self.world_dispatcher.read();
