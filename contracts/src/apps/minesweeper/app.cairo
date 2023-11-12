@@ -30,47 +30,10 @@ struct Game {
 
 #[starknet::interface]
 trait IMinesweeperActions<TContractState> {
-    
-    //1. read the world state
-    //2. get_core_actions to call the `update_app_name` function and add the minesweeper app to the world.
-    //3. update permissions to other apps (if wanted).
     fn init(self: @TContractState);
-
-    //1. the interact function is a must of any pixelaw app. This is what the front-end calls.
-    //- If you add an optional third parameter, your can allow for additional user input.
-    
-    //2. Load important variables
-    //- world: any system that impacts the world needs to 
-    //- core_actions:
-    //- position: the position clicked by the player. (part of default parameter utils)
-    //- player: get_player_address
-    //- system: get_system_address
-    //- pixel: get the state of selected pixel.
-    
-    //3. check if 10x10 pixel field around the pixel is ownerless.  && has to check if the selected pixel is inside an open minesweeper.
-
-    //4. load the game
-    //- create a game struct(key x, key y, id, state, size, mines_amount, player address, started _timestamp)
-    //- create minesweeper game
-    
-    //5. add game to world State
-    //- update properties of affected pixels.
-    
-    //6. set the mines
-    
     fn interact(self: @TContractState, default_params: DefaultParameters, size: u64, mines_amount: u64);
-
-    //1. Load relevant pixels
-    //- check if pixel is a mine or not.
-    //fn explore(self: @TContractState, default_params: DefaultParameters);
-
 	fn reveal(self: @TContractState, default_params: DefaultParameters);
 	fn explode(self: @TContractState, default_params: DefaultParameters);
-
-
-
-
-
     //fn fade(self: @TContractState, default_params: DefaultParameters, size: u64);
 	fn ownerless_space(self: @TContractState, default_params: DefaultParameters, size: u64) -> bool;
 }
@@ -159,7 +122,7 @@ mod minesweeper_actions {
 			}
 			else if self.ownerless_space(default_params, size: size) == true //check if size grid ownerless;
 			{
-				let mut id = world.uuid(); //do we need this in this condition?
+				let mut id = world.uuid();
                 game = 
                     Game {
                         x: position.x,
@@ -254,8 +217,9 @@ mod minesweeper_actions {
 									action: Option::None,
 								}
 							);
+						i += 1;
 					//}
-					i += 1;
+					j += 1;
 				};
 			} else {
 				'find a free area'.print();
