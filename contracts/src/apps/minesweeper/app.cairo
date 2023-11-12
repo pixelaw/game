@@ -90,6 +90,7 @@ mod minesweeper_actions {
     use pixelaw::core::utils::{get_core_actions, Position, DefaultParameters};
 	use pixelaw::core::models::registry::{App, AppName, CoreActionsAddress};
     use debug::PrintTrait;
+	use poseidon::poseidon_hash_span;
 
     #[derive(Drop, starknet::Event)]
     struct GameOpened {
@@ -207,16 +208,21 @@ mod minesweeper_actions {
 					i += 1;
 				};
 
-				let mut random: u64 = 0;
-				let mut random_number: u64 = 0;
+				let mut random_number: u256 = 0;
 
 				i = 0;
 				loop {
 					if i >= mines_amount {
 						break;
 					}
-					random = (timestamp + i) + position.x.into() + position.y.into();
-					random_number = random % (size * size);
+					let timestamp_felt252 = timestamp.into();
+					let x_felt252 = position.x.into();
+					let y_felt252 = position.y.into();
+
+					//random = (timestamp + i) + position.x.into() + position.y.into();
+
+					let hash: u256 = poseidon_hash_span(array![timestamp_felt252, x_felt252, y_felt252].span()).into();
+					random_number = hash % (size * size).into();
 					
 					
 					//get a random value
@@ -235,9 +241,9 @@ mod minesweeper_actions {
 								system,
 								PixelUpdate {
 									//x: (position.x + random_x),
-									x: position.x + (random_number / size),
+									x: position.x + (random_number / size.into()).try_into().unwrap(),
 									//y: (position.y + random_y),
-									y: position.y + (random_number % size),
+									y: position.y + (random_number % size.into()).try_into().unwrap(),
 									color: Option::Some(default_params.color),
 									alert: Option::Some('explode'),
 									timestamp: Option::None,
