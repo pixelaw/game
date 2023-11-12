@@ -119,7 +119,7 @@ mod hunter_actions {
                     }
                 );
 
-        // Update the timestamp for the cooldown
+            // Update the timestamp for the cooldown
             last_attempt.timestamp = timestamp;
             set!(world, (last_attempt));
 
