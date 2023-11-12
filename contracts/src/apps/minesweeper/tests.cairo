@@ -81,3 +81,4 @@ mod tests {
                 mines_amount
             );
     }
+}
