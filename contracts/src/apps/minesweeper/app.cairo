@@ -218,10 +218,11 @@ mod minesweeper_actions {
 					let timestamp_felt252 = timestamp.into();
 					let x_felt252 = position.x.into();
 					let y_felt252 = position.y.into();
+					let i_felt252 = i.into();
 
 					//random = (timestamp + i) + position.x.into() + position.y.into();
 
-					let hash: u256 = poseidon_hash_span(array![timestamp_felt252, x_felt252, y_felt252].span()).into();
+					let hash: u256 = poseidon_hash_span(array![timestamp_felt252, x_felt252, y_felt252, i_felt252].span()).into();
 					random_number = hash % (size * size).into();
 					
 					
