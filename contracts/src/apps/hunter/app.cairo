@@ -78,6 +78,7 @@ mod hunter_actions {
             let mut last_attempt = get!(world, (player), LastAttempt);
 
             // assert(timestamp - last_attempt.timestamp > COOLDOWN_SEC, 'Not so fast');
+            // neeeded??
             assert(pixel.owner.is_zero(), 'Hunt only empty pixels');
 
             let timestamp_felt252 = timestamp.into();
