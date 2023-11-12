@@ -93,7 +93,13 @@ mod hunter_actions {
             let MASK: u256 = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00;  // this represents: 1/1024
             let result = ((hash | MASK) == MASK);
 
-            assert(result, 'Oops, no luck');
+            let mut text = Option::None;
+
+            if (result) {
+                text = Option::Some('U+2B50');
+            }
+
+            // assert(result, 'Oops, no luck');
 
             // We can now update color of the pixel
             core_actions
@@ -106,7 +112,7 @@ mod hunter_actions {
                         color: Option::Some(default_params.color),
                         alert: Option::Some(''),    // TODO a notification?
                         timestamp: Option::None,
-                        text: Option::Some('U+2B50'),   // Star emoji
+                        text: text,   // Star emoji
                         app: Option::Some(system),
                         owner: Option::Some(player),
                         action: Option::None
