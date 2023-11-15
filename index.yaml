@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   pixelaw:
   - apiVersion: v2
+    appVersion: 0.1.18
+    created: "2023-11-15T07:20:06.982176013Z"
+    description: A Helm chart for Kubernetes
+    digest: 0fe2c3ee610a51caf4b418742b4c39e4e8d8313573fbc631d2019147028b72c7
+    name: pixelaw
+    type: application
+    urls:
+    - https://github.com/pixelaw/game/releases/download/pixelaw-0.1.18/pixelaw-0.1.18.tgz
+    version: 0.1.18
+  - apiVersion: v2
     appVersion: 0.1.17
     created: "2023-11-15T04:01:48.357730501Z"
     description: A Helm chart for Kubernetes
@@ -121,4 +131,4 @@ entries:
     urls:
     - https://github.com/pixelaw/game/releases/download/pixelaw-0.1.6/pixelaw-0.1.6.tgz
     version: 0.1.6
-generated: "2023-11-15T04:01:48.357847088Z"
+generated: "2023-11-15T07:20:06.982262686Z"
