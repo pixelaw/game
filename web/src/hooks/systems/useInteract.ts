@@ -7,6 +7,7 @@ import { num } from 'starknet'
 import interpret, { isInstruction, ParamDefinitionType } from '@/lib/Instruction'
 import useManifest from '@/hooks/systems/useManifest'
 import { InterfaceType, Manifest } from '@/global/types'
+import { sleep } from '@latticexyz/utils'
 
 const DEFAULT_PARAMETERS_TYPE = 'pixelaw::core::utils::DefaultParameters'
 
@@ -160,7 +161,8 @@ const useInteract = (
             else additionalParams.push(param)
           }
         }
-
+        // TODO: add sleep for now so that nonce issue is mitigated
+        await sleep(1_000)
         interact(account, contractName, position, decimalColor, methodName, additionalParams)
       }
     }),
