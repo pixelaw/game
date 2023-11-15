@@ -25,18 +25,18 @@ COPY --from=web_node_deps /app/node_modules ./node_modules
 # Build the webapp
 RUN yarn build --mode production
 
-FROM oostvoort/dojo:v0.3.6 AS contracts_builder
+FROM oostvoort/dojo:v0.3.10 AS contracts_builder
 WORKDIR /app
 COPY /contracts .
 RUN sozo build
 
-FROM oostvoort/keiko:v0.0.6 AS runtime
+FROM oostvoort/keiko:v0.0.7 AS runtime
 
 # Install node
 RUN apt-get update -y && \
     apt-get install -y nodejs npm
 
-WORKDIR /opt
+WORKDIR /keiko
 COPY --from=contracts_builder /app/target ./contracts/target/
 COPY --from=web_node_builder /app/dist static/
 
