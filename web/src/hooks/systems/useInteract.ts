@@ -163,7 +163,7 @@ const useInteract = (
         }
         // TODO: add sleep for now so that nonce issue is mitigated
         await sleep(1_000)
-        interact(account, contractName, position, decimalColor, methodName, additionalParams)
+        await interact(account, contractName, position, decimalColor, methodName, additionalParams)
       }
     }),
     params: fillableParamDefs
