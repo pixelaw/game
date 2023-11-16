@@ -18,7 +18,7 @@ SNAKE_MODELS=("Snake" "SnakeSegment")
 
 HUNTER_MODELS=("LastAttempt")
 
-MINESWEEPER_MODELS=("MinesweeperGame")
+#MINESWEEPER_MODELS=("MinesweeperGame")
 
 echo "Write permissions for CORE_ACTIONS"
 for model in ${CORE_MODELS[@]}; do
@@ -48,12 +48,12 @@ for model in ${APP_MODELS[@]}; do
 done
 echo "Write permissions for RPS_ACTIONS: Done"
 
-echo "Write permissions for MINESWEEPER_ACTIONS"
-for model in ${MINESWEEPER_MODELS[@]}; do
-    sleep 0.1
-    sozo auth writer $model $MINESWEEPER_ACTIONS
-done
-echo "Write permissions for MINESWEEPER_ACTIONS: Done"
+#echo "Write permissions for MINESWEEPER_ACTIONS"
+#for model in ${MINESWEEPER_MODELS[@]}; do
+#    sleep 0.1
+#    sozo auth writer $model $MINESWEEPER_ACTIONS
+#done
+#echo "Write permissions for MINESWEEPER_ACTIONS: Done"
 
 echo "Write permissions for HUNTER_ACTIONS"
 for model in ${HUNTER_MODELS[@]}; do
