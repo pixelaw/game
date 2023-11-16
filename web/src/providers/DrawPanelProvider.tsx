@@ -172,6 +172,8 @@ export default function DrawPanelProvider({ children }: { children: React.ReactN
       .then()
       .catch(err => {
         console.error('reversing color because of: ', err)
+      })
+      .finally(() => {
         setTempData({})
       })
 
