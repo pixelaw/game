@@ -83,10 +83,10 @@ sleep 0.1
 sozo execute $RPS_ACTIONS init
 echo "Initialize RPS_ACTIONS: Done"
 
-echo "Initialize MINESWEEPER: Done"
-sleep 0.1
-sozo execute $MINESWEEPER_ACTIONS init
-echo "Initialize MINESWEEPER_ACTIONS: Done"
+#echo "Initialize MINESWEEPER: Done"
+#sleep 0.1
+#sozo execute $MINESWEEPER_ACTIONS init
+#echo "Initialize MINESWEEPER_ACTIONS: Done"
 
 echo "Initialize HUNTER_ACTIONS: Done"
 sleep 0.1
