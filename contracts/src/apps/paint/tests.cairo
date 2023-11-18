@@ -80,12 +80,12 @@ mod tests {
                 DefaultParameters {
                     for_player: Zeroable::zero(),
                     for_system: Zeroable::zero(),
-                    position: Position { x: 1, y: 1 },
+                    position: Position { x: 10, y: 10 },
                     color: color
                 },
             );
-        
-        let pixel_1_1 = get!(world, (1, 1), (Pixel));
+
+        let pixel_1_1 = get!(world, (10, 10), (Pixel));
         assert(pixel_1_1.color == color, 'should be the color');
 
         'Passed test'.print();
