@@ -16,6 +16,8 @@ APP_MODELS=("Game" "Player")
 
 SNAKE_MODELS=("Snake" "SnakeSegment")
 
+TTT_MODELS=("TicTacToeGame" "TicTacToeGameField")
+
 echo "Write permissions for CORE_ACTIONS"
 for model in ${CORE_MODELS[@]}; do
     sleep 0.1
@@ -44,6 +46,13 @@ for model in ${APP_MODELS[@]}; do
 done
 echo "Write permissions for RPS_ACTIONS: Done"
 
+echo "Write permissions for TTT_ACTIONS"
+for model in ${TTT_MODELS[@]}; do
+    sleep 0.1
+    sozo auth writer $model $TTT_ACTIONS
+done
+echo "Write permissions for TTT_ACTIONS: Done"
+
 
 echo "Initialize CORE_ACTIONS : $CORE_ACTIONS"
 sleep 0.1
@@ -64,5 +73,10 @@ echo "Initialize RPS_ACTIONS: Done"
 sleep 0.1
 sozo execute $RPS_ACTIONS init
 echo "Initialize RPS_ACTIONS: Done"
+
+echo "Initialize TTT_ACTIONS: Done"
+sleep 0.1
+sozo execute $TTT_ACTIONS init
+echo "Initialize TTT_ACTIONS: Done"
 
 
