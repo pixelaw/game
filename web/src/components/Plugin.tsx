@@ -91,7 +91,7 @@ export default function Plugin() {
                                     <div
                                       key={index}
                                       className={cn(['flex justify-center items-center w-full ', {'gap-x-xs justify-start': isOpen}])}
-                                      onClick={() => setGameMode(plugin.name as "none" | "paint" | "rps" | "snake")}
+                                      onClick={() => setGameMode(plugin.name as "none" | "paint" | "rps" | "snake" | "tictactoe")}
                                     >
                                         <Button
                                             key={index}

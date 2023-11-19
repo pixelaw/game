@@ -41,7 +41,12 @@ const useInteract = (
 
   const contract = manifest.contracts.find(contract => contract.name === contractName)
   if (!contract) throw new Error(`unknown contract: ${contractName}`)
-  const interfaceName = `I${convertSnakeToPascal(contractName)}`
+
+  let interfaceName = `I${convertSnakeToPascal(contractName)}`
+
+
+  if(interfaceName == 'ITictactoeActions') interfaceName = 'ITicTacToeActions'
+
   const methods = contract.abi.find(x => x.type === 'interface' && x.name.includes(interfaceName))
   if (!methods) throw new Error(`unknown interface: ${interfaceName}`)
   if (!methods?.items) throw new Error(`no methods for interface: ${interfaceName}`)

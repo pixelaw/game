@@ -735,7 +735,8 @@
       }
     ],
     "reads": [],
-    "writes": []
+    "writes": [],
+    "computed": []
   },
   "executor": {
     "name": "executor",
@@ -795,7 +796,8 @@
       }
     ],
     "reads": [],
-    "writes": []
+    "writes": [],
+    "computed": []
   },
   "base": {
     "name": "base",
@@ -862,7 +864,7 @@
     {
       "name": "actions",
       "address": "0x5a8c45891c00ab589542d169769555327af8cdf9fae5d042263fd9b49d4df9a",
-      "class_hash": "0x1fe3acad95c13bf78633360336247d36b7a9e9a0d937120bc7b81de8e5752ac",
+      "class_hash": "0x1b82a0a1227c457fe2c7ce28ac5cc99a15d9af438d78ff2a5afe11c27cba865",
       "abi": [
         {
           "type": "impl",
@@ -891,6 +893,54 @@
           "type": "impl",
           "name": "ActionsImpl",
           "interface_name": "pixelaw::core::actions::IActions"
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "pixelaw::core::models::permissions::Permission",
+          "members": [
+            {
+              "name": "alert",
+              "type": "core::bool"
+            },
+            {
+              "name": "app",
+              "type": "core::bool"
+            },
+            {
+              "name": "color",
+              "type": "core::bool"
+            },
+            {
+              "name": "owner",
+              "type": "core::bool"
+            },
+            {
+              "name": "text",
+              "type": "core::bool"
+            },
+            {
+              "name": "timestamp",
+              "type": "core::bool"
+            },
+            {
+              "name": "action",
+              "type": "core::bool"
+            }
+          ]
         },
         {
           "type": "struct",
@@ -1041,26 +1091,30 @@
           ]
         },
         {
-          "type": "enum",
-          "name": "core::bool",
-          "variants": [
-            {
-              "name": "False",
-              "type": "()"
-            },
-            {
-              "name": "True",
-              "type": "()"
-            }
-          ]
-        },
-        {
           "type": "struct",
           "name": "core::array::Span::<core::felt252>",
           "members": [
             {
               "name": "snapshot",
               "type": "@core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "pixelaw::core::models::registry::App",
+          "members": [
+            {
+              "name": "system",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action",
+              "type": "core::felt252"
             }
           ]
         },
@@ -1072,6 +1126,22 @@
               "type": "function",
               "name": "init",
               "inputs": [],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "update_permission",
+              "inputs": [
+                {
+                  "name": "for_system",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "permission",
+                  "type": "pixelaw::core::models::permissions::Permission"
+                }
+              ],
               "outputs": [],
               "state_mutability": "view"
             },
@@ -1186,12 +1256,64 @@
               ],
               "outputs": [],
               "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "new_app",
+              "inputs": [
+                {
+                  "name": "system",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "name",
+                  "type": "core::felt252"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "pixelaw::core::models::registry::App"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_system_address",
+              "inputs": [
+                {
+                  "name": "for_system",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_player_address",
+              "inputs": [
+                {
+                  "name": "for_player",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
             }
           ]
         },
         {
           "type": "function",
-          "name": "name",
+          "name": "dojo_resource",
           "inputs": [],
           "outputs": [
             {
@@ -1245,27 +1367,13 @@
           ]
         },
         {
-          "type": "struct",
-          "name": "pixelaw::core::models::registry::AppBySystem",
-          "members": [
-            {
-              "name": "system",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
-            {
-              "name": "name",
-              "type": "core::felt252"
-            }
-          ]
-        },
-        {
           "type": "event",
           "name": "pixelaw::core::actions::actions::AppNameUpdated",
           "kind": "struct",
           "members": [
             {
               "name": "app",
-              "type": "pixelaw::core::models::registry::AppBySystem",
+              "type": "pixelaw::core::models::registry::App",
               "kind": "data"
             },
             {
@@ -1299,18 +1407,24 @@
         }
       ],
       "reads": [
-        "AppBySystem",
+        "App",
+        "AppName",
         "Permissions",
         "Pixel"
       ],
       "writes": [
+        "App",
+        "AppName",
+        "CoreActionsAddress",
+        "Permissions",
         "Pixel"
-      ]
+      ],
+      "computed": []
     },
     {
       "name": "paint_actions",
       "address": "0x44d1fe83a484fc8f0e13fe7a524c8f2d2c9121721450ae57dc9240362c27647",
-      "class_hash": "0x7012fdad0266834aa0f21430962425474adce8dd9f8fcd5cdd7e37b156505a8",
+      "class_hash": "0x7504f60cb191a2f73b95d05f8cd9c812cbb2eb07657daceaf266c476230422a",
       "abi": [
         {
           "type": "impl",
@@ -1415,7 +1529,7 @@
         },
         {
           "type": "function",
-          "name": "name",
+          "name": "dojo_resource",
           "inputs": [],
           "outputs": [
             {
@@ -1434,12 +1548,13 @@
       "reads": [
         "Pixel"
       ],
-      "writes": []
+      "writes": [],
+      "computed": []
     },
     {
       "name": "rps_actions",
       "address": "0x617decd4dbeb7291a7a00a506f9287389eb75a7fc125edf49e3cad4611ef175",
-      "class_hash": "0x4adb5993f78b47b1f3ee3ce4c228d947c26a7cb31b61a94bac5e6913ba8d3c8",
+      "class_hash": "0x65d86306a63d69f35527281608386fe4d4c22648d71ba46f4f2c77863517171",
       "abi": [
         {
           "type": "impl",
@@ -1466,7 +1581,7 @@
         },
         {
           "type": "impl",
-          "name": "ActionsImpl",
+          "name": "RpsActionsImpl",
           "interface_name": "pixelaw::apps::rps::app::IRpsActions"
         },
         {
@@ -1606,7 +1721,7 @@
         },
         {
           "type": "function",
-          "name": "name",
+          "name": "dojo_resource",
           "inputs": [],
           "outputs": [
             {
@@ -1651,12 +1766,13 @@
       ],
       "writes": [
         "Game"
-      ]
+      ],
+      "computed": []
     },
     {
       "name": "snake_actions",
       "address": "0x26c141617c37324fa943e5509d29a21b4017abad5ee56f6351deef299c819d0",
-      "class_hash": "0x6bd83e497e84342eb1469bdbf2014f09d10f3ee8ef597df295da884cbb4fd3",
+      "class_hash": "0x5990c03322379673a02e13b6dd1dd41fb90fea8691307480365f7b27a618c08",
       "abi": [
         {
           "type": "impl",
@@ -1784,8 +1900,8 @@
               "name": "move",
               "inputs": [
                 {
-                  "name": "snake_id",
-                  "type": "core::integer::u32"
+                  "name": "owner",
+                  "type": "core::starknet::contract_address::ContractAddress"
                 }
               ],
               "outputs": [],
@@ -1795,7 +1911,7 @@
         },
         {
           "type": "function",
-          "name": "name",
+          "name": "dojo_resource",
           "inputs": [],
           "outputs": [
             {
@@ -1810,7 +1926,7 @@
           "kind": "struct",
           "members": [
             {
-              "name": "player",
+              "name": "owner",
               "type": "core::starknet::contract_address::ContractAddress",
               "kind": "data"
             },
@@ -1827,8 +1943,8 @@
           "kind": "struct",
           "members": [
             {
-              "name": "id",
-              "type": "core::integer::u32",
+              "name": "owner",
+              "type": "core::starknet::contract_address::ContractAddress",
               "kind": "data"
             },
             {
@@ -1869,7 +1985,194 @@
       "writes": [
         "Snake",
         "SnakeSegment"
-      ]
+      ],
+      "computed": []
+    },
+    {
+      "name": "tictactoe_actions",
+      "address": "0x600cdb8166134e9de241c2ba117e45f925c278ad246c6012799686a3c9f7d13",
+      "class_hash": "0x4e331c4b0ab42d050f44b79b834a78ae10e3a2ccca79e219682d9f33b01bf28",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "Upgradeable",
+          "interface_name": "dojo::upgradable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::upgradable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "TicTacToeActionsImpl",
+          "interface_name": "pixelaw::apps::tictactoe::app::ITicTacToeActions"
+        },
+        {
+          "type": "struct",
+          "name": "pixelaw::core::utils::Position",
+          "members": [
+            {
+              "name": "x",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "y",
+              "type": "core::integer::u64"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "pixelaw::core::utils::DefaultParameters",
+          "members": [
+            {
+              "name": "for_player",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "for_system",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "position",
+              "type": "pixelaw::core::utils::Position"
+            },
+            {
+              "name": "color",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "pixelaw::apps::tictactoe::app::ITicTacToeActions",
+          "items": [
+            {
+              "type": "function",
+              "name": "init",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "interact",
+              "inputs": [
+                {
+                  "name": "default_params",
+                  "type": "pixelaw::core::utils::DefaultParameters"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::felt252"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "play",
+              "inputs": [
+                {
+                  "name": "default_params",
+                  "type": "pixelaw::core::utils::DefaultParameters"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::felt252"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "check_winner",
+              "inputs": [
+                {
+                  "name": "default_params",
+                  "type": "pixelaw::core::utils::DefaultParameters"
+                },
+                {
+                  "name": "game_array",
+                  "type": "core::array::Array::<core::integer::u8>"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_resource",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::felt252"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::apps::tictactoe::app::tictactoe_actions::GameOpened",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "game_id",
+              "type": "core::integer::u32",
+              "kind": "data"
+            },
+            {
+              "name": "creator",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::apps::tictactoe::app::tictactoe_actions::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "GameOpened",
+              "type": "pixelaw::apps::tictactoe::app::tictactoe_actions::GameOpened",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "reads": [
+        "Pixel",
+        "TicTacToeGame",
+        "TicTacToeGameField"
+      ],
+      "writes": [
+        "TicTacToeGame",
+        "TicTacToeGameField"
+      ],
+      "computed": []
     }
   ],
   "models": [
@@ -2056,20 +2359,25 @@
       ]
     },
     {
-      "name": "AppByName",
+      "name": "App",
       "members": [
-        {
-          "name": "name",
-          "type": "felt252",
-          "key": true
-        },
         {
           "name": "system",
           "type": "ContractAddress",
+          "key": true
+        },
+        {
+          "name": "name",
+          "type": "felt252",
+          "key": false
+        },
+        {
+          "name": "action",
+          "type": "felt252",
           "key": false
         }
       ],
-      "class_hash": "0x105f926485944dddd3fb6048473e1aea436d35a2951cda40a22d693a5462b80",
+      "class_hash": "0x7078b6620aa15fa57bd59637c3019fe6ebee7ad372b71160ba83059ff1183c8",
       "abi": [
         {
           "type": "function",
@@ -2226,27 +2534,27 @@
         },
         {
           "type": "event",
-          "name": "pixelaw::core::models::registry::app_by_name::Event",
+          "name": "pixelaw::core::models::registry::app::Event",
           "kind": "enum",
           "variants": []
         }
       ]
     },
     {
-      "name": "AppBySystem",
+      "name": "AppName",
       "members": [
-        {
-          "name": "system",
-          "type": "ContractAddress",
-          "key": true
-        },
         {
           "name": "name",
           "type": "felt252",
+          "key": true
+        },
+        {
+          "name": "system",
+          "type": "ContractAddress",
           "key": false
         }
       ],
-      "class_hash": "0x60598e0799501d1e26a8b0b8d4e757a8bcb245c2476c054bf05c81e6a21dd1d",
+      "class_hash": "0x606366cdf829c6d997527cab27fc0ffddcc7baa509fbc8e7e17343a6bd3ebb1",
       "abi": [
         {
           "type": "function",
@@ -2403,7 +2711,189 @@
         },
         {
           "type": "event",
-          "name": "pixelaw::core::models::registry::app_by_system::Event",
+          "name": "pixelaw::core::models::registry::app_name::Event",
+          "kind": "enum",
+          "variants": []
+        }
+      ]
+    },
+    {
+      "name": "AppUser",
+      "members": [
+        {
+          "name": "system",
+          "type": "ContractAddress",
+          "key": true
+        },
+        {
+          "name": "player",
+          "type": "ContractAddress",
+          "key": true
+        },
+        {
+          "name": "action",
+          "type": "felt252",
+          "key": false
+        }
+      ],
+      "class_hash": "0xbf66689926ea62935f2e670aab4a323813c4de71fe1e27e5ec4ff3ab8b559",
+      "abi": [
+        {
+          "type": "function",
+          "name": "name",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::felt252"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "unpacked_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "packed_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::integer::u8>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::integer::u8>"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "layout",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::array::Span::<core::integer::u8>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::felt252>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::array::Span::<core::felt252>>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "dojo::database::schema::Struct",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "attrs",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<(core::felt252, core::array::Span::<core::felt252>)>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<(core::felt252, core::array::Span::<core::felt252>)>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "dojo::database::schema::Enum",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "attrs",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Span::<(core::felt252, core::array::Span::<core::felt252>)>"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "dojo::database::schema::Ty",
+          "variants": [
+            {
+              "name": "Primitive",
+              "type": "core::felt252"
+            },
+            {
+              "name": "Struct",
+              "type": "dojo::database::schema::Struct"
+            },
+            {
+              "name": "Enum",
+              "type": "dojo::database::schema::Enum"
+            },
+            {
+              "name": "Tuple",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "schema",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::database::schema::Ty"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::core::models::registry::app_user::Event",
           "kind": "enum",
           "variants": []
         }
@@ -3565,8 +4055,8 @@
       "name": "Snake",
       "members": [
         {
-          "name": "id",
-          "type": "u32",
+          "name": "owner",
+          "type": "ContractAddress",
           "key": true
         },
         {
@@ -3590,11 +4080,6 @@
           "key": false
         },
         {
-          "name": "owner",
-          "type": "ContractAddress",
-          "key": false
-        },
-        {
           "name": "color",
           "type": "u32",
           "key": false
@@ -3610,7 +4095,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x7f0670031c57ae6e880ba5e1faec571917364c92837c656414c233f2ebe2f0",
+      "class_hash": "0x375ca1cacc8f69eb0119335b34de9a6ea9598469650125b9cae6687b464c74b",
       "abi": [
         {
           "type": "function",
@@ -3970,6 +4455,395 @@
         {
           "type": "event",
           "name": "pixelaw::apps::snake::app::snake_segment::Event",
+          "kind": "enum",
+          "variants": []
+        }
+      ]
+    },
+    {
+      "name": "TicTacToeGame",
+      "members": [
+        {
+          "name": "id",
+          "type": "u32",
+          "key": true
+        },
+        {
+          "name": "player1",
+          "type": "ContractAddress",
+          "key": false
+        },
+        {
+          "name": "started_time",
+          "type": "u64",
+          "key": false
+        },
+        {
+          "name": "x",
+          "type": "u64",
+          "key": false
+        },
+        {
+          "name": "y",
+          "type": "u64",
+          "key": false
+        },
+        {
+          "name": "moves_left",
+          "type": "u8",
+          "key": false
+        }
+      ],
+      "class_hash": "0x4ae5948319a5633e9adf3a696c512c004010443049effb765445c510e8ea356",
+      "abi": [
+        {
+          "type": "function",
+          "name": "name",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::felt252"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "unpacked_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "packed_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::integer::u8>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::integer::u8>"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "layout",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::array::Span::<core::integer::u8>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::felt252>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::array::Span::<core::felt252>>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "dojo::database::schema::Struct",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "attrs",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<(core::felt252, core::array::Span::<core::felt252>)>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<(core::felt252, core::array::Span::<core::felt252>)>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "dojo::database::schema::Enum",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "attrs",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Span::<(core::felt252, core::array::Span::<core::felt252>)>"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "dojo::database::schema::Ty",
+          "variants": [
+            {
+              "name": "Primitive",
+              "type": "core::felt252"
+            },
+            {
+              "name": "Struct",
+              "type": "dojo::database::schema::Struct"
+            },
+            {
+              "name": "Enum",
+              "type": "dojo::database::schema::Enum"
+            },
+            {
+              "name": "Tuple",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "schema",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::database::schema::Ty"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::apps::tictactoe::app::tic_tac_toe_game::Event",
+          "kind": "enum",
+          "variants": []
+        }
+      ]
+    },
+    {
+      "name": "TicTacToeGameField",
+      "members": [
+        {
+          "name": "x",
+          "type": "u64",
+          "key": true
+        },
+        {
+          "name": "y",
+          "type": "u64",
+          "key": true
+        },
+        {
+          "name": "id",
+          "type": "u32",
+          "key": false
+        },
+        {
+          "name": "index",
+          "type": "u8",
+          "key": false
+        },
+        {
+          "name": "state",
+          "type": "u8",
+          "key": false
+        }
+      ],
+      "class_hash": "0x69ebec30e0f71708dc93a51d36a942404642f80dc859f78bfe86746b41c977d",
+      "abi": [
+        {
+          "type": "function",
+          "name": "name",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::felt252"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "unpacked_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "packed_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::integer::u8>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::integer::u8>"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "layout",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::array::Span::<core::integer::u8>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::felt252>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::array::Span::<core::felt252>>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "dojo::database::schema::Struct",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "attrs",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<(core::felt252, core::array::Span::<core::felt252>)>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<(core::felt252, core::array::Span::<core::felt252>)>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "dojo::database::schema::Enum",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "attrs",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Span::<(core::felt252, core::array::Span::<core::felt252>)>"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "dojo::database::schema::Ty",
+          "variants": [
+            {
+              "name": "Primitive",
+              "type": "core::felt252"
+            },
+            {
+              "name": "Struct",
+              "type": "dojo::database::schema::Struct"
+            },
+            {
+              "name": "Enum",
+              "type": "dojo::database::schema::Enum"
+            },
+            {
+              "name": "Tuple",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "schema",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::database::schema::Ty"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "event",
+          "name": "pixelaw::apps::tictactoe::app::tic_tac_toe_game_field::Event",
           "kind": "enum",
           "variants": []
         }

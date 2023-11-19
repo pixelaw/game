@@ -64,6 +64,10 @@ export const plugins = [
   {
     icon: "🌳",
     name: "tree"
+  },
+  {
+    icon: "⭕",
+    name: "tictactoe"
   }
 ]
 
