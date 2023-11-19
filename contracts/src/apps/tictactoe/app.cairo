@@ -155,7 +155,7 @@ pixel.app.print();
                     PixelUpdate {
                         x: position.x,
                         y: position.y,
-                        color: Option::None,
+                        color: Option::Some(0xffff0000),
                         alert: Option::None,
                         timestamp: Option::None,
                         text: Option::Some('U+0058'),
@@ -201,6 +201,10 @@ pixel.app.print();
             // index 0 means the top-left pixel
             let ai_position = position_from(origin_position, ai_move_index);
 
+'aipos:'.print();
+          ai_position.x.print();
+          ai_position.y.print();
+
             // Change the field
             let mut ai_field = get!(world, (ai_position.x, ai_position.y), TicTacToeGameField);
             assert(ai_field.state == 0, 'ai illegal move');
@@ -215,7 +219,7 @@ pixel.app.print();
                     PixelUpdate {
                         x: position.x,
                         y: position.y,
-                        color: Option::None,
+                        color: Option::Some(0xff00ff00),
                         alert: Option::None,
                         timestamp: Option::None,
                         text: Option::Some('U+004F'),
@@ -330,8 +334,21 @@ pixel.app.print();
     // For a given array index, give the appropriate position
     fn position_from(origin: Position, index: u32) -> Position {
         let mut result = origin.clone();
+
+        'position_from:'.print();
+        origin.x.print();
+        origin.y.print();
+        index.print();
+
+      // input 20,20 : index: 4
+
+      //     21        20            1
         result.x = origin.x + (index % 3).into(); // Adjusting for 0-based indexing
+      //     21          20           1
         result.y = origin.y + (index / 3).into(); // Adjusting for 0-based indexing
+
+      result.x.print();
+      result.y.print();
         result
     }
 

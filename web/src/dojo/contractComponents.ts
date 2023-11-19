@@ -76,23 +76,9 @@ export function defineContractComponents(world: World) {
 	      }
 	    );
 	  })(),
-	  LastAttempt: (() => {
-	    return defineComponent(
-	      world,
-	      { player: RecsType.String, timestamp: RecsType.Number },
-	      {
-	        metadata: {
-	          name: "LastAttempt",
-	          types: [],
-	        },
-	      }
-	    );
-	  })(),
 	  Permissions: (() => {
 	    return defineComponent(
 	      world,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
 	      { allowing_app: RecsType.String, allowed_app: RecsType.String, permission: { alert: RecsType.Boolean, app: RecsType.Boolean, color: RecsType.Boolean, owner: RecsType.Boolean, text: RecsType.Boolean, timestamp: RecsType.Boolean, action: RecsType.Boolean } },
 	      {
 	        metadata: {
@@ -157,6 +143,30 @@ export function defineContractComponents(world: World) {
 	      {
 	        metadata: {
 	          name: "SnakeSegment",
+	          types: [],
+	        },
+	      }
+	    );
+	  })(),
+	  TicTacToeGame: (() => {
+	    return defineComponent(
+	      world,
+	      { id: RecsType.Number, player1: RecsType.String, started_time: RecsType.Number, x: RecsType.Number, y: RecsType.Number, moves_left: RecsType.Number },
+	      {
+	        metadata: {
+	          name: "TicTacToeGame",
+	          types: [],
+	        },
+	      }
+	    );
+	  })(),
+	  TicTacToeGameField: (() => {
+	    return defineComponent(
+	      world,
+	      { x: RecsType.Number, y: RecsType.Number, id: RecsType.Number, index: RecsType.Number, state: RecsType.Number },
+	      {
+	        metadata: {
+	          name: "TicTacToeGameField",
 	          types: [],
 	        },
 	      }
