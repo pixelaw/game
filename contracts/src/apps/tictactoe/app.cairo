@@ -217,8 +217,8 @@ pixel.app.print();
                     player,
                     get_contract_address(),
                     PixelUpdate {
-                        x: position.x,
-                        y: position.y,
+                        x: ai_position.x,
+                        y: ai_position.y,
                         color: Option::Some(0xff00ff00),
                         alert: Option::None,
                         timestamp: Option::None,
