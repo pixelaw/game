@@ -13,7 +13,7 @@ spec:
   metrics:
   - type: Resource
     resource:
-      name: cpu
+      name: memory
       target:
         type: Utilization
-        averageUtilization: {{ .Values.averageUtilization }}
+        averageUtilization: {{ .Values.averageMemoryUtilization }}

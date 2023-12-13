@@ -21,4 +21,8 @@ spec:
         image: {{ .Values.dockerImage }}
         imagePullPolicy: Always
         ports:
-        - containerPort: {{ .Values.webappContainerService.port }}                   
+        - containerPort: {{ .Values.webappContainerService.port }}          
+        resources:
+          requests:
+            cpu: "1"  # Requesting 1 CPU
+            memory: "1Gi"  # Requesting 1 GiB of memory          
